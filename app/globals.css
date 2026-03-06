@@ -2,26 +2,265 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   CSS Custom Properties – Asuntokartta
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base colors */
+  --color-bg-primary: #0f1117;
+  --color-bg-secondary: #1a1d27;
+  --color-bg-tertiary: #242836;
+  --color-bg-glass: rgba(15, 17, 23, 0.85);
+
+  /* Accent */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+  --color-accent-light: #93c5fd;
+  --color-accent-dark: #2563eb;
+
+  /* Semantic */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Text */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Borders */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Price scale – halvin (vihrea) -> kallein (punainen) */
+  --price-1: #22c55e;
+  --price-2: #4ade80;
+  --price-3: #86efac;
+  --price-4: #fde047;
+  --price-5: #facc15;
+  --price-6: #f59e0b;
+  --price-7: #f97316;
+  --price-8: #ef4444;
+  --price-9: #dc2626;
+  --price-10: #991b1b;
+
+  /* shadcn/ui CSS variables (HSL format for dark theme) */
+  --background: 228 20% 7%;
+  --foreground: 210 40% 98%;
+
+  --card: 228 18% 11%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 228 18% 11%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 217 91% 60%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 228 15% 15%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 228 15% 15%;
+  --muted-foreground: 215 20% 55%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 228 15% 18%;
+  --input: 228 15% 18%;
+  --ring: 217 91% 60%;
+
+  --radius: 0.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================
+   Base Styles
+   ============================================ */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply font-body text-foreground;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Headings use Plus Jakarta Sans */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  /* Data numbers use monospace */
+  [data-number],
+  .font-data {
+    @apply font-mono tabular-nums;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================
+   Component Utilities
+   ============================================ */
+
+@layer components {
+  /* Glassmorphism panel */
+  .glass {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: var(--color-bg-glass);
+    border: 1px solid var(--color-border);
+  }
+
+  .glass-hover:hover {
+    border-color: var(--color-border-hover);
+    background: rgba(15, 17, 23, 0.9);
+  }
+
+  /* Subtle glass variant */
+  .glass-subtle {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(15, 17, 23, 0.6);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Price scale badge styles */
+  .price-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-mono font-semibold;
+  }
+
+  /* Map overlay panel */
+  .map-overlay {
+    @apply glass rounded-xl shadow-glass;
+    pointer-events: auto;
+  }
 }
+
+/* ============================================
+   Utility Classes
+   ============================================ */
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============================================
+   Dark Scrollbar
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-bg-tertiary) var(--color-bg-primary);
+}
+
+/* ============================================
+   MapLibre GL Overrides
+   ============================================
+   Import maplibre-gl/dist/maplibre-gl.css in the map component.
+   Below are dark-theme overrides for MapLibre UI elements.
+*/
+
+.maplibregl-popup-content {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.75rem !important;
+  padding: 1rem !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: var(--color-bg-secondary) !important;
+}
+
+.maplibregl-ctrl-group {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+  background: transparent !important;
+  border-color: var(--color-border) !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--color-border) !important;
+}
+
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+
+/* ============================================
+   Selection Colors
+   ============================================ */
+
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #f8fafc;
+}
+
+/* ============================================
+   Focus Styles
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }

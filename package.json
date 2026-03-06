@@ -9,18 +9,31 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@turf/bbox": "^7.3.4",
+    "@turf/centroid": "^7.3.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "d3-delaunay": "^6.0.4",
+    "framer-motion": "^12.35.0",
+    "lucide-react": "^0.577.0",
+    "maplibre-gl": "^5.19.0",
+    "next": "14.2.35",
+    "next-themes": "^0.4.6",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.35"
+    "react-map-gl": "^8.1.0",
+    "recharts": "^3.7.0",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/d3-delaunay": "^6.0.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.35"
+    "typescript": "^5"
   }
 }

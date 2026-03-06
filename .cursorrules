@@ -1,0 +1,127 @@
+# Asuntokartta – Cursor Rules
+
+## Projekti
+
+Interaktiivinen web-karttasovellus suomalaisten alueiden asuntojen hinta-arvioille. Next.js 14 + Mapbox GL JS + Supabase/PostGIS + Tailwind CSS + shadcn/ui.
+
+## Ehdottomat säännöt
+
+- TypeScript kaikkialla, `any` kielletty – käytä `unknown` + type guard
+- Funktionaaliset komponentit + hooks, EI class-komponentteja
+- Server Components oletuksena, `'use client'` VAIN kun tarvitaan interaktioita/hooks
+- Virhekäsittely JOKAISESSA API-kutsussa ja datanhaussa
+- Karttakomponentit AINA `'use client'` + `dynamic(() => ..., { ssr: false })`
+- Kieli: kommentit ja muuttujat englanniksi, UI-tekstit suomeksi
+- Ei console.log tuotantoon – käytä strukturoitua loggeria
+
+## Tech Stack
+
+```
+Next.js 14 (App Router)     React 18
+Mapbox GL JS / Deck.gl      Karttavisualisointi
+Tailwind CSS + shadcn/ui    UI-komponentit
+Supabase (PostgreSQL)       Tietokanta
+PostGIS                     Geospatiaalinen data
+Vercel                      Deployment
+Vitest + Playwright         Testaus
+```
+
+## Kansiorakenne
+
+```
+app/
+├── page.tsx                # Pääsivu (kartta)
+├── layout.tsx              # Root layout
+├── globals.css             # Tailwind + custom CSS
+├── api/
+│   ├── areas/route.ts      # GeoJSON endpoint
+│   ├── areas/[id]/route.ts # Yksittäinen alue
+│   ├── prices/route.ts     # Hinta-arviot
+│   └── stats/route.ts      # Tilastot
+├── components/
+│   ├── map/                # Karttakomponentit (client)
+│   ├── sidebar/            # Tilastopaneeli, filtterit
+│   └── ui/                 # shadcn/ui
+├── lib/                    # Utilityt, supabase client
+├── types/                  # TypeScript-tyypit
+├── hooks/                  # Custom hooks
+└── contexts/               # React Context (MapContext)
+```
+
+## Design-periaatteet
+
+- Tumma teema: bg #0f1117, paneelit #1a1d27, glassmorphism
+- Kartta vie 70-80% näkymästä, UI kelluu päälle
+- Choropleth: sininen→vihreä→keltainen→punainen→purppura (€/m²)
+- Fontit: Plus Jakarta Sans (otsikot), Inter (body), JetBrains Mono (data)
+- Animaatiot: cubic-bezier(0.4, 0, 0.2, 1), 200-350ms
+- Mobiili: bottom sheet pattern, desktop: sivupaneeli
+
+## Koodimalleja
+
+### API Route
+
+```typescript
+// Aina tämä rakenne
+export async function GET(request: NextRequest) {
+  try {
+    const params = request.nextUrl.searchParams
+    const { data, error } = await supabaseAdmin.from('table').select('*')
+    if (error) throw error
+    return NextResponse.json(data, {
+      headers: { 'Cache-Control': 'public, s-maxage=900' }
+    })
+  } catch (error) {
+    return NextResponse.json({ error: 'Virhe' }, { status: 500 })
+  }
+}
+```
+
+### Karttakomponentti
+
+```typescript
+'use client'
+import { useCallback, useMemo } from 'react'
+// Aina useMemo raskaalle laskennalle
+const processedData = useMemo(() => transform(data), [data])
+// useCallback event handlereille
+const handleClick = useCallback((e) => { ... }, [deps])
+```
+
+### Custom Hook
+
+```typescript
+// Aina abort controller fetcheille
+useEffect(() => {
+  const controller = new AbortController()
+  fetch(url, { signal: controller.signal }).then(...)
+  return () => controller.abort()
+}, [deps])
+```
+
+## Mitä EI tehdä ilman lupaa
+
+- Tietokantamigraatioiden muuttaminen
+- Uusien npm-pakettien lisääminen
+- Next.js/Tailwind-konfiguraation muuttaminen
+- Tiedostojen poistaminen
+
+## Suorituskyky
+
+- Geometrioiden yksinkertaistus zoom-tasoittain (ST_Simplify)
+- Viewport-rajoitetut kyselyt (ST_Intersects + bbox)
+- React.memo suurille listoille
+- Dynamic import karttakomponenteille
+- Cache-Control headersit API-vastauksissa
+- Debounce viewport-muutoksissa (300ms)
+
+## Agenttiohjeistukset
+
+Projektissa on erikoistuneet agentit kansiossa `/agents/`:
+- `map-specialist.md` – Karttavisualisointi ja Mapbox
+- `ui-ux-designer.md` – Design, värit, typografia, animaatiot
+- `data-engineer.md` – Supabase, PostGIS, API, datalähteet
+- `qa-tester.md` – Testaus, suorituskyky, esteettömyys
+- `fullstack-integrator.md` – Arkkitehtuuri, tilanhallinta, deployment
+
+Viittaa näihin agentteihin kun työskentelet vastaavalla osa-alueella.
