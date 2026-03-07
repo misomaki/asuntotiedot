@@ -168,12 +168,24 @@ let providerInstance: DataProvider | null = null
 
 /**
  * Returns the active DataProvider instance.
- * Currently returns a MockDataProvider; swap to a Supabase-backed provider
- * when the database is ready.
+ * Auto-detects Supabase when environment variables are set;
+ * falls back to MockDataProvider otherwise.
  */
 export function getDataProvider(): DataProvider {
   if (!providerInstance) {
-    providerInstance = new MockDataProvider()
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
+      // Dynamic import to avoid loading Supabase client when not needed
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { SupabaseDataProvider } = require('./supabaseDataProvider')
+      providerInstance = new SupabaseDataProvider()
+      console.log('Using SupabaseDataProvider (real data)')
+    } else {
+      providerInstance = new MockDataProvider()
+      console.log('Using MockDataProvider (mock data)')
+    }
   }
-  return providerInstance
+  return providerInstance!
 }

@@ -4,6 +4,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useAreaStats } from '@/app/hooks/useAreaStats'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { StatsPanel } from '@/app/components/sidebar/StatsPanel'
+import { BuildingPanel } from '@/app/components/sidebar/BuildingPanel'
 import { ComparisonPanel } from '@/app/components/comparison/ComparisonPanel'
 import { Sheet } from '@/app/components/ui/sheet'
 import { X, GitCompareArrows } from 'lucide-react'
@@ -31,6 +32,8 @@ export function Sidebar() {
     setIsCompareMode,
     isSidebarOpen,
     setIsSidebarOpen,
+    selectedBuilding,
+    setSelectedBuilding,
     filters,
   } = useMapContext()
 
@@ -43,11 +46,12 @@ export function Sidebar() {
   // Determine visibility
   const hasSelectedArea = selectedArea !== null
   const hasComparedArea = comparedArea !== null
+  const hasSelectedBuilding = selectedBuilding !== null
   const isComparisonReady = isCompareMode && hasSelectedArea && hasComparedArea
   const isWaitingForSecondArea = isCompareMode && !hasSelectedArea && hasComparedArea
   const isOpen =
     isSidebarOpen &&
-    (hasSelectedArea || isCompareMode)
+    (hasSelectedArea || hasSelectedBuilding || isCompareMode)
 
   // Enter compare mode: current area becomes compared, clear selected for next click
   function handleStartCompare() {
@@ -60,6 +64,7 @@ export function Sidebar() {
   function handleClose() {
     setIsSidebarOpen(false)
     setSelectedArea(null)
+    setSelectedBuilding(null)
     setComparedArea(null)
     setIsCompareMode(false)
   }
@@ -70,6 +75,11 @@ export function Sidebar() {
 
   // ---- Sidebar content ----
   function renderContent() {
+    // Building detail panel
+    if (hasSelectedBuilding) {
+      return <BuildingPanel />
+    }
+
     // Compare mode: both areas selected -> show comparison panel
     if (isComparisonReady) {
       return <ComparisonPanel />

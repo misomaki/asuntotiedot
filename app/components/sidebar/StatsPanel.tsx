@@ -91,8 +91,8 @@ function PriceTypeCard({ label, priceEstimate }: PriceTypeCardProps) {
         {label}
       </p>
       <p className="text-sm font-mono tabular-nums text-foreground" data-number>
-        {priceEstimate?.price_per_sqm_median != null
-          ? formatPricePerSqm(priceEstimate.price_per_sqm_median)
+        {(priceEstimate?.price_per_sqm_median ?? priceEstimate?.price_per_sqm_avg) != null
+          ? formatPricePerSqm(priceEstimate?.price_per_sqm_median ?? priceEstimate?.price_per_sqm_avg ?? null)
           : 'Ei tietoa'}
       </p>
       {priceEstimate && priceEstimate.transaction_count > 0 && (
@@ -376,10 +376,10 @@ export function StatsPanel({ data, isLoading }: StatsPanelProps) {
             className="text-3xl font-mono font-bold text-foreground tracking-tight"
             data-number
           >
-            {formatPricePerSqm(primaryPrice?.price_per_sqm_median ?? null)}
+            {formatPricePerSqm(primaryPrice?.price_per_sqm_median ?? primaryPrice?.price_per_sqm_avg ?? null)}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Mediaanihinta
+            Keskihinta
           </p>
         </div>
 

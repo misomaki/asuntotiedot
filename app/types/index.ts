@@ -69,3 +69,31 @@ export interface AreaFeatureProperties {
   population: number | null
   walk_score: number | null
 }
+
+/** Individual building with estimated price */
+export interface BuildingWithPrice {
+  id: string
+  area_code: string
+  area_name: string
+  building_type: string | null
+  construction_year: number | null
+  floor_count: number | null
+  footprint_area_sqm: number | null
+  address: string | null
+  estimated_price_per_sqm: number | null
+  min_distance_to_water_m: number | null
+  base_price: number | null
+  age_factor: number
+  water_factor: number
+  floor_factor: number
+}
+
+/** Properties on a building GeoJSON feature */
+export interface BuildingFeatureProperties {
+  id: string
+  building_type: string | null
+  construction_year: number | null
+  floor_count: number | null
+  address: string | null
+  estimated_price_per_sqm: number | null
+}

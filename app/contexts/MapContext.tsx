@@ -24,6 +24,8 @@ interface SelectedArea {
   name: string;
 }
 
+/** Selected building ID (for building detail panel) */
+
 /** Active filter state */
 interface MapFilters {
   year: number;
@@ -51,6 +53,8 @@ interface MapContextValue {
   setIsLoading: (loading: boolean) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (open: boolean) => void;
+  selectedBuilding: string | null;
+  setSelectedBuilding: (id: string | null) => void;
 }
 
 const defaultViewport: MapViewport = {
@@ -81,6 +85,7 @@ export function MapProvider({ children }: MapProviderProps) {
   const [filters, setFilters] = useState<MapFilters>(defaultFilters);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
 
   const updateFilter = useCallback(
     <K extends keyof MapFilters>(key: K, value: MapFilters[K]) => {
@@ -105,6 +110,8 @@ export function MapProvider({ children }: MapProviderProps) {
     setIsLoading,
     isSidebarOpen,
     setIsSidebarOpen,
+    selectedBuilding,
+    setSelectedBuilding,
   };
 
   return <MapContext.Provider value={value}>{children}</MapContext.Provider>;
