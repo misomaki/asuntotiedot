@@ -82,6 +82,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
 
 /supabase
   /migrations/001_initial_schema.sql  # PostGIS-skeema + RPC-funktiot
+  /migrations/002_building_functions.sql # Spatial join, vesistöetäisyys, hintafunktiot
 ```
 
 ## Tietokantarakenne (Supabase / PostGIS)
@@ -257,18 +258,37 @@ estimated_price = base_price × age_factor × water_factor × floor_factor
 
 ## Data-import
 
-Import-scriptit ajetaan järjestyksessä:
+Import-scriptit ajetaan järjestyksessä. Scriptit 03-04 käyttävät Overpass API:a (ei tarvita GDAL/ogr2ogr eikä lokaaleja tiedostoja).
+Migraatio 002 täytyy ajaa Supabase SQL Editorissa ennen scriptejä 03-05.
+
 ```bash
-npx tsx scripts/data-import/01-import-paavo-areas.ts     # ✅ ajettu (406 aluetta + 402 väestöä)
-npx tsx scripts/data-import/02-import-statfin-prices.ts  # ✅ ajettu (7373 hintarecordia, 2009-2024)
-npx tsx scripts/data-import/03-import-buildings.ts       # ⏳ vaatii finland-latest.osm.pbf + ogr2ogr
-npx tsx scripts/data-import/04-import-water-bodies.ts    # ⏳ vaatii OSM-dataa
-npx tsx scripts/data-import/05-compute-building-prices.ts # ⏳ vaatii scriptit 03-04
+# Vaihe 1: Alueet ja hinnat
+npx tsx scripts/data-import/01-import-paavo-areas.ts     # ✅ 406 aluetta + 402 väestöä
+npx tsx scripts/data-import/02-import-statfin-prices.ts  # ✅ 7373 hintarecordia, 2009-2024
+
+# Vaihe 2: Aja migraatio SQL Editorissa
+# supabase/migrations/002_building_functions.sql         # ✅ RPC-funktiot
+
+# Vaihe 3: Rakennukset, vesistöt, hinta-arviot
+npx tsx scripts/data-import/03-import-buildings.ts       # ✅ 318 650 rakennusta (Overpass API)
+npx tsx scripts/data-import/04-import-water-bodies.ts    # ✅ 3 351 vesistöä + etäisyyslaskenta
+npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ ~80 000 rakennusta sai hinta-arvion
 ```
+
+### Overpass API -huomiot
+- Endpoint: `https://overpass-api.de/api/interpreter`, POST, URL-encoded `data`-parametri
+- Bbox-formaatti: `(south, west, north, east)` — eri järjestys kuin GeoJSON!
+- Rate limit: max 2 rinnakkaista kyselyä, 429/503 → odota ja yritä uudelleen
+- Geometria palautuu `[{lat, lon}, ...]` — muunna GeoJSON:iin `[lng, lat]` + sulje rengas
+
+### PostGIS-huomiot (opittu)
+- `assign_buildings_to_areas()` RPC aikakatkaistaan 318K rakennuksella → aja SQL suoraan SQL Editorissa
+- Partial unique index (`WHERE osm_id IS NOT NULL`) EI toimi Supabasen `.upsert({onConflict: 'osm_id'})` kanssa → käytä `.insert()` + muistinsisäinen deduplikointi
+- Hinta-arviolaskennassa käytä `estimation_year IS NULL` (EI `estimated_price_per_sqm IS NULL`), koska `compute_building_price()` palauttaa NULL kun ei löydy perushintaa → infinite loop
 
 ## Seuraavat vaiheet
 
-- Importoi rakennukset (OSM), vesistöt ja laske rakennuskohtaiset hinta-arviot (scripts 03-05)
 - Vercel-deployment
+- Mobiiliresponsiivisuus
 - Käyttäjätilit ja suosikkialueet
 - Julkinen API
