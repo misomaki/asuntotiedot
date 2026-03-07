@@ -76,6 +76,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     03-import-buildings.ts            # Rakennukset OpenStreetMapista
     04-import-water-bodies.ts         # Vesistöt (etäisyyslaskenta)
     05-compute-building-prices.ts     # Rakennuskohtaiset hinta-arviot
+    06-enrich-from-ryhti.ts           # Rikastus Ryhti-rakennusrekisteristä (SYKE)
     /config.ts                        # Kaupungit, postinumeroprefixet
     /lib/supabaseAdmin.ts             # Admin-client importeille
     /lib/pxwebClient.ts               # PxWeb API helper
@@ -83,6 +84,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
 /supabase
   /migrations/001_initial_schema.sql  # PostGIS-skeema + RPC-funktiot
   /migrations/002_building_functions.sql # Spatial join, vesistöetäisyys, hintafunktiot
+  /migrations/003_ryhti_enrichment.sql   # Ryhti staging-taulu + matchaus-funktiot
 ```
 
 ## Tietokantarakenne (Supabase / PostGIS)
@@ -273,7 +275,23 @@ npx tsx scripts/data-import/02-import-statfin-prices.ts  # ✅ 7373 hintarecordi
 npx tsx scripts/data-import/03-import-buildings.ts       # ✅ 318 650 rakennusta (Overpass API)
 npx tsx scripts/data-import/04-import-water-bodies.ts    # ✅ 3 351 vesistöä + etäisyyslaskenta
 npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ ~80 000 rakennusta sai hinta-arvion
+
+# Vaihe 4: Aja migraatio 003 SQL Editorissa
+# supabase/migrations/003_ryhti_enrichment.sql         # ✅ Staging-taulu + matchaus
+
+# Vaihe 5: Ryhti-rikastus + hintojen uudelleenlaskenta
+npx tsx scripts/data-import/06-enrich-from-ryhti.ts    # ✅ 369 176 Ryhti-rakennusta, 257 021 vuotta matchattu
+npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ 141 348 rakennusta sai hinta-arvion
 ```
+
+### Datan nykytilanne
+- **Alueet:** 406 postinumeroaluetta, 402 väestötietoa
+- **Hinnat:** 7 373 hintarecordia (StatFin, 2009-2024)
+- **Rakennukset:** 318 650 (OSM Overpass API)
+- **Vesistöt:** 3 351 + etäisyyslaskenta 308 474 rakennukselle
+- **Rakennusvuosi:** 299 206 / 318 650 (94%) — OSM 12% + Ryhti 82%
+- **Kerrostieto:** 296 659 / 318 650 (93%)
+- **Hinta-arvio:** 141 348 / 308 474 (46%) — loput alueilla joilla ei StatFin-dataa
 
 ### Overpass API -huomiot
 - Endpoint: `https://overpass-api.de/api/interpreter`, POST, URL-encoded `data`-parametri
@@ -281,10 +299,23 @@ npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ ~80 000 rakennus
 - Rate limit: max 2 rinnakkaista kyselyä, 429/503 → odota ja yritä uudelleen
 - Geometria palautuu `[{lat, lon}, ...]` — muunna GeoJSON:iin `[lng, lat]` + sulje rengas
 
+### SYKE Ryhti OGC API Features
+- URL: `https://paikkatiedot.ymparisto.fi/geoserver/ryhti_building/ogc/features/v1/collections/open_building/items`
+- Avoin data (CC BY 4.0), ei API-avainta
+- **Paginaatio:** `startIndex` (EI `offset`!) + `limit`, max ~5000/sivu
+- **Koordinaatit:** GeoJSON-vastaus WGS84:ssä (vaikka `point_location_srid: 3067`)
+- **Geometria:** Point (ei polygoni) — matchataan OSM-rakennusten centroideihin
+- **Deduplikointi:** Sama rakennus voi esiintyä monta kertaa (`permanent_building_identifier`) — pidä vain tuorein (`modified_timestamp_utc`)
+- **Hyödylliset kentät:** `completion_date` (valmistumisvuosi), `number_of_storeys`, `main_purpose`, `apartment_count`
+
 ### PostGIS-huomiot (opittu)
 - `assign_buildings_to_areas()` RPC aikakatkaistaan 318K rakennuksella → aja SQL suoraan SQL Editorissa
 - Partial unique index (`WHERE osm_id IS NOT NULL`) EI toimi Supabasen `.upsert({onConflict: 'osm_id'})` kanssa → käytä `.insert()` + muistinsisäinen deduplikointi
 - Hinta-arviolaskennassa käytä `estimation_year IS NULL` (EI `estimated_price_per_sqm IS NULL`), koska `compute_building_price()` palauttaa NULL kun ei löydy perushintaa → infinite loop
+
+### Supabase-huomiot (lisää)
+- `.rpc()` JSONB-parametrille anna JavaScript-objekti/array, EI `JSON.stringify()` → muuten "cannot extract elements from a scalar"
+- Migraatiot täytyy ajaa uudelleen SQL Editorissa jos funktioita muutetaan lokaalisti — tietokannassa on edelleen vanha versio kunnes CREATE OR REPLACE ajetaan
 
 ## Seuraavat vaiheet
 
