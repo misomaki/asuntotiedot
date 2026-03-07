@@ -101,13 +101,14 @@ function parseCompletionYear(dateStr: string | null): number | null {
 
 /**
  * Fetch a single page from the Ryhti OGC API Features endpoint.
+ * Uses startIndex for pagination (GeoServer OGC API Features).
  */
 async function fetchRyhtiPage(
   bbox: [number, number, number, number],
-  offset: number
+  startIndex: number
 ): Promise<RyhtiResponse> {
   const [west, south, east, north] = bbox
-  const url = `${RYHTI_API}?f=json&limit=${PAGE_SIZE}&offset=${offset}&bbox=${west},${south},${east},${north}`
+  const url = `${RYHTI_API}?f=json&limit=${PAGE_SIZE}&startIndex=${startIndex}&bbox=${west},${south},${east},${north}`
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -144,18 +145,20 @@ async function fetchRyhtiForBbox(
   bbox: [number, number, number, number]
 ): Promise<Map<string, RyhtiRecord>> {
   const buildings = new Map<string, RyhtiRecord>()
-  let offset = 0
+  let startIndex = 0
   let pageNum = 0
+  let totalAvailable = 0
 
   while (true) {
     pageNum++
-    const data = await fetchRyhtiPage(bbox, offset)
+    const data = await fetchRyhtiPage(bbox, startIndex)
     const features = data.features ?? []
 
     if (features.length === 0) break
 
     if (pageNum === 1 && data.numberMatched) {
-      console.log(`    Total available: ${data.numberMatched}`)
+      totalAvailable = data.numberMatched
+      console.log(`    Total available: ${totalAvailable}`)
     }
 
     let added = 0
@@ -194,14 +197,17 @@ async function fetchRyhtiForBbox(
     }
 
     if (pageNum % 10 === 0 || features.length < PAGE_SIZE) {
+      const pct = totalAvailable > 0
+        ? ` (${Math.round((startIndex + features.length) / totalAvailable * 100)}%)`
+        : ''
       console.log(
-        `    Page ${pageNum}: +${features.length} features, ${added} new unique (total: ${buildings.size})`
+        `    Page ${pageNum}: +${features.length} features, ${added} new unique (total: ${buildings.size})${pct}`
       )
     }
 
     if (features.length < PAGE_SIZE) break
 
-    offset += PAGE_SIZE
+    startIndex += PAGE_SIZE
     await sleep(API_DELAY_MS)
   }
 
@@ -232,7 +238,7 @@ async function insertIntoStaging(records: RyhtiRecord[]): Promise<number> {
     }))
 
     const { data, error } = await supabase.rpc('insert_ryhti_batch', {
-      p_buildings: JSON.stringify(payload),
+      p_buildings: payload,
     })
 
     if (error) {
