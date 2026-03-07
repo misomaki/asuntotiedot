@@ -1,246 +1,246 @@
 /**
- * Script 03: Import building outlines from OpenStreetMap.
+ * Script 03: Import building outlines from OpenStreetMap via Overpass API.
+ *
+ * Queries the Overpass API for building ways within each city's bounding box.
+ * No local files, GDAL, or PBF downloads needed.
+ *
+ * After inserting buildings, runs a spatial join via PostGIS to assign
+ * each building to its postal code area and computes centroids.
  *
  * Prerequisites:
- * 1. Download Finland OSM extract: https://download.geofabrik.de/europe/finland-latest.osm.pbf
- * 2. Install GDAL (brew install gdal) for ogr2ogr
- * 3. Extract buildings per city using ogr2ogr (see commands below)
- *
- * Pre-processing commands (run manually before this script):
- *
- *   # Extract buildings for Helsinki metro area
- *   ogr2ogr -f GeoJSON data/buildings_helsinki.geojson \
- *     finland-latest.osm.pbf \
- *     -sql "SELECT osm_id, name, building, 'building:levels' as levels, start_date, 'addr:street' as street, 'addr:housenumber' as housenumber FROM multipolygons WHERE building IS NOT NULL" \
- *     -spat 24.50 60.05 25.30 60.35
- *
- *   # Repeat for other cities with appropriate bounding boxes
+ *   - Scripts 01 must be run first (areas in database)
+ *   - Run supabase/migrations/002_building_functions.sql in SQL Editor
  *
  * Usage: npx tsx scripts/data-import/03-import-buildings.ts
  */
 
-import { readFileSync, existsSync } from 'fs'
-import { resolve } from 'path'
 import { supabase } from './lib/supabaseAdmin'
-import { CITIES } from './config'
+import { CITIES, type CityConfig } from './config'
+import { sleep } from './lib/pxwebClient'
 
-const DATA_DIR = resolve(__dirname, '../../data')
+const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
 
-interface OSMBuildingFeature {
-  type: 'Feature'
-  properties: {
-    osm_id?: number
-    building?: string
-    levels?: string | number
-    'building:levels'?: string | number
-    start_date?: string
-    'building:year'?: string
-    'addr:street'?: string
-    'addr:housenumber'?: string
-    street?: string
-    housenumber?: string
-    name?: string
-  }
-  geometry: {
-    type: 'Polygon' | 'MultiPolygon'
-    coordinates: number[][][] | number[][][][]
-  }
+/** Non-residential building types to exclude */
+const EXCLUDED_BUILDING_TYPES = new Set([
+  'garage', 'garages', 'shed', 'barn', 'greenhouse', 'industrial',
+  'commercial', 'warehouse', 'retail', 'church', 'chapel', 'hospital',
+  'school', 'university', 'kindergarten', 'public', 'government',
+  'transportation', 'train_station', 'parking', 'service', 'roof',
+  'ruins', 'collapsed', 'construction', 'abandoned', 'bridge',
+  'bunker', 'cabin', 'cowshed', 'farm_auxiliary', 'hangar',
+  'hut', 'kiosk', 'storage_tank', 'silo', 'stable', 'tank',
+  'toilets', 'transformer_tower', 'water_tower',
+])
+
+interface OverpassElement {
+  type: 'way' | 'relation' | 'node'
+  id: number
+  tags?: Record<string, string>
+  geometry?: Array<{ lat: number; lon: number }>
 }
 
-function parseConstructionYear(feature: OSMBuildingFeature): number | null {
-  const props = feature.properties
-  const raw =
-    props.start_date || props['building:year'] || null
+/**
+ * Query the Overpass API with retry logic for rate limiting.
+ */
+async function queryOverpass(query: string): Promise<{ elements: OverpassElement[] }> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      console.log(`  Overpass query (attempt ${attempt})...`)
 
+      const response = await fetch(OVERPASS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `data=${encodeURIComponent(query)}`,
+      })
+
+      if (response.status === 429 || response.status === 503) {
+        const wait = 30000 * attempt
+        console.log(`  Rate limited (${response.status}), waiting ${wait / 1000}s...`)
+        await sleep(wait)
+        continue
+      }
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(`Overpass API error ${response.status}: ${text.slice(0, 300)}`)
+      }
+
+      return response.json()
+    } catch (err) {
+      if (attempt === 3) throw err
+      console.log(`  Attempt ${attempt} failed, retrying in ${10 * attempt}s...`)
+      await sleep(10000 * attempt)
+    }
+  }
+
+  throw new Error('Overpass query failed after all retries')
+}
+
+/**
+ * Convert Overpass way geometry [{lat,lon},...] to GeoJSON Polygon.
+ */
+function wayToPolygon(
+  geometry: Array<{ lat: number; lon: number }>
+): { type: 'Polygon'; coordinates: number[][][] } | null {
+  if (!geometry || geometry.length < 4) return null
+
+  const ring = geometry.map((p) => [p.lon, p.lat])
+
+  // Ensure closed ring
+  const first = ring[0]
+  const last = ring[ring.length - 1]
+  if (first[0] !== last[0] || first[1] !== last[1]) {
+    ring.push([first[0], first[1]])
+  }
+
+  return { type: 'Polygon', coordinates: [ring] }
+}
+
+function parseConstructionYear(tags: Record<string, string>): number | null {
+  const raw = tags['start_date'] || tags['building:year'] || null
   if (!raw) return null
 
-  // Try to parse year from various formats: "1965", "1960s", "~1970"
   const match = String(raw).match(/(\d{4})/)
   if (match) {
     const year = parseInt(match[1], 10)
     if (year >= 1800 && year <= 2030) return year
   }
-
   return null
 }
 
-function parseFloorCount(feature: OSMBuildingFeature): number | null {
-  const raw =
-    feature.properties.levels ||
-    feature.properties['building:levels'] ||
-    null
-
+function parseFloorCount(tags: Record<string, string>): number | null {
+  const raw = tags['building:levels'] || null
   if (!raw) return null
 
   const num = parseInt(String(raw), 10)
   if (num >= 1 && num <= 50) return num
-
   return null
 }
 
-function parseAddress(feature: OSMBuildingFeature): string | null {
-  const props = feature.properties
-  const street = props['addr:street'] || props.street
-  const number = props['addr:housenumber'] || props.housenumber
+function parseAddress(tags: Record<string, string>): string | null {
+  const street = tags['addr:street']
+  const number = tags['addr:housenumber']
 
   if (street && number) return `${street} ${number}`
   if (street) return street
   return null
 }
 
-function normalizeToPolygon(
-  geometry: OSMBuildingFeature['geometry']
-): { type: 'Polygon'; coordinates: number[][][] } | null {
-  if (geometry.type === 'Polygon') {
-    return geometry as { type: 'Polygon'; coordinates: number[][][] }
-  }
+async function importBuildingsForCity(city: CityConfig): Promise<number> {
+  const [west, south, east, north] = city.bbox
 
-  // For MultiPolygon, take the largest polygon
-  if (geometry.type === 'MultiPolygon') {
-    const coords = geometry.coordinates as number[][][][]
-    if (coords.length === 0) return null
+  console.log(`\n${city.name}: bbox [${west}, ${south}, ${east}, ${north}]`)
 
-    // Find the polygon with the most points
-    let largest = coords[0]
-    let maxPoints = coords[0][0]?.length ?? 0
+  // Overpass bbox format: (south, west, north, east)
+  const query = `
+    [out:json][timeout:300];
+    way["building"](${south},${west},${north},${east});
+    out body geom;
+  `
 
-    for (const poly of coords) {
-      const points = poly[0]?.length ?? 0
-      if (points > maxPoints) {
-        largest = poly
-        maxPoints = points
-      }
-    }
+  const data = await queryOverpass(query)
+  console.log(`  Received ${data.elements.length} building elements`)
 
-    return { type: 'Polygon', coordinates: largest }
-  }
+  // Filter: ways only, with geometry, exclude non-residential
+  const buildings = data.elements.filter((el) => {
+    if (el.type !== 'way') return false
+    if (!el.geometry || el.geometry.length < 4) return false
 
-  return null
-}
+    const buildingType = el.tags?.building
+    if (!buildingType) return false
+    if (EXCLUDED_BUILDING_TYPES.has(buildingType)) return false
 
-async function importBuildingsForCity(cityName: string, filename: string) {
-  const filepath = resolve(DATA_DIR, filename)
-
-  if (!existsSync(filepath)) {
-    console.log(`  File not found: ${filepath}`)
-    console.log(`  Skipping ${cityName}. Run ogr2ogr extract first.`)
-    return 0
-  }
-
-  console.log(`\n  Loading ${filename}...`)
-  const raw = readFileSync(filepath, 'utf-8')
-  const geojson = JSON.parse(raw)
-  const features: OSMBuildingFeature[] = geojson.features ?? []
-
-  console.log(`  ${features.length} building features loaded`)
-
-  // Filter to only residential buildings
-  const residential = features.filter((f) => {
-    const bt = f.properties.building
-    if (!bt) return false
-    // Exclude non-residential
-    const exclude = [
-      'garage', 'garages', 'shed', 'barn', 'greenhouse', 'industrial',
-      'commercial', 'warehouse', 'retail', 'church', 'chapel', 'hospital',
-      'school', 'university', 'kindergarten', 'public', 'government',
-      'transportation', 'train_station', 'parking',
-    ]
-    return !exclude.includes(bt)
+    return true
   })
 
-  console.log(`  ${residential.length} residential buildings after filtering`)
+  console.log(`  ${buildings.length} residential buildings after filtering`)
 
+  // Insert in batches
   let inserted = 0
   const BATCH_SIZE = 200
 
-  for (let i = 0; i < residential.length; i += BATCH_SIZE) {
-    const batch = residential.slice(i, i + BATCH_SIZE)
+  for (let i = 0; i < buildings.length; i += BATCH_SIZE) {
+    const batch = buildings.slice(i, i + BATCH_SIZE)
 
     const rows = batch
-      .map((f) => {
-        const polygon = normalizeToPolygon(f.geometry)
+      .map((el) => {
+        const polygon = wayToPolygon(el.geometry!)
         if (!polygon) return null
 
+        const tags = el.tags ?? {}
+
         return {
-          osm_id: f.properties.osm_id ?? null,
+          osm_id: el.id,
           geometry: JSON.stringify(polygon),
-          building_type: f.properties.building ?? 'yes',
-          construction_year: parseConstructionYear(f),
-          floor_count: parseFloorCount(f),
-          address: parseAddress(f),
+          building_type: tags.building ?? 'yes',
+          construction_year: parseConstructionYear(tags),
+          floor_count: parseFloorCount(tags),
+          address: parseAddress(tags),
         }
       })
       .filter(Boolean)
 
     if (rows.length === 0) continue
 
-    const { error, count } = await supabase
+    const { error } = await supabase
       .from('buildings')
       .insert(rows as Record<string, unknown>[])
 
     if (error) {
-      console.error(`  Batch insert error at ${i}: ${error.message}`)
+      console.error(`  Batch error at ${i}: ${error.message}`)
     } else {
       inserted += rows.length
     }
 
-    if ((i + BATCH_SIZE) % 2000 === 0 || i + BATCH_SIZE >= residential.length) {
+    if ((i + BATCH_SIZE) % 2000 === 0 || i + BATCH_SIZE >= buildings.length) {
       console.log(
-        `  Progress: ${Math.min(i + BATCH_SIZE, residential.length)}/${residential.length} (${inserted} inserted)`
+        `  Progress: ${Math.min(i + BATCH_SIZE, buildings.length)}/${buildings.length} (${inserted} inserted)`
       )
     }
   }
 
+  console.log(`  Inserted ${inserted} buildings for ${city.name}`)
   return inserted
 }
 
-async function assignAreasAndComputeCentroids() {
+async function assignAreasAndCentroids() {
   console.log('\nAssigning buildings to postal code areas (spatial join)...')
+  console.log('This may take a few minutes...')
 
-  // Use PostGIS to assign area_id and compute centroids
-  const { error: centroidError } = await supabase.rpc('assign_buildings_to_areas')
+  const { data, error } = await supabase.rpc('assign_buildings_to_areas')
 
-  if (centroidError) {
-    console.log('RPC not available, falling back to SQL...')
-
-    // Run raw SQL via the REST API
-    const { error } = await supabase.from('buildings').select('id').limit(1)
-    if (error) {
-      console.error('Could not verify buildings table:', error.message)
-      return
-    }
-
+  if (error) {
+    console.error('RPC assign_buildings_to_areas failed:', error.message)
+    console.log('\nRun these SQL commands in the Supabase SQL editor:')
     console.log(
-      'Note: Run these SQL commands in the Supabase SQL editor:\n' +
-        "  UPDATE buildings SET centroid = ST_Centroid(geometry) WHERE centroid IS NULL;\n" +
-        '  UPDATE buildings b SET area_id = a.id FROM areas a WHERE ST_Contains(a.geometry, b.centroid) AND b.area_id IS NULL;\n' +
-        "  UPDATE buildings SET footprint_area_sqm = ST_Area(geometry::geography) WHERE footprint_area_sqm IS NULL;"
+      "  UPDATE buildings SET centroid = ST_Centroid(geometry) WHERE centroid IS NULL;\n" +
+      '  UPDATE buildings b SET area_id = a.id FROM areas a WHERE ST_Contains(a.geometry, b.centroid) AND b.area_id IS NULL;\n' +
+      "  UPDATE buildings SET footprint_area_sqm = ST_Area(geometry::geography) WHERE footprint_area_sqm IS NULL;"
     )
-  } else {
-    console.log('Buildings assigned to areas successfully')
+    return
   }
+
+  console.log('Spatial join result:', data)
 }
 
 async function main() {
-  console.log('=== Building Import ===\n')
-  console.log(`Data directory: ${DATA_DIR}`)
-
-  const cityFiles = [
-    { name: 'Helsinki metro', file: 'buildings_helsinki.geojson' },
-    { name: 'Tampere', file: 'buildings_tampere.geojson' },
-    { name: 'Turku', file: 'buildings_turku.geojson' },
-    { name: 'Oulu', file: 'buildings_oulu.geojson' },
-  ]
+  console.log('=== Building Import (Overpass API) ===\n')
 
   let totalInserted = 0
 
-  for (const { name, file } of cityFiles) {
-    const count = await importBuildingsForCity(name, file)
+  for (const city of CITIES) {
+    const count = await importBuildingsForCity(city)
     totalInserted += count
+
+    // Respect Overpass rate limits — wait between cities
+    if (CITIES.indexOf(city) < CITIES.length - 1) {
+      console.log('  Waiting 15s for Overpass rate limit...')
+      await sleep(15000)
+    }
   }
 
   if (totalInserted > 0) {
-    await assignAreasAndComputeCentroids()
+    await assignAreasAndCentroids()
   }
 
   console.log(`\n=== Import complete: ${totalInserted} buildings ===`)
