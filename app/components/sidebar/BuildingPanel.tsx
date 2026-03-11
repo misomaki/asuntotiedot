@@ -119,9 +119,16 @@ export function BuildingPanel() {
           </div>
         )}
         <div className="flex items-center gap-2 flex-wrap">
-          {building.building_type && (
+          {(building.ryhti_main_purpose || building.building_type) && (
             <Badge variant="secondary" className="text-xs capitalize">
-              {getBuildingTypeLabel(building.building_type)}
+              {building.ryhti_main_purpose
+                ? getRyhtiPurposeLabel(building.ryhti_main_purpose)
+                : getBuildingTypeLabel(building.building_type!)}
+            </Badge>
+          )}
+          {building.is_residential === false && (
+            <Badge variant="outline" className="text-xs text-amber-400 border-amber-400/40">
+              Ei asuinkäytössä
             </Badge>
           )}
           {building.area_name && (
@@ -339,4 +346,65 @@ function getBuildingTypeLabel(type: string): string {
     yes: 'Rakennus',
   }
   return labels[type] ?? type
+}
+
+/**
+ * Map Ryhti main_purpose codes to Finnish labels.
+ * Codes follow the Finnish national building classification.
+ * See: https://koodistot.suomi.fi/codelist;registryCode=rak;schemeCode=kayttotarkoitus
+ */
+function getRyhtiPurposeLabel(code: string): string {
+  // Exact match first, then prefix match
+  const exact: Record<string, string> = {
+    '0110': 'Omakotitalo',
+    '0111': 'Paritalo',
+    '0112': 'Rivitalo',
+    '0120': 'Rivitalo',
+    '0130': 'Asuinkerrostalo',
+    '0140': 'Asuinkerrostalo',
+    '0141': 'Senioritalo',
+    '0150': 'Erityisasunto',
+    '0160': 'Erityisasunto',
+    '0210': 'Vapaa-ajan asunto',
+    '0220': 'Sauna',
+    '0310': 'Toimistorakennus',
+    '0320': 'Liikerakennus',
+    '0330': 'Kauppakeskus',
+    '0340': 'Majoitusrakennus',
+    '0350': 'Ravintola',
+    '0360': 'Liikennerakennus',
+    '0410': 'Hoitolaitos',
+    '0420': 'Sairaala',
+    '0430': 'Sosiaalipalvelurakennus',
+    '0440': 'Vanhainkoti',
+    '0510': 'Oppilaitos',
+    '0520': 'Tutkimusrakennus',
+    '0610': 'Teollisuusrakennus',
+    '0620': 'Varastorakennus',
+    '0710': 'Pelastusrakennus',
+    '0720': 'Maatalousrakennus',
+    '0730': 'Muu rakennus',
+    '0810': 'Kirkko',
+    '0820': 'Seurakuntarakennus',
+    '0910': 'Urheilurakennus',
+    '0920': 'Kokoontumisrakennus',
+  }
+
+  if (exact[code]) return exact[code]
+
+  // Prefix-based fallback (2-digit)
+  const prefix = code.slice(0, 2)
+  const prefixLabels: Record<string, string> = {
+    '01': 'Asuinrakennus',
+    '02': 'Vapaa-ajan rakennus',
+    '03': 'Liikerakennus',
+    '04': 'Hoitorakennus',
+    '05': 'Opetusrakennus',
+    '06': 'Tuotantorakennus',
+    '07': 'Muu rakennus',
+    '08': 'Uskonnollinen rakennus',
+    '09': 'Urheilu-/kokoontumisrak.',
+  }
+
+  return prefixLabels[prefix] ?? `Rakennus (${code})`
 }

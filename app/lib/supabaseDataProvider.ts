@@ -303,7 +303,8 @@ export class SupabaseDataProvider implements DataProvider {
       .select(
         `id, building_type, construction_year, floor_count,
          footprint_area_sqm, address, estimated_price_per_sqm,
-         min_distance_to_water_m, area_id`
+         min_distance_to_water_m, area_id,
+         ryhti_main_purpose, is_residential`
       )
       .eq('id', buildingId)
       .single()
@@ -370,27 +371,41 @@ export class SupabaseDataProvider implements DataProvider {
       age_factor: ageFactor,
       water_factor: waterFactor,
       floor_factor: floorFactor,
+      ryhti_main_purpose: building.ryhti_main_purpose ?? null,
+      is_residential: building.is_residential ?? null,
     }
   }
   /**
-   * Look up base price with omakotitalo fallback logic.
-   * Falls back: omakotitalo → rivitalo×0.85 → kerrostalo×0.75.
+   * Look up base price with omakotitalo fallback + municipality fallback.
+   * Phase 1: area-level (omakotitalo → rivitalo×0.85 → kerrostalo×0.75)
+   * Phase 2: municipality-level average (same cascade)
    */
   private async lookupBasePrice(
     areaId: string,
     propertyType: string
   ): Promise<number | null> {
-    // Direct lookup first
+    // Phase 1: Area-level lookup
     const price = await this.fetchLatestPrice(areaId, propertyType)
     if (price !== null) return price
 
-    // Fallback chain for omakotitalo
     if (propertyType === 'omakotitalo') {
       const rivitaloPrice = await this.fetchLatestPrice(areaId, 'rivitalo')
       if (rivitaloPrice !== null) return rivitaloPrice * 0.85
 
       const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
       if (kerrostaloPrice !== null) return kerrostaloPrice * 0.75
+    }
+
+    // Phase 2: Municipality-level fallback
+    const munPrice = await this.fetchMunicipalityAvgPrice(areaId, propertyType)
+    if (munPrice !== null) return munPrice
+
+    if (propertyType === 'omakotitalo') {
+      const munRivitalo = await this.fetchMunicipalityAvgPrice(areaId, 'rivitalo')
+      if (munRivitalo !== null) return munRivitalo * 0.85
+
+      const munKerrostalo = await this.fetchMunicipalityAvgPrice(areaId, 'kerrostalo')
+      if (munKerrostalo !== null) return munKerrostalo * 0.75
     }
 
     return null
@@ -412,6 +427,57 @@ export class SupabaseDataProvider implements DataProvider {
 
     if (!data) return null
     return Number(data.price_per_sqm_median ?? data.price_per_sqm_avg)
+  }
+
+  /**
+   * Municipality-level average price fallback.
+   * Returns the average price across all postal codes in the same municipality
+   * for the most recent year with data.
+   */
+  private async fetchMunicipalityAvgPrice(
+    areaId: string,
+    propertyType: string
+  ): Promise<number | null> {
+    // Get municipality for this area
+    const { data: area } = await this.supabase
+      .from('areas')
+      .select('municipality')
+      .eq('id', areaId)
+      .single()
+
+    if (!area?.municipality) return null
+
+    // Get all area IDs in the same municipality
+    const { data: municipalityAreas } = await this.supabase
+      .from('areas')
+      .select('id')
+      .eq('municipality', area.municipality)
+
+    if (!municipalityAreas?.length) return null
+
+    const areaIds = municipalityAreas.map((a: { id: string }) => a.id)
+
+    // Get latest year with data for this property type in the municipality
+    const { data: prices } = await this.supabase
+      .from('price_estimates')
+      .select('year, price_per_sqm_avg, price_per_sqm_median')
+      .in('area_id', areaIds)
+      .eq('property_type', propertyType)
+      .not('price_per_sqm_avg', 'is', null)
+      .order('year', { ascending: false })
+
+    if (!prices?.length) return null
+
+    // Filter to only the latest year's records
+    type PriceRow = { year: number; price_per_sqm_avg: number; price_per_sqm_median: number | null }
+    const latestYear = (prices[0] as PriceRow).year
+    const latestPrices = (prices as PriceRow[]).filter((p) => p.year === latestYear)
+
+    const sum = latestPrices.reduce(
+      (acc, p) => acc + Number(p.price_per_sqm_median ?? p.price_per_sqm_avg),
+      0
+    )
+    return sum / latestPrices.length
   }
 }
 

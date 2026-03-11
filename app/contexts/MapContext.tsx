@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react";
 
@@ -86,6 +87,29 @@ export function MapProvider({ children }: MapProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        // Skip if user has already panned/zoomed the map
+        setViewport((prev) => {
+          const isDefault =
+            prev.longitude === defaultViewport.longitude &&
+            prev.latitude === defaultViewport.latitude;
+          if (!isDefault) return prev;
+          return {
+            ...prev,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            zoom: 14,
+          };
+        });
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000 }
+    );
+  }, []);
 
   const updateFilter = useCallback(
     <K extends keyof MapFilters>(key: K, value: MapFilters[K]) => {

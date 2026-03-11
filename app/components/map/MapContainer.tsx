@@ -153,7 +153,9 @@ export default function MapContainer() {
     [isCompareMode, selectedAreaCode, comparedAreaCode]
   )
 
-  /** Building fill color — brightened price scale to stand out from Voronoi terrain */
+  /** Building fill color — warm-shifted palette to contrast against the cool Voronoi terrain.
+   *  Voronoi uses cool teals/greens; buildings use warm-shifted versions so they
+   *  stand out even when the price (and thus hue) is similar. */
   const buildingColorExpression = useMemo(
     (): ExpressionSpecification => [
       'case',
@@ -164,25 +166,25 @@ export default function MapContainer() {
         ['linear'],
         ['coalesce', ['get', 'price'], 0],
         0,
-        '#4b5563',   // no price — gray-600 (brighter than Voronoi gray-700)
+        '#6b7280',   // no price — gray-500 (clearly lighter than background)
         1000,
-        '#3730a3',   // < 1000  — indigo-700
+        '#6366f1',   // < 1000  — indigo-500 (brighter)
         1500,
-        '#4f46e5',   // 1000-1500 — indigo-600
+        '#818cf8',   // 1000-1500 — indigo-400 (brighter)
         2000,
-        '#0f766e',   // 1500-2000 — teal-700
+        '#34d399',   // 1500-2000 — emerald-400 (warm-shifted from teal)
         2500,
-        '#14b8a6',   // 2000-2500 — teal-500
+        '#4ade80',   // 2000-2500 — green-400 (clearly distinct from Voronoi teal)
         3000,
-        '#5eead4',   // 2500-3000 — teal-300
+        '#a3e635',   // 2500-3000 — lime-400 (warm green, pops against teal bg)
         4000,
-        '#bef264',   // 3000-4000 — lime-300
+        '#facc15',   // 3000-4000 — yellow-400
         5000,
-        '#fde047',   // 4000-5000 — yellow-300
+        '#fb923c',   // 4000-5000 — orange-400
         7000,
-        '#fbbf24',   // 5000-7000 — amber-400
+        '#f97316',   // 5000-7000 — orange-500
         10000,
-        '#d97706',   // > 7000   — amber-600
+        '#ea580c',   // > 7000   — orange-600
       ],
     ],
     []

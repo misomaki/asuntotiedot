@@ -77,6 +77,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     04-import-water-bodies.ts         # Vesistöt (etäisyyslaskenta)
     05-compute-building-prices.ts     # Rakennuskohtaiset hinta-arviot
     06-enrich-from-ryhti.ts           # Rikastus Ryhti-rakennusrekisteristä (SYKE)
+    07-classify-buildings.ts          # Rakennusluokittelu (residential/non-residential)
     /config.ts                        # Kaupungit, postinumeroprefixet
     /lib/supabaseAdmin.ts             # Admin-client importeille
     /lib/pxwebClient.ts               # PxWeb API helper
@@ -85,6 +86,8 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/001_initial_schema.sql  # PostGIS-skeema + RPC-funktiot
   /migrations/002_building_functions.sql # Spatial join, vesistöetäisyys, hintafunktiot
   /migrations/003_ryhti_enrichment.sql   # Ryhti staging-taulu + matchaus-funktiot
+  /migrations/006_municipality_price_fallback.sql # Kuntatasoinen hintafallback
+  /migrations/007_building_classification.sql     # Rakennusluokittelu + MVT-päivitys
 ```
 
 ## Tietokantarakenne (Supabase / PostGIS)
@@ -241,7 +244,7 @@ estimated_price = base_price × age_factor × water_factor × floor_factor
 - **EI solurajoja:** Voronoi-solujen välillä EI saa olla outline/border-viivoja. Käytä `fill-antialias: false` Voronoi-layerissä
 - **Kerrosjärjestys basemapissa:** background → landcover → landuse → park → boundary → **VORONOI FILL** → water → building → roads → labels → **BUILDING FILL** (zoom ≥14)
 - **IDW-interpolointi:** Smooth price gradients anchor-pisteiden välillä (power=2)
-- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan **täsmälleen samalla väriskaalauksella** kuin Voronoi (käytä `PRICE_BREAKS` ja `PRICE_COLORS` lähteestä `colorScales.ts`). Klikkaus avaa BuildingPanel-sivupaneelin.
+- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan **warm-shifted paletilla** joka kontrastoi Voronoin viileitä teal-sävyjä (ks. `buildingColorExpression` MapContainer.tsx:ssä). Rakennukset käyttävät emerald→green→lime→yellow→orange skaalaa, EI samoja teal-värejä kuin Voronoi — muuten rakennukset sulautuvat taustaan. Klikkaus avaa BuildingPanel-sivupaneelin.
 - **Interaktio:** Vain rakennukset ovat interaktiivisia (hover + click). Voronoi EI ole interaktiivinen — ei hover-highlightia, ei klikkiä.
 
 ### Basemap-tyylien ylikirjoitus (`handleMapLoad`)
@@ -264,6 +267,16 @@ Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`o
 - **TÄRKEÄÄ:** Tyylitä AINA kaikki kolme kontekstia (road + tunnel + bridge) jokaiselle tietyypille! Jos unohdat tunnel/bridge-variantin, se näkyy mustana viivana zoomattaessa.
 - **Rautatiet:** `rail`, `rail_dash`, `tunnel_rail`, `tunnel_rail_dash`
 - **Fill-layerit (rakennukset):** `building` (läpinäkyvä pohja) ja `building-top` (näkyvä katto). Molemmat tarvitsevat `fill-antialias: false` tai outline-väri == fill-väri.
+
+### Rakennuskerroksen värikontrasti (kriittinen)
+
+- Rakennusten (`buildingColorExpression`) ja Voronoin (`colorScales.ts`) väripaletit **EIVÄT saa olla samat**
+- Voronoi käyttää viileitä sävyjä: indigo → teal → lime → yellow → orange
+- Rakennukset käyttävät **warm-shifted** sävyjä: indigo → emerald → green → lime → yellow → orange
+- Kriittinen hintaväli on 2000–3000 €/m² (suurin osa omakotitaloista) — tässä kontrastin on oltava selkein
+- Jos muutat kumpaakaan palettia, varmista ettei väriarvot mene päällekkäin samassa hintahaarukassa
+- `get_buildings_in_bbox` RPC suodattaa pois rakennukset joilla ei ole hintaa (`estimated_price_per_sqm IS NOT NULL`) — testaus tällä API:lla ei näytä hinnattomia rakennuksia
+- `get_buildings_mvt` (MVT-tiilet) palauttaa KAIKKI rakennukset, myös hinnattomat — kartalla näkyy enemmän rakennuksia kuin GeoJSON-API palauttaa
 
 ### `reuseMaps` ja `handleMapLoad` — kehitysympäristön sudenkuoppa
 
@@ -312,6 +325,14 @@ npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ ~80 000 rakennus
 # Vaihe 5: Ryhti-rikastus + hintojen uudelleenlaskenta
 npx tsx scripts/data-import/06-enrich-from-ryhti.ts    # ✅ 369 176 Ryhti-rakennusta, 257 021 vuotta matchattu
 npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ 141 348 rakennusta sai hinta-arvion
+
+# Vaihe 6: Aja migraatiot 006-007 SQL Editorissa
+# supabase/migrations/006_municipality_price_fallback.sql  # ✅ Kuntatasoinen hintafallback
+# supabase/migrations/007_building_classification.sql      # ✅ Rakennusluokittelu (residential/non-residential)
+
+# Vaihe 7: Rakennusluokittelu + hintojen uudelleenlaskenta
+npx tsx scripts/data-import/07-classify-buildings.ts       # Ryhti purpose + is_residential luokittelu
+npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-asuin skipätään)
 ```
 
 ### Datan nykytilanne
@@ -321,7 +342,8 @@ npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ 141 348 rakennus
 - **Vesistöt:** 3 351 + etäisyyslaskenta 308 474 rakennukselle
 - **Rakennusvuosi:** 299 206 / 318 650 (94%) — OSM 12% + Ryhti 82%
 - **Kerrostieto:** 296 659 / 318 650 (93%)
-- **Hinta-arvio:** 141 348 / 308 474 (46%) — loput alueilla joilla ei StatFin-dataa
+- **Hinta-arvio:** 308 474 / 308 474 (100%) — kuntatasoinen fallback alueille joilla ei StatFin-dataa (migraatio 006)
+- **Rakennusluokittelu:** `is_residential` (3-tasoinen: Ryhti main_purpose → OSM building_type → pinta-alaheuristiikka)
 
 ### Overpass API -huomiot
 - Endpoint: `https://overpass-api.de/api/interpreter`, POST, URL-encoded `data`-parametri
