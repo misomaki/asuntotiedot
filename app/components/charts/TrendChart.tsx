@@ -48,9 +48,9 @@ const LINE_CONFIG: Record<
   PropertyType,
   { color: string; label: string }
 > = {
-  kerrostalo: { color: '#3b82f6', label: 'Kerrostalo' },
-  rivitalo: { color: '#22c55e', label: 'Rivitalo' },
-  omakotitalo: { color: '#f59e0b', label: 'Omakotitalo' },
+  kerrostalo: { color: '#ff90e8', label: 'Kerrostalo' },
+  rivitalo: { color: '#23c8a0', label: 'Rivitalo' },
+  omakotitalo: { color: '#ffc900', label: 'Omakotitalo' },
 }
 
 // ---------------------------------------------------------------------------
@@ -70,8 +70,8 @@ function CustomTooltip(props: Partial<TooltipContentProps<ValueType, NameType>>)
   if (!active || !payload || payload.length === 0) return null
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#1a1d27] px-4 py-3 shadow-xl">
-      <p className="mb-2 text-sm font-medium text-white">{label}</p>
+    <div className="rounded-lg border-2 border-[#1a1a1a] bg-white px-4 py-3 shadow-hard-sm">
+      <p className="mb-2 text-sm font-display font-bold text-[#1a1a1a]">{label}</p>
       <div className="space-y-1.5">
         {payload.map((entry: { dataKey?: string | number; value?: ValueType }) => {
           const key = entry.dataKey as PropertyType
@@ -82,12 +82,12 @@ function CustomTooltip(props: Partial<TooltipContentProps<ValueType, NameType>>)
             <div key={key} className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-2">
                 <div
-                  className="h-2.5 w-2.5 rounded-full"
+                  className="h-2.5 w-2.5 rounded-full border border-[#1a1a1a]"
                   style={{ backgroundColor: config.color }}
                 />
-                <span className="text-xs text-white/70">{config.label}</span>
+                <span className="text-xs text-[#666]">{config.label}</span>
               </div>
-              <span className="font-mono text-xs tabular-nums text-white">
+              <span className="font-mono text-xs tabular-nums text-[#1a1a1a] font-bold">
                 {formatPricePerSqm(value)}
               </span>
             </div>
@@ -126,7 +126,7 @@ function CustomLegendContent({
               className="h-2 w-2 rounded-full"
               style={{ backgroundColor: entry.color ?? config?.color }}
             />
-            <span className="text-[11px] text-white/60">
+            <span className="text-[11px] text-[#666]">
               {config?.label ?? entry.value}
             </span>
           </div>
@@ -244,7 +244,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
   return (
     <div
       className={cn(
-        'rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 backdrop-blur-sm',
+        'rounded-xl border-2 border-[#1a1a1a] bg-white p-4 shadow-hard-sm',
         className
       )}
     >
@@ -258,8 +258,8 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
 
       {/* Chart or empty state */}
       {hasError || isEmpty ? (
-        <div className="flex h-[250px] items-center justify-center rounded-lg border border-dashed border-white/10">
-          <p className="text-sm text-muted-foreground">Ei dataa</p>
+        <div className="flex h-[250px] items-center justify-center rounded-lg border-2 border-dashed border-[#e0e0e0]">
+          <p className="text-sm text-[#999]">Ei dataa</p>
         </div>
       ) : (
         <div className="h-[250px] w-full">
@@ -269,19 +269,19 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
               margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
             >
               <CartesianGrid
-                stroke="rgba(255,255,255,0.06)"
+                stroke="#e0e0e0"
                 strokeDasharray="3 3"
                 vertical={false}
               />
               <XAxis
                 dataKey="year"
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: '#999', fontSize: 11 }}
+                axisLine={{ stroke: '#e0e0e0' }}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={formatYAxis}
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
+                tick={{ fill: '#999', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
                 width={56}
@@ -302,7 +302,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
                     r: 5,
                     fill: LINE_CONFIG[type].color,
                     strokeWidth: 2,
-                    stroke: '#1a1d27',
+                    stroke: '#ffffff',
                   }}
                   connectNulls
                   animationDuration={800}

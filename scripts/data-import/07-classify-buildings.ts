@@ -164,35 +164,20 @@ async function main() {
   const classified = await computeIsResidential()
   const priceResets = await resetNonResidentialPrices()
 
-  // Summary stats
-  const { count: totalBuildings } = await supabase
-    .from('buildings')
-    .select('id', { count: 'exact', head: true })
-    .not('area_id', 'is', null)
-
-  const { count: residential } = await supabase
-    .from('buildings')
-    .select('id', { count: 'exact', head: true })
-    .not('area_id', 'is', null)
-    .eq('is_residential', true)
-
-  const { count: nonResidential } = await supabase
-    .from('buildings')
-    .select('id', { count: 'exact', head: true })
-    .not('area_id', 'is', null)
-    .eq('is_residential', false)
-
-  const { count: withPurpose } = await supabase
-    .from('buildings')
-    .select('id', { count: 'exact', head: true })
-    .not('area_id', 'is', null)
-    .not('ryhti_main_purpose', 'is', null)
-
-  const { count: needsEstimation } = await supabase
-    .from('buildings')
-    .select('id', { count: 'exact', head: true })
-    .not('area_id', 'is', null)
-    .is('estimation_year', null)
+  // Summary stats — run all counts in parallel
+  const [
+    { count: totalBuildings },
+    { count: residential },
+    { count: nonResidential },
+    { count: withPurpose },
+    { count: needsEstimation },
+  ] = await Promise.all([
+    supabase.from('buildings').select('id', { count: 'exact', head: true }).not('area_id', 'is', null),
+    supabase.from('buildings').select('id', { count: 'exact', head: true }).not('area_id', 'is', null).eq('is_residential', true),
+    supabase.from('buildings').select('id', { count: 'exact', head: true }).not('area_id', 'is', null).eq('is_residential', false),
+    supabase.from('buildings').select('id', { count: 'exact', head: true }).not('area_id', 'is', null).not('ryhti_main_purpose', 'is', null),
+    supabase.from('buildings').select('id', { count: 'exact', head: true }).not('area_id', 'is', null).is('estimation_year', null),
+  ])
 
   console.log(`\n=== Classification complete ===`)
   console.log(`Ryhti purposes matched:      ${purposeMatches}`)

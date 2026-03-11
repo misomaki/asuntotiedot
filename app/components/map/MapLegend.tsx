@@ -14,19 +14,19 @@ export default function MapLegend() {
 
   return (
     <div className="absolute bottom-6 right-6 z-40">
-      <div className="glass rounded-xl shadow-glass overflow-hidden">
+      <div className="bg-white border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
         {/* Header / toggle button */}
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
+          className="flex w-full items-center justify-between px-3 py-2 text-sm font-display font-bold text-[#1a1a1a] hover:bg-pink-pale transition-colors"
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Pienennä selite' : 'Laajenna selite'}
         >
           <span>Hinta &euro;/m&sup2;</span>
           {isExpanded ? (
-            <ChevronDown className="ml-2 h-4 w-4 text-[var(--color-text-muted)]" />
+            <ChevronDown className="ml-2 h-4 w-4 text-[#999]" />
           ) : (
-            <ChevronUp className="ml-2 h-4 w-4 text-[var(--color-text-muted)]" />
+            <ChevronUp className="ml-2 h-4 w-4 text-[#999]" />
           )}
         </button>
 
@@ -36,10 +36,10 @@ export default function MapLegend() {
             {PRICE_COLORS.map((color, index) => (
               <div key={index} className="flex items-center gap-2">
                 <span
-                  className="inline-block h-3 w-5 rounded-sm flex-shrink-0"
+                  className="inline-block h-3 w-5 rounded-sm flex-shrink-0 border border-[#1a1a1a]"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-xs text-[var(--color-text-secondary)] font-mono whitespace-nowrap">
+                <span className="text-xs text-[#666] font-mono whitespace-nowrap">
                   {PRICE_LABELS[index]}
                 </span>
               </div>

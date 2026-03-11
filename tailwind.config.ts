@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,29 +9,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base backgrounds – cool dark navy
-        "bg-primary": "#0a0e1a",
-        "bg-secondary": "#111827",
-        "bg-glass": "rgba(10,14,26,0.88)",
+        // Backgrounds – clean white
+        "bg-primary": "#ffffff",
+        "bg-secondary": "#f8f8f8",
+        "bg-glass": "#ffffff",
 
-        // Brand accent – warm amber/gold
-        accent: {
-          DEFAULT: "#f59e0b",
-          hover: "#fbbf24",
-          light: "#fcd34d",
-          dark: "#d97706",
+        // Brand pastels
+        pink: {
+          DEFAULT: "#ff90e8",
+          deep: "#e870d0",
+          light: "#ffb8f0",
+          pale: "#fff0fb",
         },
+        yellow: {
+          DEFAULT: "#ffc900",
+          light: "#ffe566",
+          pale: "#fff8e0",
+        },
+        mint: {
+          DEFAULT: "#23c8a0",
+          light: "#60e8c8",
+        },
+        peach: "#ffad8a",
+        lavender: "#b8a8ff",
 
-        // Secondary accent – teal
-        teal: {
-          DEFAULT: "#0d9488",
-          light: "#2dd4bf",
-          dark: "#0f766e",
+        // Brand accent = pink
+        accent: {
+          DEFAULT: "#ff90e8",
+          hover: "#ffb8f0",
+          light: "#fff0fb",
+          dark: "#e870d0",
         },
 
         // Semantic colors
-        success: "#22c55e",
-        warning: "#f59e0b",
+        success: "#23c8a0",
+        warning: "#ffc900",
         danger: "#ef4444",
 
         // shadcn/ui compatible tokens
@@ -66,26 +77,27 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors – indigo->teal->amber (colorblind-safe sequential)
+        // Price scale colors – pink → peach → yellow → mint
         price: {
-          1: "#1e1b4b", // Halvin (deep indigo)
-          2: "#312e81",
-          3: "#115e59",
-          4: "#0d9488",
-          5: "#2dd4bf",
-          6: "#a3e635",
-          7: "#facc15",
-          8: "#f59e0b",
-          9: "#d97706",
-          10: "#b45309", // Kallein (deep amber)
+          1: "#b84080",
+          2: "#d4508c",
+          3: "#ff6b9d",
+          4: "#ff90b8",
+          5: "#ffb0c8",
+          6: "#ffd4a8",
+          7: "#ffe08a",
+          8: "#e8f060",
+          9: "#a8e8a0",
+          10: "#60d4a0",
         },
       },
 
       fontFamily: {
-        brand: ["var(--font-brand)", "Inconsolata", "monospace"],
-        heading: ["var(--font-body)", "Inter", "sans-serif"],
-        body: ["var(--font-body)", "Inter", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+        display: ["var(--font-display)", "Libre Franklin", "sans-serif"],
+        brand: ["var(--font-display)", "Libre Franklin", "sans-serif"],
+        heading: ["var(--font-display)", "Libre Franklin", "sans-serif"],
+        body: ["var(--font-body)", "DM Sans", "sans-serif"],
+        mono: ["var(--font-mono)", "IBM Plex Mono", "monospace"],
       },
 
       borderRadius: {
@@ -101,10 +113,6 @@ const config: Config = {
         "88": "22rem",
         "100": "25rem",
         "120": "30rem",
-      },
-
-      backdropBlur: {
-        xs: "2px",
       },
 
       animation: {
@@ -149,11 +157,17 @@ const config: Config = {
       },
 
       boxShadow: {
-        glass: "0 8px 32px rgba(0, 0, 0, 0.4)",
-        "glass-sm": "0 4px 16px rgba(0, 0, 0, 0.25)",
-        glow: "0 0 20px rgba(245, 158, 11, 0.25)",
-        "glow-sm": "0 0 10px rgba(245, 158, 11, 0.15)",
-        "glow-teal": "0 0 20px rgba(13, 148, 136, 0.25)",
+        // Neobrutalist hard shadows
+        hard: "4px 4px 0px #1a1a1a",
+        "hard-sm": "3px 3px 0px #1a1a1a",
+        "hard-lg": "6px 6px 0px #1a1a1a",
+        "hard-pink": "4px 4px 0px #ff90e8",
+        // Kept for backwards compat
+        glass: "4px 4px 0px #1a1a1a",
+        "glass-sm": "3px 3px 0px #1a1a1a",
+        glow: "4px 4px 0px #ff90e8",
+        "glow-sm": "3px 3px 0px #ff90e8",
+        "glow-teal": "4px 4px 0px #23c8a0",
       },
     },
   },

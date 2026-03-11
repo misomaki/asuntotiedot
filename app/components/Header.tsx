@@ -87,7 +87,7 @@ export function Header() {
           area.name.toLowerCase().includes(query) ||
           area.municipality.toLowerCase().includes(query)
       )
-      .slice(0, 8) // Limit to 8 results
+      .slice(0, 8)
   }, [searchQuery, searchableAreas])
 
   // Select an area from search results
@@ -108,12 +108,9 @@ export function Header() {
         (f) => f.properties != null && f.properties['area_code'] === area.areaCode
       )
       if (feature && feature.geometry.type !== 'GeometryCollection') {
-        // Calculate rough center from geometry coordinates
         const geom = feature.geometry as { coordinates: number[][][] | number[][][][] }
         const coords = geom.coordinates
         const flatCoords = (coords as number[][][][]).flat(3) as unknown as number[]
-        // flatCoords is now [lng, lat, lng, lat, ...]
-        // Re-chunk as coordinate pairs
         const pairs: number[][] = []
         for (let i = 0; i + 1 < flatCoords.length; i += 2) {
           pairs.push([flatCoords[i], flatCoords[i + 1]])
@@ -186,14 +183,17 @@ export function Header() {
         {/* Main header bar */}
         <div
           className={cn(
-            'glass rounded-xl h-14 px-4',
+            'bg-white border-2 border-[#1a1a1a] rounded-xl h-14 px-4',
             'flex items-center gap-4',
-            'shadow-glass-sm'
+            'shadow-hard-sm'
           )}
         >
-          {/* Left: Logo */}
-          <h1 className="flex-shrink-0">
-            <LogoMark />
+          {/* Left: Logo + Brand name */}
+          <h1 className="flex-shrink-0 flex items-center gap-2">
+            <LogoMark size={28} />
+            <span className="font-display font-black text-base tracking-tight text-[#1a1a1a] hidden md:inline">
+              Neliöt
+            </span>
           </h1>
 
           {/* Right: Year selector + Search (desktop) / Hamburger (mobile) */}
@@ -206,9 +206,10 @@ export function Header() {
                   onChange={(e) => updateFilter('year', Number(e.target.value))}
                   aria-label="Valitse vuosi"
                   className={cn(
-                    'h-8 px-2 text-xs rounded-lg',
-                    'border border-border bg-bg-secondary text-foreground',
-                    'focus:outline-none focus:ring-2 focus:ring-ring',
+                    'h-8 px-2 text-xs font-mono font-bold rounded-lg',
+                    'border-2 border-[#1a1a1a] bg-pink text-[#1a1a1a]',
+                    'shadow-hard-sm',
+                    'focus:outline-none focus:ring-2 focus:ring-pink',
                     'transition-colors cursor-pointer'
                   )}
                 >
@@ -223,16 +224,16 @@ export function Header() {
                 <div ref={searchContainerRef} className="relative">
                   <div
                     className={cn(
-                      'flex items-center gap-2 rounded-lg border bg-bg-secondary',
+                      'flex items-center gap-2 rounded-lg border-2 bg-white',
                       'transition-all duration-200',
                       isSearchFocused
-                        ? 'border-accent w-64'
-                        : 'border-border w-48'
+                        ? 'border-pink w-64 shadow-hard-sm'
+                        : 'border-[#1a1a1a] w-48'
                     )}
                   >
                     <Search
                       size={14}
-                      className="ml-2.5 text-muted-foreground flex-shrink-0"
+                      className="ml-2.5 text-[#999] flex-shrink-0"
                     />
                     <input
                       ref={searchInputRef}
@@ -243,9 +244,9 @@ export function Header() {
                       onKeyDown={handleSearchKeyDown}
                       placeholder="Hae postinumeroa..."
                       className={cn(
-                        'w-full h-8 pr-2.5 text-xs bg-transparent text-foreground',
-                        'placeholder:text-muted-foreground',
-                        'focus:outline-none'
+                        'w-full h-8 pr-2.5 text-xs bg-transparent text-[#1a1a1a]',
+                        'placeholder:text-[#999]',
+                        'focus:outline-none font-body'
                       )}
                     />
                   </div>
@@ -255,8 +256,8 @@ export function Header() {
                     <div
                       className={cn(
                         'absolute top-full left-0 right-0 mt-1.5',
-                        'rounded-lg border border-border bg-bg-secondary',
-                        'shadow-glass overflow-hidden',
+                        'rounded-lg border-2 border-[#1a1a1a] bg-white',
+                        'shadow-hard overflow-hidden',
                         'animate-fade-in'
                       )}
                     >
@@ -268,19 +269,19 @@ export function Header() {
                           className={cn(
                             'w-full px-3 py-2 text-left',
                             'flex items-center gap-2',
-                            'text-xs text-foreground',
-                            'hover:bg-muted/50 transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-muted/50'
+                            'text-xs text-[#1a1a1a]',
+                            'hover:bg-pink-pale transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-pink-pale'
                           )}
                         >
                           <span
-                            className="font-mono text-muted-foreground flex-shrink-0"
+                            className="font-mono text-[#999] flex-shrink-0"
                             data-number
                           >
                             {area.areaCode}
                           </span>
                           <span className="truncate">{area.name}</span>
-                          <span className="text-muted-foreground ml-auto flex-shrink-0">
+                          <span className="text-[#999] ml-auto flex-shrink-0">
                             {area.municipality}
                           </span>
                         </button>
@@ -295,9 +296,9 @@ export function Header() {
                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 className={cn(
                   'h-8 w-8 rounded-md flex items-center justify-center',
-                  'text-muted-foreground hover:text-foreground',
-                  'hover:bg-muted/50 transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                  'text-[#666] hover:text-[#1a1a1a]',
+                  'hover:bg-pink-pale transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink'
                 )}
                 aria-label={isMobileMenuOpen ? 'Sulje valikko' : 'Avaa valikko'}
                 aria-expanded={isMobileMenuOpen}
@@ -312,18 +313,18 @@ export function Header() {
         {!isDesktop && isMobileMenuOpen && (
           <div
             className={cn(
-              'glass rounded-xl mt-2 p-4',
-              'shadow-glass-sm',
+              'bg-white border-2 border-[#1a1a1a] rounded-xl mt-2 p-4',
+              'shadow-hard-sm',
               'space-y-3',
               'animate-slide-down'
             )}
           >
             {/* Mobile search */}
             <div ref={searchContainerRef} className="relative">
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-bg-secondary">
+              <div className="flex items-center gap-2 rounded-lg border-2 border-[#1a1a1a] bg-white">
                 <Search
                   size={14}
-                  className="ml-2.5 text-muted-foreground flex-shrink-0"
+                  className="ml-2.5 text-[#999] flex-shrink-0"
                 />
                 <input
                   ref={searchInputRef}
@@ -334,9 +335,9 @@ export function Header() {
                   onKeyDown={handleSearchKeyDown}
                   placeholder="Hae postinumeroa..."
                   className={cn(
-                    'w-full h-9 pr-2.5 text-sm bg-transparent text-foreground',
-                    'placeholder:text-muted-foreground',
-                    'focus:outline-none'
+                    'w-full h-9 pr-2.5 text-sm bg-transparent text-[#1a1a1a]',
+                    'placeholder:text-[#999]',
+                    'focus:outline-none font-body'
                   )}
                 />
               </div>
@@ -346,8 +347,8 @@ export function Header() {
                 <div
                   className={cn(
                     'absolute top-full left-0 right-0 mt-1.5 z-50',
-                    'rounded-lg border border-border bg-bg-secondary',
-                    'shadow-glass overflow-hidden',
+                    'rounded-lg border-2 border-[#1a1a1a] bg-white',
+                    'shadow-hard overflow-hidden',
                     'animate-fade-in'
                   )}
                 >
@@ -362,19 +363,19 @@ export function Header() {
                       className={cn(
                         'w-full px-3 py-2.5 text-left',
                         'flex items-center gap-2',
-                        'text-sm text-foreground',
-                        'hover:bg-muted/50 transition-colors',
-                        'focus-visible:outline-none focus-visible:bg-muted/50'
+                        'text-sm text-[#1a1a1a]',
+                        'hover:bg-pink-pale transition-colors',
+                        'focus-visible:outline-none focus-visible:bg-pink-pale'
                       )}
                     >
                       <span
-                        className="font-mono text-muted-foreground flex-shrink-0"
+                        className="font-mono text-[#999] flex-shrink-0"
                         data-number
                       >
                         {area.areaCode}
                       </span>
                       <span className="truncate">{area.name}</span>
-                      <span className="text-muted-foreground ml-auto flex-shrink-0 text-xs">
+                      <span className="text-[#999] ml-auto flex-shrink-0 text-xs">
                         {area.municipality}
                       </span>
                     </button>

@@ -31,7 +31,7 @@ export default function MapControls() {
         onClick={handleResetView}
         aria-label="Palauta oletusnäkymä"
         title="Palauta oletusnäkymä"
-        className="glass glass-hover flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)] shadow-glass-sm"
+        className="bg-white border-2 border-[#1a1a1a] flex h-9 w-9 items-center justify-center rounded-lg text-[#666] transition-all hover:text-[#1a1a1a] hover:shadow-hard-sm hover:-translate-x-px hover:-translate-y-px shadow-hard-sm"
       >
         <RotateCcw className="h-4 w-4" />
       </button>

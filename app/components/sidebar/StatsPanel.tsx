@@ -86,7 +86,7 @@ interface PriceTypeCardProps {
 
 function PriceTypeCard({ label, priceEstimate }: PriceTypeCardProps) {
   return (
-    <div className="rounded-lg border border-border bg-bg-secondary/50 p-3 space-y-1">
+    <div className="rounded-lg border-2 border-[#1a1a1a] bg-white p-3 space-y-1 shadow-hard-sm">
       <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
         {label}
       </p>
@@ -169,7 +169,7 @@ function StatCard({ label, value, className }: StatCardProps) {
   return (
     <div
       className={cn(
-        'rounded-lg border border-border bg-bg-secondary/50 p-3 text-center space-y-1',
+        'rounded-lg border-2 border-[#1a1a1a] bg-white p-3 text-center space-y-1 shadow-hard-sm',
         className
       )}
     >
@@ -301,7 +301,7 @@ function WalkScoreCircle({ score }: { score: number }) {
 // ---------------------------------------------------------------------------
 
 function SectionDivider() {
-  return <hr className="border-border/50" />
+  return <hr className="border-[#e0e0e0]" />
 }
 
 // ---------------------------------------------------------------------------

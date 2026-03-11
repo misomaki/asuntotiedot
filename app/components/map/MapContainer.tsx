@@ -14,7 +14,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
-import { getMapLibreColorExpression } from '@/app/lib/colorScales'
+import { getMapLibreColorExpression, PRICE_BREAKS, BUILDING_PRICE_COLORS } from '@/app/lib/colorScales'
 import MapLegend from './MapLegend'
 import MapControls from './MapControls'
 
@@ -155,38 +155,26 @@ export default function MapContainer() {
 
   /** Building fill color — warm-shifted palette to contrast against the cool Voronoi terrain.
    *  Voronoi uses cool teals/greens; buildings use warm-shifted versions so they
-   *  stand out even when the price (and thus hue) is similar. */
+   *  stand out even when the price (and thus hue) is similar.
+   *  Colors from BUILDING_PRICE_COLORS, breaks from PRICE_BREAKS (colorScales.ts). */
   const buildingColorExpression = useMemo(
-    (): ExpressionSpecification => [
-      'case',
-      ['==', ['get', 'is_residential'], false],
-      '#2a3040',   // non-residential — dark muted gray
-      [
-        'interpolate',
-        ['linear'],
-        ['coalesce', ['get', 'price'], 0],
-        0,
-        '#6b7280',   // no price — gray-500 (clearly lighter than background)
-        1000,
-        '#6366f1',   // < 1000  — indigo-500 (brighter)
-        1500,
-        '#818cf8',   // 1000-1500 — indigo-400 (brighter)
-        2000,
-        '#34d399',   // 1500-2000 — emerald-400 (warm-shifted from teal)
-        2500,
-        '#4ade80',   // 2000-2500 — green-400 (clearly distinct from Voronoi teal)
-        3000,
-        '#a3e635',   // 2500-3000 — lime-400 (warm green, pops against teal bg)
-        4000,
-        '#facc15',   // 3000-4000 — yellow-400
-        5000,
-        '#fb923c',   // 4000-5000 — orange-400
-        7000,
-        '#f97316',   // 5000-7000 — orange-500
-        10000,
-        '#ea580c',   // > 7000   — orange-600
-      ],
-    ],
+    (): ExpressionSpecification => {
+      const interpolate: unknown[] = [
+        'interpolate', ['linear'], ['coalesce', ['get', 'price'], 0],
+        0, '#6b7280',   // no price — gray-500
+      ]
+      for (let i = 0; i < PRICE_BREAKS.length; i++) {
+        interpolate.push(PRICE_BREAKS[i], BUILDING_PRICE_COLORS[i])
+      }
+      interpolate.push(10000, BUILDING_PRICE_COLORS[BUILDING_PRICE_COLORS.length - 1])
+
+      return [
+        'case',
+        ['==', ['get', 'is_residential'], false],
+        '#2a3040',   // non-residential — dark muted gray
+        interpolate,
+      ] as unknown as ExpressionSpecification
+    },
     []
   )
 

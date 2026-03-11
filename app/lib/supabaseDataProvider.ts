@@ -17,6 +17,12 @@ import type {
   AreaWithStats,
 } from '@/app/types'
 import { generateVoronoiGeoJSON, type VoronoiAnchor } from './voronoiGenerator'
+import {
+  computeAgeFactor,
+  computeWaterFactor,
+  computeFloorFactor,
+  inferPropertyType,
+} from './priceEstimation'
 
 export class SupabaseDataProvider implements DataProvider {
   private supabase: SupabaseClient
@@ -330,7 +336,7 @@ export class SupabaseDataProvider implements DataProvider {
 
       // Get the base price used for this building's estimation.
       // Omakotitalo uses fallback: rivitalo × 0.85, then kerrostalo × 0.75.
-      const propertyType = inferPropertyTypeFromBuilding(
+      const propertyType = inferPropertyType(
         building.building_type,
         building.floor_count
       )
@@ -342,13 +348,13 @@ export class SupabaseDataProvider implements DataProvider {
     }
 
     // Compute the factors for the breakdown
-    const ageFactor = computeAgeFactorLocal(building.construction_year)
-    const waterFactor = computeWaterFactorLocal(
+    const ageFactor = computeAgeFactor(building.construction_year, new Date().getFullYear())
+    const waterFactor = computeWaterFactor(
       building.min_distance_to_water_m
         ? Number(building.min_distance_to_water_m)
         : null
     )
-    const floorFactor = computeFloorFactorLocal(building.floor_count)
+    const floorFactor = computeFloorFactor(building.floor_count)
 
     return {
       id: building.id,
@@ -397,14 +403,18 @@ export class SupabaseDataProvider implements DataProvider {
     }
 
     // Phase 2: Municipality-level fallback
-    const munPrice = await this.fetchMunicipalityAvgPrice(areaId, propertyType)
+    // Resolve municipality area IDs once, reuse for all property type lookups
+    const municipalityAreaIds = await this.resolveMunicipalityAreaIds(areaId)
+    if (!municipalityAreaIds) return null
+
+    const munPrice = await this.fetchMunicipalityAvgPrice(municipalityAreaIds, propertyType)
     if (munPrice !== null) return munPrice
 
     if (propertyType === 'omakotitalo') {
-      const munRivitalo = await this.fetchMunicipalityAvgPrice(areaId, 'rivitalo')
+      const munRivitalo = await this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'rivitalo')
       if (munRivitalo !== null) return munRivitalo * 0.85
 
-      const munKerrostalo = await this.fetchMunicipalityAvgPrice(areaId, 'kerrostalo')
+      const munKerrostalo = await this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'kerrostalo')
       if (munKerrostalo !== null) return munKerrostalo * 0.75
     }
 
@@ -430,15 +440,12 @@ export class SupabaseDataProvider implements DataProvider {
   }
 
   /**
-   * Municipality-level average price fallback.
-   * Returns the average price across all postal codes in the same municipality
-   * for the most recent year with data.
+   * Resolve all area IDs belonging to the same municipality as the given area.
+   * Returns null if the area has no municipality.
    */
-  private async fetchMunicipalityAvgPrice(
-    areaId: string,
-    propertyType: string
-  ): Promise<number | null> {
-    // Get municipality for this area
+  private async resolveMunicipalityAreaIds(
+    areaId: string
+  ): Promise<string[] | null> {
     const { data: area } = await this.supabase
       .from('areas')
       .select('municipality')
@@ -447,21 +454,28 @@ export class SupabaseDataProvider implements DataProvider {
 
     if (!area?.municipality) return null
 
-    // Get all area IDs in the same municipality
     const { data: municipalityAreas } = await this.supabase
       .from('areas')
       .select('id')
       .eq('municipality', area.municipality)
 
     if (!municipalityAreas?.length) return null
+    return municipalityAreas.map((a: { id: string }) => a.id)
+  }
 
-    const areaIds = municipalityAreas.map((a: { id: string }) => a.id)
-
-    // Get latest year with data for this property type in the municipality
+  /**
+   * Municipality-level average price fallback.
+   * Returns the average price across all postal codes in the same municipality
+   * for the most recent year with data.
+   */
+  private async fetchMunicipalityAvgPrice(
+    municipalityAreaIds: string[],
+    propertyType: string
+  ): Promise<number | null> {
     const { data: prices } = await this.supabase
       .from('price_estimates')
       .select('year, price_per_sqm_avg, price_per_sqm_median')
-      .in('area_id', areaIds)
+      .in('area_id', municipalityAreaIds)
       .eq('property_type', propertyType)
       .not('price_per_sqm_avg', 'is', null)
       .order('year', { ascending: false })
@@ -484,61 +498,6 @@ export class SupabaseDataProvider implements DataProvider {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function inferPropertyTypeFromBuilding(
-  buildingType: string | null,
-  floorCount: number | null
-): string {
-  if (
-    (floorCount !== null && floorCount >= 3) ||
-    buildingType === 'apartments' ||
-    buildingType === 'residential'
-  ) {
-    return 'kerrostalo'
-  }
-  if (
-    floorCount === 2 ||
-    buildingType === 'terrace' ||
-    buildingType === 'semidetached_house'
-  ) {
-    return 'rivitalo'
-  }
-  return 'omakotitalo'
-}
-
-function computeAgeFactorLocal(constructionYear: number | null): number {
-  if (constructionYear === null) return 1.0
-  const age = new Date().getFullYear() - constructionYear
-  // U-shaped curve: 1960s-70s panels cheapest, pre-war buildings recover
-  if (age <= 0) return 1.15
-  if (age <= 5) return 1.10
-  if (age <= 10) return 1.05
-  if (age <= 20) return 1.00
-  if (age <= 30) return 0.95
-  if (age <= 40) return 0.88
-  if (age <= 50) return 0.78   // late 70s panels
-  if (age <= 60) return 0.72   // 60s-70s panels (valley — cheapest)
-  if (age <= 70) return 0.75   // post-war, starting recovery
-  if (age <= 80) return 0.80   // 1940s-50s recovery
-  if (age <= 100) return 0.85  // pre-war, good value retention
-  return 0.88                   // historical, character premium
-}
-
-function computeWaterFactorLocal(distanceM: number | null): number {
-  if (distanceM === null) return 1.0
-  if (distanceM <= 50) return 1.15
-  if (distanceM <= 100) return 1.10
-  if (distanceM <= 200) return 1.06
-  if (distanceM <= 500) return 1.03
-  return 1.0
-}
-
-function computeFloorFactorLocal(floorCount: number | null): number {
-  if (floorCount === null) return 1.0
-  if (floorCount >= 8) return 1.03
-  if (floorCount >= 5) return 1.01
-  return 1.0
-}
 
 /**
  * Parse PostGIS centroid (returned as GeoJSON or WKT) to [lng, lat].

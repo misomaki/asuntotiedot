@@ -31,9 +31,9 @@ export function FilterBar({ compact = false }: FilterBarProps) {
         onChange={(e) => updateFilter('year', Number(e.target.value))}
         aria-label="Valitse vuosi"
         className={cn(
-          'rounded-lg border border-border bg-bg-secondary text-foreground',
-          'focus:outline-none focus:ring-2 focus:ring-ring',
-          'transition-colors cursor-pointer',
+          'rounded-lg border-2 border-[#1a1a1a] bg-white text-[#1a1a1a] font-mono font-bold',
+          'focus:outline-none focus:ring-2 focus:ring-pink',
+          'transition-colors cursor-pointer shadow-hard-sm',
           compact
             ? 'h-8 px-2 text-xs'
             : 'h-10 px-3 text-sm'

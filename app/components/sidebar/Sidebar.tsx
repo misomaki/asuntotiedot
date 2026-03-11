@@ -132,9 +132,10 @@ export function Sidebar() {
               className={cn(
                 'w-full flex items-center justify-center gap-2',
                 'px-4 py-2.5 rounded-lg',
-                'bg-blue-500/10 hover:bg-blue-500/20',
-                'text-blue-400 hover:text-blue-300',
-                'border border-blue-500/20 hover:border-blue-500/30',
+                'bg-pink-pale hover:bg-pink-light',
+                'text-pink-deep hover:text-[#1a1a1a]',
+                'border-2 border-[#1a1a1a]',
+                'shadow-hard-sm',
                 'transition-all duration-200',
                 'text-sm font-medium',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -179,9 +180,9 @@ export function Sidebar() {
             'fixed top-0 left-0 z-30',
             panelWidth,
             'h-full',
-            'bg-bg-secondary/95 backdrop-blur-xl',
-            'border-r border-border',
-            'shadow-glass',
+            'bg-white',
+            'border-r-2 border-[#1a1a1a]',
+            'shadow-hard',
             'flex flex-col'
           )}
         >

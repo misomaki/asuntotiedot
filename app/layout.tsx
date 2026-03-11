@@ -1,42 +1,44 @@
 import type { Metadata } from "next";
-import { Inter, Inconsolata, JetBrains_Mono } from "next/font/google";
+import { Libre_Franklin, DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 
-const inter = Inter({
+const libreFranklin = Libre_Franklin({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
 });
 
-const inconsolata = Inconsolata({
-  subsets: ["latin"],
-  variable: "--font-brand",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Talotutka \u2013 Suomen asuntohinnat, n\u00e4htyn\u00e4",
+  title: "Neliöt \u2013 Suomen asuntohinnat, nähtynä",
   description:
-    "Interaktiivinen karttasovellus Suomen asuntojen hinta-arvioiden, ik\u00e4rakenteen ja tilastotietojen tarkasteluun. Rakennuskohtaiset hinta-arviot avoimesta datasta.",
+    "Interaktiivinen karttasovellus Suomen asuntojen hinta-arvioiden, ikärakenteen ja tilastotietojen tarkasteluun. Rakennuskohtaiset hinta-arviot avoimesta datasta.",
   keywords: [
     "asuntohinnat",
     "Suomi",
     "kartta",
     "neliöhinta",
-    "talotutka",
+    "neliöt",
     "hinta-arvio",
     "tilastokeskus",
   ],
-  authors: [{ name: "Talotutka" }],
+  authors: [{ name: "Neliöt" }],
   openGraph: {
-    title: "Talotutka \u2013 Suomen asuntohinnat, n\u00e4htyn\u00e4",
+    title: "Neliöt \u2013 Suomen asuntohinnat, nähtynä",
     description:
       "Rakennuskohtaiset hinta-arviot avoimesta datasta. Tarkastele Suomen asuntomarkkinaa interaktiivisella kartalla.",
     type: "website",
@@ -52,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="fi"
-      className={`dark ${inter.variable} ${inconsolata.variable} ${jetbrainsMono.variable} `}
+      className={`${libreFranklin.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased">

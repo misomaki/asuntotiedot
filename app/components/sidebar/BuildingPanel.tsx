@@ -107,7 +107,7 @@ export function BuildingPanel() {
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <Building2 size={18} className="text-[var(--color-accent)]" />
+          <Building2 size={18} className="text-pink" />
           <h2 className="text-lg font-semibold text-foreground">
             Rakennus
           </h2>
@@ -127,7 +127,7 @@ export function BuildingPanel() {
             </Badge>
           )}
           {building.is_residential === false && (
-            <Badge variant="outline" className="text-xs text-amber-400 border-amber-400/40">
+            <Badge variant="outline" className="text-xs text-[#e870d0] border-pink">
               Ei asuinkäytössä
             </Badge>
           )}
@@ -141,7 +141,7 @@ export function BuildingPanel() {
 
       {/* Price estimate */}
       {hasPrice && (
-        <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-3">
+        <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] p-4 space-y-3 shadow-hard-sm">
           <div className="text-sm text-muted-foreground">Hinta-arvio</div>
           <div className="text-3xl font-bold text-foreground tabular-nums">
             {formatPrice(price)} €/m²
@@ -183,7 +183,7 @@ export function BuildingPanel() {
 
       {/* Price estimation breakdown */}
       {hasPrice && building.base_price !== null && (
-        <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-3">
+        <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] p-4 space-y-3 shadow-hard-sm">
           <div className="text-sm font-medium text-foreground">
             Hinta-arvion erittely
           </div>
@@ -246,7 +246,7 @@ function AttributeCard({
   value: string
 }) {
   return (
-    <div className="rounded-lg bg-muted/20 border border-border p-3 space-y-1">
+    <div className="rounded-lg bg-white border-2 border-[#1a1a1a] p-3 space-y-1 shadow-hard-sm">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         {icon}
         <span className="text-[11px]">{label}</span>
@@ -276,8 +276,8 @@ function FactorRow({
         className={cn(
           'tabular-nums font-medium',
           neutral && 'text-muted-foreground',
-          positive && 'text-emerald-400',
-          !neutral && !positive && 'text-amber-400'
+          positive && 'text-mint',
+          !neutral && !positive && 'text-pink-deep'
         )}
       >
         {value}
@@ -353,58 +353,55 @@ function getBuildingTypeLabel(type: string): string {
  * Codes follow the Finnish national building classification.
  * See: https://koodistot.suomi.fi/codelist;registryCode=rak;schemeCode=kayttotarkoitus
  */
+const RYHTI_PURPOSE_EXACT: Record<string, string> = {
+  '0110': 'Omakotitalo',
+  '0111': 'Paritalo',
+  '0112': 'Rivitalo',
+  '0120': 'Rivitalo',
+  '0130': 'Asuinkerrostalo',
+  '0140': 'Asuinkerrostalo',
+  '0141': 'Senioritalo',
+  '0150': 'Erityisasunto',
+  '0160': 'Erityisasunto',
+  '0210': 'Vapaa-ajan asunto',
+  '0220': 'Sauna',
+  '0310': 'Toimistorakennus',
+  '0320': 'Liikerakennus',
+  '0330': 'Kauppakeskus',
+  '0340': 'Majoitusrakennus',
+  '0350': 'Ravintola',
+  '0360': 'Liikennerakennus',
+  '0410': 'Hoitolaitos',
+  '0420': 'Sairaala',
+  '0430': 'Sosiaalipalvelurakennus',
+  '0440': 'Vanhainkoti',
+  '0510': 'Oppilaitos',
+  '0520': 'Tutkimusrakennus',
+  '0610': 'Teollisuusrakennus',
+  '0620': 'Varastorakennus',
+  '0710': 'Pelastusrakennus',
+  '0720': 'Maatalousrakennus',
+  '0730': 'Muu rakennus',
+  '0810': 'Kirkko',
+  '0820': 'Seurakuntarakennus',
+  '0910': 'Urheilurakennus',
+  '0920': 'Kokoontumisrakennus',
+}
+
+const RYHTI_PURPOSE_PREFIX: Record<string, string> = {
+  '01': 'Asuinrakennus',
+  '02': 'Vapaa-ajan rakennus',
+  '03': 'Liikerakennus',
+  '04': 'Hoitorakennus',
+  '05': 'Opetusrakennus',
+  '06': 'Tuotantorakennus',
+  '07': 'Muu rakennus',
+  '08': 'Uskonnollinen rakennus',
+  '09': 'Urheilu-/kokoontumisrak.',
+}
+
 function getRyhtiPurposeLabel(code: string): string {
-  // Exact match first, then prefix match
-  const exact: Record<string, string> = {
-    '0110': 'Omakotitalo',
-    '0111': 'Paritalo',
-    '0112': 'Rivitalo',
-    '0120': 'Rivitalo',
-    '0130': 'Asuinkerrostalo',
-    '0140': 'Asuinkerrostalo',
-    '0141': 'Senioritalo',
-    '0150': 'Erityisasunto',
-    '0160': 'Erityisasunto',
-    '0210': 'Vapaa-ajan asunto',
-    '0220': 'Sauna',
-    '0310': 'Toimistorakennus',
-    '0320': 'Liikerakennus',
-    '0330': 'Kauppakeskus',
-    '0340': 'Majoitusrakennus',
-    '0350': 'Ravintola',
-    '0360': 'Liikennerakennus',
-    '0410': 'Hoitolaitos',
-    '0420': 'Sairaala',
-    '0430': 'Sosiaalipalvelurakennus',
-    '0440': 'Vanhainkoti',
-    '0510': 'Oppilaitos',
-    '0520': 'Tutkimusrakennus',
-    '0610': 'Teollisuusrakennus',
-    '0620': 'Varastorakennus',
-    '0710': 'Pelastusrakennus',
-    '0720': 'Maatalousrakennus',
-    '0730': 'Muu rakennus',
-    '0810': 'Kirkko',
-    '0820': 'Seurakuntarakennus',
-    '0910': 'Urheilurakennus',
-    '0920': 'Kokoontumisrakennus',
-  }
-
-  if (exact[code]) return exact[code]
-
-  // Prefix-based fallback (2-digit)
-  const prefix = code.slice(0, 2)
-  const prefixLabels: Record<string, string> = {
-    '01': 'Asuinrakennus',
-    '02': 'Vapaa-ajan rakennus',
-    '03': 'Liikerakennus',
-    '04': 'Hoitorakennus',
-    '05': 'Opetusrakennus',
-    '06': 'Tuotantorakennus',
-    '07': 'Muu rakennus',
-    '08': 'Uskonnollinen rakennus',
-    '09': 'Urheilu-/kokoontumisrak.',
-  }
-
-  return prefixLabels[prefix] ?? `Rakennus (${code})`
+  return RYHTI_PURPOSE_EXACT[code]
+    ?? RYHTI_PURPOSE_PREFIX[code.slice(0, 2)]
+    ?? `Rakennus (${code})`
 }

@@ -3,78 +3,91 @@
 @tailwind utilities;
 
 /* ============================================
-   CSS Custom Properties – Talotutka
+   CSS Custom Properties – Neliöt
+   Neobrutalist design: thick borders, hard shadows, playful pastels
    ============================================ */
 
 :root {
-  /* Base colors – cool dark navy, aligned with CartoCDN Dark Matter */
-  --color-bg-primary: #0a0e1a;
-  --color-bg-secondary: #111827;
-  --color-bg-tertiary: #1e2536;
-  --color-bg-glass: rgba(10, 14, 26, 0.88);
+  /* Backgrounds */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f8f8;
+  --color-bg-tertiary: #f0f0f0;
 
-  /* Brand accent – warm amber/gold (connects to price visualization) */
-  --color-accent: #f59e0b;
-  --color-accent-hover: #fbbf24;
-  --color-accent-light: #fcd34d;
-  --color-accent-dark: #d97706;
+  /* Brand pastels */
+  --color-pink: #ff90e8;
+  --color-pink-deep: #e870d0;
+  --color-pink-light: #ffb8f0;
+  --color-pink-pale: #fff0fb;
+  --color-yellow: #ffc900;
+  --color-yellow-light: #ffe566;
+  --color-yellow-pale: #fff8e0;
+  --color-mint: #23c8a0;
+  --color-mint-light: #60e8c8;
+  --color-peach: #ffad8a;
+  --color-lavender: #b8a8ff;
 
-  /* Secondary accent – teal (data/interactive elements) */
-  --color-teal: #0d9488;
-  --color-teal-light: #2dd4bf;
-  --color-teal-dark: #0f766e;
+  /* Accent = pink (primary brand color) */
+  --color-accent: #ff90e8;
+  --color-accent-hover: #ffb8f0;
+  --color-accent-dark: #e870d0;
 
   /* Semantic */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
+  --color-success: #23c8a0;
+  --color-warning: #ffc900;
   --color-danger: #ef4444;
 
   /* Text */
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
 
-  /* Borders – semi-transparent whites for dark theme depth */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-hover: rgba(255, 255, 255, 0.15);
+  /* Borders – solid black for neobrutalist look */
+  --color-border: #1a1a1a;
+  --color-border-hover: #000000;
 
-  /* Price scale – indigo -> teal -> amber (colorblind-safe sequential) */
-  --price-1: #1e1b4b;
-  --price-2: #312e81;
-  --price-3: #115e59;
-  --price-4: #0d9488;
-  --price-5: #2dd4bf;
-  --price-6: #a3e635;
-  --price-7: #facc15;
-  --price-8: #f59e0b;
-  --price-9: #d97706;
-  --price-10: #b45309;
+  /* Neobrutalist shadows */
+  --shadow-hard: 4px 4px 0px #1a1a1a;
+  --shadow-hard-sm: 3px 3px 0px #1a1a1a;
+  --shadow-hard-lg: 6px 6px 0px #1a1a1a;
+  --shadow-pink: 4px 4px 0px #ff90e8;
 
-  /* shadcn/ui CSS variables (HSL format for dark theme) */
-  --background: 224 33% 5%;
-  --foreground: 210 40% 98%;
+  /* Price scale – pink → peach → yellow → mint */
+  --price-1: #b84080;
+  --price-2: #d4508c;
+  --price-3: #ff6b9d;
+  --price-4: #ff90b8;
+  --price-5: #ffb0c8;
+  --price-6: #ffd4a8;
+  --price-7: #ffe08a;
+  --price-8: #e8f060;
+  --price-9: #a8e8a0;
+  --price-10: #60d4a0;
 
-  --card: 222 28% 7%;
-  --card-foreground: 210 40% 98%;
+  /* shadcn/ui CSS variables (HSL format for light theme) */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 10%;
 
-  --popover: 222 28% 7%;
-  --popover-foreground: 210 40% 98%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
 
-  --primary: 38 92% 50%;
-  --primary-foreground: 224 33% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
 
-  --secondary: 222 20% 14%;
-  --secondary-foreground: 210 40% 98%;
+  --primary: 316 100% 78%;
+  --primary-foreground: 0 0% 10%;
 
-  --muted: 222 20% 14%;
-  --muted-foreground: 215 20% 55%;
+  --secondary: 0 0% 97%;
+  --secondary-foreground: 0 0% 10%;
+
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 40%;
 
   --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 222 20% 16%;
-  --input: 222 20% 16%;
-  --ring: 38 92% 50%;
+  --border: 0 0% 10%;
+  --input: 0 0% 90%;
+  --ring: 316 100% 78%;
 
   --radius: 0.75rem;
 }
@@ -102,15 +115,16 @@
     overflow-x: hidden;
   }
 
-  /* Headings use Inter */
+  /* Headings use display font */
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
     letter-spacing: -0.02em;
   }
 
-  /* Brand wordmark uses Inconsolata */
+  /* Brand wordmark uses display font bold */
   .font-brand {
-    font-family: var(--font-brand), 'Inconsolata', monospace;
+    font-family: var(--font-display), 'Libre Franklin', sans-serif;
+    font-weight: 900;
   }
 
   /* Data numbers use monospace */
@@ -125,51 +139,69 @@
    ============================================ */
 
 @layer components {
-  /* Glassmorphism panel */
+  /* Neobrutalist card — solid bg, thick border, hard shadow */
+  .neo-card {
+    background: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-hard);
+  }
+
+  .neo-card-sm {
+    background: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-hard-sm);
+  }
+
+  /* Glass — kept for backwards compat, now maps to neo-card */
   .glass {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: var(--color-bg-glass);
-    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-hard);
   }
 
   .glass-hover:hover {
-    border-color: var(--color-border-hover);
-    background: rgba(15, 17, 23, 0.9);
+    box-shadow: var(--shadow-hard-lg);
+    transform: translate(-1px, -1px);
   }
 
-  /* Subtle glass variant */
   .glass-subtle {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    background: rgba(15, 17, 23, 0.6);
-    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
   }
 
-  /* Gradient text – brand gradient (teal to amber) */
+  /* Gradient text – brand gradient (pink to mint) */
   .text-gradient {
-    background: linear-gradient(135deg, var(--color-teal), var(--color-accent));
+    background: linear-gradient(135deg, var(--color-pink), var(--color-mint));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Gradient text – amber only variant */
+  /* Gradient text – pink variant */
   .text-gradient-warm {
-    background: linear-gradient(135deg, var(--color-accent-dark), var(--color-accent-light));
+    background: linear-gradient(135deg, var(--color-pink-deep), var(--color-pink-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Neobrutalist pill */
+  .neo-pill {
+    @apply inline-flex items-center rounded-full px-3.5 py-1 text-xs font-semibold;
+    border: 2px solid var(--color-border);
   }
 
   /* Price scale badge styles */
   .price-badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-mono font-semibold;
+    border: 2px solid var(--color-border);
   }
 
   /* Map overlay panel */
   .map-overlay {
-    @apply glass rounded-xl shadow-glass;
+    @apply neo-card;
     pointer-events: auto;
   }
 }
@@ -195,7 +227,7 @@
 }
 
 /* ============================================
-   Dark Scrollbar
+   Scrollbar
    ============================================ */
 
 ::-webkit-scrollbar {
@@ -204,49 +236,48 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-primary);
+  background: var(--color-bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-bg-tertiary);
   border-radius: 4px;
+  border: 1px solid var(--color-border);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: #d0d0d0;
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-bg-tertiary) var(--color-bg-primary);
+  scrollbar-color: var(--color-bg-tertiary) var(--color-bg-secondary);
 }
 
 /* ============================================
-   MapLibre GL Overrides
-   ============================================
-   Import maplibre-gl/dist/maplibre-gl.css in the map component.
-   Below are dark-theme overrides for MapLibre UI elements.
-*/
+   MapLibre GL Overrides – Neobrutalist
+   ============================================ */
 
 .maplibregl-popup-content {
-  background: var(--color-bg-secondary) !important;
+  background: var(--color-bg-primary) !important;
   color: var(--color-text-primary) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 0.75rem !important;
+  border: 2px solid var(--color-border) !important;
+  border-radius: 12px !important;
   padding: 1rem !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: var(--shadow-hard) !important;
 }
 
 .maplibregl-popup-tip {
-  border-top-color: var(--color-bg-secondary) !important;
+  border-top-color: var(--color-bg-primary) !important;
 }
 
 .maplibregl-ctrl-group {
-  background: var(--color-bg-secondary) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 0.5rem !important;
+  background: var(--color-bg-primary) !important;
+  border: 2px solid var(--color-border) !important;
+  border-radius: 8px !important;
   overflow: hidden;
+  box-shadow: var(--shadow-hard-sm) !important;
 }
 
 .maplibregl-ctrl-group button {
@@ -255,15 +286,11 @@
 }
 
 .maplibregl-ctrl-group button:hover {
-  background: var(--color-bg-tertiary) !important;
+  background: var(--color-bg-secondary) !important;
 }
 
 .maplibregl-ctrl-group button + button {
   border-top: 1px solid var(--color-border) !important;
-}
-
-.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
-  filter: invert(1);
 }
 
 /* ============================================
@@ -271,8 +298,8 @@
    ============================================ */
 
 ::selection {
-  background: rgba(245, 158, 11, 0.3);
-  color: #f8fafc;
+  background: rgba(255, 144, 232, 0.3);
+  color: #1a1a1a;
 }
 
 /* ============================================
@@ -280,6 +307,6 @@
    ============================================ */
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-pink);
   outline-offset: 2px;
 }
