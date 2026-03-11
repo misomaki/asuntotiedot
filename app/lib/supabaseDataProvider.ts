@@ -224,6 +224,7 @@ export class SupabaseDataProvider implements DataProvider {
    */
   async getBuildingsGeoJSON(
     bounds: [number, number, number, number],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     year: number
   ): Promise<GeoJSONFeatureCollection> {
     const [west, south, east, north] = bounds
@@ -326,26 +327,17 @@ export class SupabaseDataProvider implements DataProvider {
         areaName = area.name
       }
 
-      // Get the base price used for this building's estimation
+      // Get the base price used for this building's estimation.
+      // Omakotitalo uses fallback: rivitalo × 0.85, then kerrostalo × 0.75.
       const propertyType = inferPropertyTypeFromBuilding(
         building.building_type,
         building.floor_count
       )
 
-      const { data: priceData } = await this.supabase
-        .from('price_estimates')
-        .select('price_per_sqm_avg, price_per_sqm_median')
-        .eq('area_id', building.area_id)
-        .eq('property_type', propertyType)
-        .order('year', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (priceData) {
-        basePrice = Number(
-          priceData.price_per_sqm_median ?? priceData.price_per_sqm_avg
-        )
-      }
+      basePrice = await this.lookupBasePrice(
+        building.area_id,
+        propertyType
+      )
     }
 
     // Compute the factors for the breakdown
@@ -380,6 +372,47 @@ export class SupabaseDataProvider implements DataProvider {
       floor_factor: floorFactor,
     }
   }
+  /**
+   * Look up base price with omakotitalo fallback logic.
+   * Falls back: omakotitalo → rivitalo×0.85 → kerrostalo×0.75.
+   */
+  private async lookupBasePrice(
+    areaId: string,
+    propertyType: string
+  ): Promise<number | null> {
+    // Direct lookup first
+    const price = await this.fetchLatestPrice(areaId, propertyType)
+    if (price !== null) return price
+
+    // Fallback chain for omakotitalo
+    if (propertyType === 'omakotitalo') {
+      const rivitaloPrice = await this.fetchLatestPrice(areaId, 'rivitalo')
+      if (rivitaloPrice !== null) return rivitaloPrice * 0.85
+
+      const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
+      if (kerrostaloPrice !== null) return kerrostaloPrice * 0.75
+    }
+
+    return null
+  }
+
+  private async fetchLatestPrice(
+    areaId: string,
+    propertyType: string
+  ): Promise<number | null> {
+    const { data } = await this.supabase
+      .from('price_estimates')
+      .select('price_per_sqm_avg, price_per_sqm_median')
+      .eq('area_id', areaId)
+      .eq('property_type', propertyType)
+      .not('price_per_sqm_avg', 'is', null)
+      .order('year', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!data) return null
+    return Number(data.price_per_sqm_median ?? data.price_per_sqm_avg)
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -410,16 +443,19 @@ function inferPropertyTypeFromBuilding(
 function computeAgeFactorLocal(constructionYear: number | null): number {
   if (constructionYear === null) return 1.0
   const age = new Date().getFullYear() - constructionYear
+  // U-shaped curve: 1960s-70s panels cheapest, pre-war buildings recover
   if (age <= 0) return 1.15
   if (age <= 5) return 1.10
   if (age <= 10) return 1.05
   if (age <= 20) return 1.00
-  if (age <= 30) return 0.97
-  if (age <= 40) return 0.94
-  if (age <= 50) return 0.90
-  if (age <= 70) return 0.87
-  if (age <= 100) return 0.85
-  return 0.83
+  if (age <= 30) return 0.95
+  if (age <= 40) return 0.88
+  if (age <= 50) return 0.78   // late 70s panels
+  if (age <= 60) return 0.72   // 60s-70s panels (valley — cheapest)
+  if (age <= 70) return 0.75   // post-war, starting recovery
+  if (age <= 80) return 0.80   // 1940s-50s recovery
+  if (age <= 100) return 0.85  // pre-war, good value retention
+  return 0.88                   // historical, character premium
 }
 
 function computeWaterFactorLocal(distanceM: number | null): number {

@@ -10,17 +10,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base backgrounds
-        "bg-primary": "#0f1117",
-        "bg-secondary": "#1a1d27",
-        "bg-glass": "rgba(15,17,23,0.85)",
+        // Base backgrounds – cool dark navy
+        "bg-primary": "#0a0e1a",
+        "bg-secondary": "#111827",
+        "bg-glass": "rgba(10,14,26,0.88)",
 
-        // Accent colors
+        // Brand accent – warm amber/gold
         accent: {
-          DEFAULT: "#3b82f6",
-          hover: "#60a5fa",
-          light: "#93c5fd",
-          dark: "#2563eb",
+          DEFAULT: "#f59e0b",
+          hover: "#fbbf24",
+          light: "#fcd34d",
+          dark: "#d97706",
+        },
+
+        // Secondary accent – teal
+        teal: {
+          DEFAULT: "#0d9488",
+          light: "#2dd4bf",
+          dark: "#0f766e",
         },
 
         // Semantic colors
@@ -59,23 +66,24 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors (low to high)
+        // Price scale colors – indigo->teal->amber (colorblind-safe sequential)
         price: {
-          1: "#22c55e", // Halvin
-          2: "#4ade80",
-          3: "#86efac",
-          4: "#fde047",
-          5: "#facc15",
-          6: "#f59e0b",
-          7: "#f97316",
-          8: "#ef4444",
-          9: "#dc2626",
-          10: "#991b1b", // Kallein
+          1: "#1e1b4b", // Halvin (deep indigo)
+          2: "#312e81",
+          3: "#115e59",
+          4: "#0d9488",
+          5: "#2dd4bf",
+          6: "#a3e635",
+          7: "#facc15",
+          8: "#f59e0b",
+          9: "#d97706",
+          10: "#b45309", // Kallein (deep amber)
         },
       },
 
       fontFamily: {
-        heading: ["var(--font-heading)", "Plus Jakarta Sans", "sans-serif"],
+        brand: ["var(--font-brand)", "Inconsolata", "monospace"],
+        heading: ["var(--font-body)", "Inter", "sans-serif"],
         body: ["var(--font-body)", "Inter", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
@@ -141,10 +149,11 @@ const config: Config = {
       },
 
       boxShadow: {
-        glass: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        "glass-sm": "0 4px 16px rgba(0, 0, 0, 0.2)",
-        glow: "0 0 20px rgba(59, 130, 246, 0.3)",
-        "glow-sm": "0 0 10px rgba(59, 130, 246, 0.2)",
+        glass: "0 8px 32px rgba(0, 0, 0, 0.4)",
+        "glass-sm": "0 4px 16px rgba(0, 0, 0, 0.25)",
+        glow: "0 0 20px rgba(245, 158, 11, 0.25)",
+        "glow-sm": "0 0 10px rgba(245, 158, 11, 0.15)",
+        "glow-teal": "0 0 20px rgba(13, 148, 136, 0.25)",
       },
     },
   },

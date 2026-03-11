@@ -25,17 +25,17 @@ export function BuildingPanel() {
   const {
     selectedBuilding,
     setSelectedBuilding,
-    setSelectedArea,
-    setIsSidebarOpen,
   } = useMapContext()
 
   const [building, setBuilding] = useState<BuildingWithPrice | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [fetchFailed, setFetchFailed] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     if (!selectedBuilding) {
       setBuilding(null)
+      setFetchFailed(false)
       return
     }
 
@@ -44,12 +44,17 @@ export function BuildingPanel() {
     abortRef.current = controller
 
     setIsLoading(true)
+    setFetchFailed(false)
     fetch(`/api/buildings/${selectedBuilding}`, { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setBuilding(data as BuildingWithPrice))
+      .then((data) => {
+        setBuilding(data as BuildingWithPrice)
+        if (!data) setFetchFailed(true)
+      })
       .catch((err) => {
         if (err instanceof DOMException && err.name === 'AbortError') return
         console.error('BuildingPanel fetch error:', err)
+        setFetchFailed(true)
       })
       .finally(() => setIsLoading(false))
 
@@ -66,15 +71,17 @@ export function BuildingPanel() {
     return (
       <div className="flex flex-col items-center justify-center h-40 gap-2">
         <p className="text-sm text-muted-foreground">
-          Rakennustietoja ei löytynyt.
+          {fetchFailed ? 'Rakennustietoja ei löytynyt.' : 'Ladataan tietoja…'}
         </p>
-        <button
-          type="button"
-          onClick={handleBack}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Takaisin
-        </button>
+        {fetchFailed && (
+          <button
+            type="button"
+            onClick={handleBack}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Takaisin
+          </button>
+        )}
       </div>
     )
   }

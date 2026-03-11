@@ -141,22 +141,64 @@ BEGIN
     v_property_type := 'omakotitalo';
   END IF;
 
-  -- Get base price from real StatFin data
-  SELECT COALESCE(price_per_sqm_median, price_per_sqm_avg)
-  INTO v_base_price
-  FROM price_estimates
-  WHERE area_id = p_area_id
-    AND year <= p_year
-    AND property_type = v_property_type
-    AND price_per_sqm_avg IS NOT NULL
-  ORDER BY year DESC
-  LIMIT 1;
+  -- Get base price from real StatFin data.
+  -- Omakotitalo uses cascading fallback: rivitalo×0.85 → kerrostalo×0.75.
+  IF v_property_type = 'omakotitalo' THEN
+    -- Try omakotitalo first (future-proofing if data becomes available)
+    SELECT COALESCE(price_per_sqm_median, price_per_sqm_avg)
+    INTO v_base_price
+    FROM price_estimates
+    WHERE area_id = p_area_id
+      AND year <= p_year
+      AND property_type = 'omakotitalo'
+      AND price_per_sqm_avg IS NOT NULL
+    ORDER BY year DESC
+    LIMIT 1;
+
+    -- Fallback to rivitalo × 0.85
+    IF v_base_price IS NULL THEN
+      SELECT COALESCE(price_per_sqm_median, price_per_sqm_avg) * 0.85
+      INTO v_base_price
+      FROM price_estimates
+      WHERE area_id = p_area_id
+        AND year <= p_year
+        AND property_type = 'rivitalo'
+        AND price_per_sqm_avg IS NOT NULL
+      ORDER BY year DESC
+      LIMIT 1;
+    END IF;
+
+    -- Fallback to kerrostalo × 0.75
+    IF v_base_price IS NULL THEN
+      SELECT COALESCE(price_per_sqm_median, price_per_sqm_avg) * 0.75
+      INTO v_base_price
+      FROM price_estimates
+      WHERE area_id = p_area_id
+        AND year <= p_year
+        AND property_type = 'kerrostalo'
+        AND price_per_sqm_avg IS NOT NULL
+      ORDER BY year DESC
+      LIMIT 1;
+    END IF;
+  ELSE
+    -- Direct lookup for kerrostalo / rivitalo
+    SELECT COALESCE(price_per_sqm_median, price_per_sqm_avg)
+    INTO v_base_price
+    FROM price_estimates
+    WHERE area_id = p_area_id
+      AND year <= p_year
+      AND property_type = v_property_type
+      AND price_per_sqm_avg IS NOT NULL
+    ORDER BY year DESC
+    LIMIT 1;
+  END IF;
 
   IF v_base_price IS NULL THEN
     RETURN NULL;
   END IF;
 
-  -- Age factor
+  -- Age factor (U-shaped curve)
+  -- 1960s-70s panel houses are cheapest; pre-war buildings recover value.
   IF p_construction_year IS NULL THEN
     v_age_factor := 1.0;
   ELSE
@@ -166,12 +208,14 @@ BEGIN
       WHEN v_age <= 5 THEN 1.10
       WHEN v_age <= 10 THEN 1.05
       WHEN v_age <= 20 THEN 1.00
-      WHEN v_age <= 30 THEN 0.97
-      WHEN v_age <= 40 THEN 0.94
-      WHEN v_age <= 50 THEN 0.90
-      WHEN v_age <= 70 THEN 0.87
-      WHEN v_age <= 100 THEN 0.85
-      ELSE 0.83
+      WHEN v_age <= 30 THEN 0.95
+      WHEN v_age <= 40 THEN 0.88
+      WHEN v_age <= 50 THEN 0.78   -- late 70s panels
+      WHEN v_age <= 60 THEN 0.72   -- 60s-70s panels (valley — cheapest)
+      WHEN v_age <= 70 THEN 0.75   -- post-war, starting recovery
+      WHEN v_age <= 80 THEN 0.80   -- 1940s-50s recovery
+      WHEN v_age <= 100 THEN 0.85  -- pre-war, good value retention
+      ELSE 0.88                     -- historical, character premium
     END;
   END IF;
 

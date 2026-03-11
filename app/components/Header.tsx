@@ -6,6 +6,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
 import { FilterBar } from '@/app/components/sidebar/FilterBar'
+import { LogoMark } from '@/app/components/brand/LogoMark'
 import { cn } from '@/app/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -25,20 +26,6 @@ interface SearchableArea {
 
 const YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] as const
 
-type PropertyTypeOption = 'kerrostalo' | 'rivitalo' | 'omakotitalo'
-
-interface PropertyTypeButton {
-  value: PropertyTypeOption
-  label: string
-  shortLabel: string
-}
-
-const PROPERTY_TYPE_OPTIONS: PropertyTypeButton[] = [
-  { value: 'kerrostalo', label: 'Kerrostalo', shortLabel: 'Kerros.' },
-  { value: 'rivitalo', label: 'Rivitalo', shortLabel: 'Rivi.' },
-  { value: 'omakotitalo', label: 'Omakotitalo', shortLabel: 'OKT' },
-]
-
 // ---------------------------------------------------------------------------
 // Header component
 // ---------------------------------------------------------------------------
@@ -46,9 +33,9 @@ const PROPERTY_TYPE_OPTIONS: PropertyTypeButton[] = [
 /**
  * Header – Floating header bar at the top of the map.
  *
- * Contains the app logo, filter controls (year + property type), and a
- * search input for finding postal code areas. On mobile it collapses to
- * just the logo and a hamburger menu that opens the filter controls.
+ * Contains the app logo, year selector, and a search input for finding
+ * postal code areas. On mobile it collapses to just the logo and a
+ * hamburger menu that opens the filter controls.
  */
 export function Header() {
   const {
@@ -204,136 +191,103 @@ export function Header() {
             'shadow-glass-sm'
           )}
         >
-          {/* Left: Logo / title */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <h1 className="font-heading font-bold text-lg text-foreground tracking-tight">
-              <span className="text-gradient">Asuntokartta</span>
-            </h1>
-          </div>
+          {/* Left: Logo */}
+          <h1 className="flex-shrink-0">
+            <LogoMark />
+          </h1>
 
-          {/* Center: Filter controls (desktop only) */}
-          {isDesktop && (
-            <div className="flex items-center gap-3 flex-1 justify-center">
-              {/* Year selector */}
-              <select
-                value={filters.year}
-                onChange={(e) => updateFilter('year', Number(e.target.value))}
-                aria-label="Valitse vuosi"
-                className={cn(
-                  'h-8 px-2 text-xs rounded-lg',
-                  'border border-border bg-bg-secondary text-foreground',
-                  'focus:outline-none focus:ring-2 focus:ring-ring',
-                  'transition-colors cursor-pointer'
-                )}
-              >
-                {YEARS.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-
-              {/* Property type buttons */}
-              <div
-                className="flex items-center rounded-lg border border-border bg-bg-secondary p-0.5"
-                role="group"
-                aria-label="Asuntotyyppi"
-              >
-                {PROPERTY_TYPE_OPTIONS.map((option) => {
-                  const isActive = filters.propertyType === option.value
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => updateFilter('propertyType', option.value)}
-                      aria-pressed={isActive}
-                      className={cn(
-                        'px-2.5 py-1 text-[11px] rounded-md font-medium',
-                        'transition-all duration-200',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        isActive
-                          ? 'bg-accent text-white shadow-glow-sm'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                      )}
-                    >
-                      {option.shortLabel}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Right: Search input (desktop) / Hamburger (mobile) */}
+          {/* Right: Year selector + Search (desktop) / Hamburger (mobile) */}
           <div className="flex items-center gap-2 ml-auto flex-shrink-0">
             {isDesktop ? (
-              <div ref={searchContainerRef} className="relative">
-                <div
+              <div className="flex items-center gap-2">
+                {/* Year selector */}
+                <select
+                  value={filters.year}
+                  onChange={(e) => updateFilter('year', Number(e.target.value))}
+                  aria-label="Valitse vuosi"
                   className={cn(
-                    'flex items-center gap-2 rounded-lg border bg-bg-secondary',
-                    'transition-all duration-200',
-                    isSearchFocused
-                      ? 'border-accent w-64'
-                      : 'border-border w-48'
+                    'h-8 px-2 text-xs rounded-lg',
+                    'border border-border bg-bg-secondary text-foreground',
+                    'focus:outline-none focus:ring-2 focus:ring-ring',
+                    'transition-colors cursor-pointer'
                   )}
                 >
-                  <Search
-                    size={14}
-                    className="ml-2.5 text-muted-foreground flex-shrink-0"
-                  />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onKeyDown={handleSearchKeyDown}
-                    placeholder="Hae postinumeroa..."
-                    className={cn(
-                      'w-full h-8 pr-2.5 text-xs bg-transparent text-foreground',
-                      'placeholder:text-muted-foreground',
-                      'focus:outline-none'
-                    )}
-                  />
-                </div>
+                  {YEARS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
 
-                {/* Search results dropdown */}
-                {showSearchDropdown && (
+                {/* Search input */}
+                <div ref={searchContainerRef} className="relative">
                   <div
                     className={cn(
-                      'absolute top-full left-0 right-0 mt-1.5',
-                      'rounded-lg border border-border bg-bg-secondary',
-                      'shadow-glass overflow-hidden',
-                      'animate-fade-in'
+                      'flex items-center gap-2 rounded-lg border bg-bg-secondary',
+                      'transition-all duration-200',
+                      isSearchFocused
+                        ? 'border-accent w-64'
+                        : 'border-border w-48'
                     )}
                   >
-                    {searchResults.map((area) => (
-                      <button
-                        key={area.areaCode}
-                        type="button"
-                        onClick={() => handleSelectArea(area)}
-                        className={cn(
-                          'w-full px-3 py-2 text-left',
-                          'flex items-center gap-2',
-                          'text-xs text-foreground',
-                          'hover:bg-muted/50 transition-colors',
-                          'focus-visible:outline-none focus-visible:bg-muted/50'
-                        )}
-                      >
-                        <span
-                          className="font-mono text-muted-foreground flex-shrink-0"
-                          data-number
-                        >
-                          {area.areaCode}
-                        </span>
-                        <span className="truncate">{area.name}</span>
-                        <span className="text-muted-foreground ml-auto flex-shrink-0">
-                          {area.municipality}
-                        </span>
-                      </button>
-                    ))}
+                    <Search
+                      size={14}
+                      className="ml-2.5 text-muted-foreground flex-shrink-0"
+                    />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onKeyDown={handleSearchKeyDown}
+                      placeholder="Hae postinumeroa..."
+                      className={cn(
+                        'w-full h-8 pr-2.5 text-xs bg-transparent text-foreground',
+                        'placeholder:text-muted-foreground',
+                        'focus:outline-none'
+                      )}
+                    />
                   </div>
-                )}
+
+                  {/* Search results dropdown */}
+                  {showSearchDropdown && (
+                    <div
+                      className={cn(
+                        'absolute top-full left-0 right-0 mt-1.5',
+                        'rounded-lg border border-border bg-bg-secondary',
+                        'shadow-glass overflow-hidden',
+                        'animate-fade-in'
+                      )}
+                    >
+                      {searchResults.map((area) => (
+                        <button
+                          key={area.areaCode}
+                          type="button"
+                          onClick={() => handleSelectArea(area)}
+                          className={cn(
+                            'w-full px-3 py-2 text-left',
+                            'flex items-center gap-2',
+                            'text-xs text-foreground',
+                            'hover:bg-muted/50 transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-muted/50'
+                          )}
+                        >
+                          <span
+                            className="font-mono text-muted-foreground flex-shrink-0"
+                            data-number
+                          >
+                            {area.areaCode}
+                          </span>
+                          <span className="truncate">{area.name}</span>
+                          <span className="text-muted-foreground ml-auto flex-shrink-0">
+                            {area.municipality}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <button

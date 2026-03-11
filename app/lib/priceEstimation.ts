@@ -36,16 +36,20 @@ export function computeAgeFactor(
 
   const age = referenceYear - constructionYear
 
+  // U-shaped curve: 1960s-70s panel houses (age ~50-60) are cheapest,
+  // pre-war buildings (age 80-100+) recover value.
   if (age <= 0) return 1.15
   if (age <= 5) return 1.10
   if (age <= 10) return 1.05
   if (age <= 20) return 1.00
-  if (age <= 30) return 0.97
-  if (age <= 40) return 0.94
-  if (age <= 50) return 0.90
-  if (age <= 70) return 0.87
-  if (age <= 100) return 0.85
-  return 0.83
+  if (age <= 30) return 0.95
+  if (age <= 40) return 0.88
+  if (age <= 50) return 0.78   // late 70s panels
+  if (age <= 60) return 0.72   // 60s-70s panels (valley — cheapest)
+  if (age <= 70) return 0.75   // post-war, starting recovery
+  if (age <= 80) return 0.80   // 1940s-50s recovery
+  if (age <= 100) return 0.85  // pre-war, good value retention
+  return 0.88                   // historical, often renovated, character premium
 }
 
 export function computeWaterFactor(distanceM: number | null): number {

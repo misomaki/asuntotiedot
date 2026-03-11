@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { RotateCcw, Layers, Maximize } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 
 /** Default Helsinki area viewport */
@@ -14,10 +14,8 @@ const FINLAND_OVERVIEW = {
 } as const
 
 /**
- * Map control buttons for the top-right area of the map.
+ * Map control buttons – top-right, below the header bar.
  * - Reset view: fly back to the Finland overview
- * - Layer toggle: placeholder for future layer management
- * - Fit bounds: placeholder for fit-to-data
  */
 export default function MapControls() {
   const { setViewport } = useMapContext()
@@ -27,66 +25,16 @@ export default function MapControls() {
   }, [setViewport])
 
   return (
-    <div className="absolute top-4 right-4 z-40 flex flex-col gap-2">
+    <div className="absolute top-[4.5rem] right-4 z-40 flex flex-col gap-2">
       {/* Reset view */}
-      <ControlButton
+      <button
         onClick={handleResetView}
-        ariaLabel="Palauta oletusnäkymä"
+        aria-label="Palauta oletusnäkymä"
         title="Palauta oletusnäkymä"
+        className="glass glass-hover flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)] shadow-glass-sm"
       >
         <RotateCcw className="h-4 w-4" />
-      </ControlButton>
-
-      {/* Layer toggle (placeholder) */}
-      <ControlButton
-        onClick={() => {
-          /* Layer toggle – to be implemented */
-        }}
-        ariaLabel="Vaihda karttatasoja"
-        title="Karttatasot"
-      >
-        <Layers className="h-4 w-4" />
-      </ControlButton>
-
-      {/* Fit bounds (placeholder) */}
-      <ControlButton
-        onClick={() => {
-          /* Fit bounds – to be implemented */
-        }}
-        ariaLabel="Sovita näkymä dataan"
-        title="Sovita näkymä"
-      >
-        <Maximize className="h-4 w-4" />
-      </ControlButton>
+      </button>
     </div>
-  )
-}
-
-/* -------------------------------------------------
-   Reusable glass button used by the controls above
-   ------------------------------------------------- */
-
-interface ControlButtonProps {
-  onClick: () => void
-  ariaLabel: string
-  title: string
-  children: React.ReactNode
-}
-
-function ControlButton({
-  onClick,
-  ariaLabel,
-  title,
-  children,
-}: ControlButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label={ariaLabel}
-      title={title}
-      className="glass glass-hover flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)] shadow-glass-sm"
-    >
-      {children}
-    </button>
   )
 }

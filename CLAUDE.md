@@ -238,10 +238,40 @@ estimated_price = base_price × age_factor × water_factor × floor_factor
 - **Voronoi-tessellation:** Hintavisualisointi käyttää d3-delaunay Voronoi-soluja IDW-interpoloinnilla, EI postinumeroalueita
 - **Voronoi = terrain-taso:** Voronoi renderöidään ALLA basemap-elementtien (`beforeId="water"`). Vesistöt, rakennukset, tiet ja labelit piirtyvät Voronoin PÄÄLLE
 - **Tiheys:** Voronoi-solujen tulee olla erittäin tiheitä (~15 000 Helsinki, ~2 700 muut) jotta värigradietti näyttää sileältä
-- **EI solurajoja:** Voronoi-solujen välillä EI saa olla outline/border-viivoja. Värimuutokset solujen välillä tulevat olla näkymättömiä. Käytä vain fill-layeriä, ei koskaan outline/line-layeriä
-- **Kerrosjärjestys basemapissa:** background → landcover → landuse → park → boundary → **VORONOI FILL** → water → building → roads → labels → **BUILDING FILL + OUTLINE** (zoom ≥14)
+- **EI solurajoja:** Voronoi-solujen välillä EI saa olla outline/border-viivoja. Käytä `fill-antialias: false` Voronoi-layerissä
+- **Kerrosjärjestys basemapissa:** background → landcover → landuse → park → boundary → **VORONOI FILL** → water → building → roads → labels → **BUILDING FILL** (zoom ≥14)
 - **IDW-interpolointi:** Smooth price gradients anchor-pisteiden välillä (power=2)
-- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan samalla skaalauksella kuin Voronoi. Klikkaus avaa BuildingPanel-sivupaneelin.
+- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan **täsmälleen samalla väriskaalauksella** kuin Voronoi (käytä `PRICE_BREAKS` ja `PRICE_COLORS` lähteestä `colorScales.ts`). Klikkaus avaa BuildingPanel-sivupaneelin.
+- **Interaktio:** Vain rakennukset ovat interaktiivisia (hover + click). Voronoi EI ole interaktiivinen — ei hover-highlightia, ei klikkiä.
+
+### Basemap-tyylien ylikirjoitus (`handleMapLoad`)
+
+Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`onLoad`). Tämä on kriittinen kokonaisuus — **kaikki** basemapin tielayerit pitää käsitellä, muuten ne näkyvät Dark Matterin oletusväreinä (vaaleanpunaiset tiet, mustat viivat).
+
+**Nykyinen väripaletti:**
+- **Tiet:** Siniharmaa `#4a5c6c`, leveys tietyypin mukaan (0.5–2.5px), ei casings-viivoja
+- **Rautatiet:** Vaaleanpunainen sävy `#8a5c6e` / `#b07890`, näkyvät zoom 8+
+- **Basemap-rakennukset:** Siniharmaa `#3a4a56`, `fill-antialias: false` (ei outlinea)
+- **Vesi:** Teal `#12484c`, vesiväylät `#20888e`, labelit `#38a8b0`
+- **Lentokentät:** `aeroway-runway` ja `aeroway-taxiway` tievärillä
+
+**CartoCDN Dark Matter -layerien nimeämislogiikka (tiet):**
+- Muoto: `{konteksti}_{tietyyppi}_{tyyppi}_{ramppi}`
+- Konteksti: `road_`, `tunnel_`, `bridge_`
+- Tietyyppi: `service`, `path`, `minor`, `sec`, `pri`, `trunk`, `mot`
+- Tyyppi: `_fill` (täyttö), `_case` (reunaviiva/casing)
+- Ramppi: `_noramp`, `_ramp` (vain pri, trunk, mot)
+- **TÄRKEÄÄ:** Tyylitä AINA kaikki kolme kontekstia (road + tunnel + bridge) jokaiselle tietyypille! Jos unohdat tunnel/bridge-variantin, se näkyy mustana viivana zoomattaessa.
+- **Rautatiet:** `rail`, `rail_dash`, `tunnel_rail`, `tunnel_rail_dash`
+- **Fill-layerit (rakennukset):** `building` (läpinäkyvä pohja) ja `building-top` (näkyvä katto). Molemmat tarvitsevat `fill-antialias: false` tai outline-väri == fill-väri.
+
+### `reuseMaps` ja `handleMapLoad` — kehitysympäristön sudenkuoppa
+
+- `reuseMaps`-prop react-map-gl:ssä pitää MapLibre-karttainstanssin moduulitason muuttujassa
+- `onLoad`-callback ajetaan **vain kerran** per karttainstanssi, EI joka renderöinnillä
+- **Ongelma kehityksessä:** Kun muutat `handleMapLoad`-koodia, Fast Refresh päivittää komponentin mutta cached map instance ei aja uutta `onLoad`-callbackia → basemap-tyylit eivät päivity
+- **Ratkaisu:** Kun muutat `handleMapLoad`-koodia, selain täytyy avata **uudessa tabissa/ikkunassa** (pelkkä reload EI riitä koska moduulitason cache säilyy)
+- Tuotannossa ei ongelmaa — kartta latautuu aina tuoreena
 
 ## MVP:n laajuus (ensimmäinen julkaisu)
 

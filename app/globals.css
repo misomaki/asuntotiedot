@@ -3,21 +3,26 @@
 @tailwind utilities;
 
 /* ============================================
-   CSS Custom Properties – Asuntokartta
+   CSS Custom Properties – Talotutka
    ============================================ */
 
 :root {
-  /* Base colors */
-  --color-bg-primary: #0f1117;
-  --color-bg-secondary: #1a1d27;
-  --color-bg-tertiary: #242836;
-  --color-bg-glass: rgba(15, 17, 23, 0.85);
+  /* Base colors – cool dark navy, aligned with CartoCDN Dark Matter */
+  --color-bg-primary: #0a0e1a;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary: #1e2536;
+  --color-bg-glass: rgba(10, 14, 26, 0.88);
 
-  /* Accent */
-  --color-accent: #3b82f6;
-  --color-accent-hover: #60a5fa;
-  --color-accent-light: #93c5fd;
-  --color-accent-dark: #2563eb;
+  /* Brand accent – warm amber/gold (connects to price visualization) */
+  --color-accent: #f59e0b;
+  --color-accent-hover: #fbbf24;
+  --color-accent-light: #fcd34d;
+  --color-accent-dark: #d97706;
+
+  /* Secondary accent – teal (data/interactive elements) */
+  --color-teal: #0d9488;
+  --color-teal-light: #2dd4bf;
+  --color-teal-dark: #0f766e;
 
   /* Semantic */
   --color-success: #22c55e;
@@ -29,47 +34,47 @@
   --color-text-secondary: #94a3b8;
   --color-text-muted: #64748b;
 
-  /* Borders */
+  /* Borders – semi-transparent whites for dark theme depth */
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(255, 255, 255, 0.15);
 
-  /* Price scale – halvin (vihrea) -> kallein (punainen) */
-  --price-1: #22c55e;
-  --price-2: #4ade80;
-  --price-3: #86efac;
-  --price-4: #fde047;
-  --price-5: #facc15;
-  --price-6: #f59e0b;
-  --price-7: #f97316;
-  --price-8: #ef4444;
-  --price-9: #dc2626;
-  --price-10: #991b1b;
+  /* Price scale – indigo -> teal -> amber (colorblind-safe sequential) */
+  --price-1: #1e1b4b;
+  --price-2: #312e81;
+  --price-3: #115e59;
+  --price-4: #0d9488;
+  --price-5: #2dd4bf;
+  --price-6: #a3e635;
+  --price-7: #facc15;
+  --price-8: #f59e0b;
+  --price-9: #d97706;
+  --price-10: #b45309;
 
   /* shadcn/ui CSS variables (HSL format for dark theme) */
-  --background: 228 20% 7%;
+  --background: 224 33% 5%;
   --foreground: 210 40% 98%;
 
-  --card: 228 18% 11%;
+  --card: 222 28% 7%;
   --card-foreground: 210 40% 98%;
 
-  --popover: 228 18% 11%;
+  --popover: 222 28% 7%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 217 91% 60%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 224 33% 5%;
 
-  --secondary: 228 15% 15%;
+  --secondary: 222 20% 14%;
   --secondary-foreground: 210 40% 98%;
 
-  --muted: 228 15% 15%;
+  --muted: 222 20% 14%;
   --muted-foreground: 215 20% 55%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 228 15% 18%;
-  --input: 228 15% 18%;
-  --ring: 217 91% 60%;
+  --border: 222 20% 16%;
+  --input: 222 20% 16%;
+  --ring: 38 92% 50%;
 
   --radius: 0.75rem;
 }
@@ -97,9 +102,15 @@
     overflow-x: hidden;
   }
 
-  /* Headings use Plus Jakarta Sans */
+  /* Headings use Inter */
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
+    letter-spacing: -0.02em;
+  }
+
+  /* Brand wordmark uses Inconsolata */
+  .font-brand {
+    font-family: var(--font-brand), 'Inconsolata', monospace;
   }
 
   /* Data numbers use monospace */
@@ -135,9 +146,17 @@
     border: 1px solid var(--color-border);
   }
 
-  /* Gradient text */
+  /* Gradient text – brand gradient (teal to amber) */
   .text-gradient {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+    background: linear-gradient(135deg, var(--color-teal), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gradient text – amber only variant */
+  .text-gradient-warm {
+    background: linear-gradient(135deg, var(--color-accent-dark), var(--color-accent-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -252,7 +271,7 @@
    ============================================ */
 
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(245, 158, 11, 0.3);
   color: #f8fafc;
 }
 

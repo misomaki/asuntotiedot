@@ -1,23 +1,20 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import Map, {
-  Source,
-  Layer,
-  NavigationControl,
-} from 'react-map-gl/maplibre'
+import Map, { Source, Layer } from 'react-map-gl/maplibre'
 import type {
   MapLayerMouseEvent,
   ViewStateChangeEvent,
 } from 'react-map-gl/maplibre'
 import type { ExpressionSpecification } from '@maplibre/maplibre-gl-style-spec'
+import type { Map as MaplibreMap } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useMapData } from '@/app/hooks/useMapData'
-import { useBuildingData } from '@/app/hooks/useBuildingData'
+// useBuildingData hook removed — buildings now served as vector tiles
+// managed natively by MapLibre (no React-level data fetching needed)
 import { getMapLibreColorExpression } from '@/app/lib/colorScales'
-import MapTooltip from './MapTooltip'
 import MapLegend from './MapLegend'
 import MapControls from './MapControls'
 
@@ -28,15 +25,6 @@ const MAP_STYLE =
 /** Minimum zoom level at which individual buildings appear */
 const BUILDING_ZOOM_THRESHOLD = 14
 
-/** Properties attached to each Voronoi GeoJSON feature */
-interface HoveredFeatureProperties {
-  area_code: string
-  name: string
-  municipality: string
-  price_per_sqm_avg: number | null
-  id: string
-}
-
 /** Properties attached to building features */
 interface HoveredBuildingProperties {
   id: string
@@ -44,7 +32,8 @@ interface HoveredBuildingProperties {
   construction_year: number | null
   floor_count: number | null
   address: string | null
-  estimated_price_per_sqm: number | null
+  price: number | null
+  is_residential: boolean
 }
 
 /** Cursor position for tooltip placement */
@@ -53,13 +42,11 @@ interface TooltipPosition {
   y: number
 }
 
-/** Tooltip content union */
-type TooltipContent =
-  | { type: 'area'; props: HoveredFeatureProperties }
-  | { type: 'building'; props: HoveredBuildingProperties }
+/** Tooltip content (buildings only) */
+type TooltipContent = { type: 'building'; props: HoveredBuildingProperties }
 
 /**
- * Main map component for the Asuntokartta application.
+ * Main map component for the Talotutka application.
  *
  * Renders the MapLibre GL map with:
  * - Voronoi fill layer (color-coded by area price per m²)
@@ -73,7 +60,6 @@ export default function MapContainer() {
     viewport,
     setViewport,
     selectedArea,
-    setSelectedArea,
     comparedArea,
     isCompareMode,
     filters,
@@ -88,16 +74,12 @@ export default function MapContainer() {
     filters.propertyType
   )
 
-  // Fetch building outlines (only when zoomed in enough)
-  const { buildings } = useBuildingData()
-
   // Sync loading state with context
   useEffect(() => {
     setIsLoading(dataLoading)
   }, [dataLoading, setIsLoading])
 
-  // Local hover state
-  const [hoveredAreaCode, setHoveredAreaCode] = useState<string | null>(null)
+  // Local hover state (buildings only — Voronoi is non-interactive)
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(
     null
   )
@@ -108,6 +90,13 @@ export default function MapContainer() {
   // Whether buildings are visible at current zoom
   const showBuildings = viewport.zoom >= BUILDING_ZOOM_THRESHOLD
 
+  // Absolute tile URL — MapLibre fetches tiles in a Web Worker where
+  // relative URLs fail (worker base is a blob: URL, not the page origin).
+  const buildingTileUrl = useMemo(() => {
+    if (typeof window === 'undefined') return '/api/tiles/buildings/{z}/{x}/{y}'
+    return `${window.location.origin}/api/tiles/buildings/{z}/{x}/{y}`
+  }, [])
+
   // Area codes for highlighting
   const selectedAreaCode = selectedArea?.areaCode ?? ''
   const comparedAreaCode = comparedArea?.areaCode ?? ''
@@ -117,12 +106,11 @@ export default function MapContainer() {
   // -------------------------------------------------------
 
   const interactiveLayerIds = useMemo(() => {
-    const ids = ['area-fill']
-    if (showBuildings && buildings) {
-      ids.push('building-fill')
+    if (showBuildings) {
+      return ['building-price-fill']
     }
-    return ids
-  }, [showBuildings, buildings])
+    return []
+  }, [showBuildings])
 
   // -------------------------------------------------------
   // Map layer paint expressions (memoised to avoid re-creation)
@@ -157,47 +145,45 @@ export default function MapContainer() {
           0.9,
           ['==', ['get', 'area_code'], comparedAreaCode],
           0.9,
-          ['==', ['get', 'area_code'], hoveredAreaCode ?? ''],
-          0.85,
           0.8,
         ]
       }
-      return [
-        'case',
-        ['==', ['get', 'area_code'], hoveredAreaCode ?? ''],
-        0.9,
-        0.8,
-      ]
+      return 0.8 as unknown as ExpressionSpecification
     },
-    [hoveredAreaCode, isCompareMode, selectedAreaCode, comparedAreaCode]
+    [isCompareMode, selectedAreaCode, comparedAreaCode]
   )
 
-  /** Building fill color — same color scale as Voronoi, keyed on estimated_price_per_sqm */
+  /** Building fill color — brightened price scale to stand out from Voronoi terrain */
   const buildingColorExpression = useMemo(
     (): ExpressionSpecification => [
-      'interpolate',
-      ['linear'],
-      ['coalesce', ['get', 'estimated_price_per_sqm'], 0],
-      0,
-      '#374151',
-      1000,
-      '#1a237e',
-      1500,
-      '#1565c0',
-      2000,
-      '#42a5f5',
-      2500,
-      '#66bb6a',
-      3000,
-      '#ffee58',
-      4000,
-      '#ffa726',
-      5000,
-      '#ef5350',
-      7000,
-      '#b71c1c',
-      10000,
-      '#4a0072',
+      'case',
+      ['==', ['get', 'is_residential'], false],
+      '#2a3040',   // non-residential — dark muted gray
+      [
+        'interpolate',
+        ['linear'],
+        ['coalesce', ['get', 'price'], 0],
+        0,
+        '#4b5563',   // no price — gray-600 (brighter than Voronoi gray-700)
+        1000,
+        '#3730a3',   // < 1000  — indigo-700
+        1500,
+        '#4f46e5',   // 1000-1500 — indigo-600
+        2000,
+        '#0f766e',   // 1500-2000 — teal-700
+        2500,
+        '#14b8a6',   // 2000-2500 — teal-500
+        3000,
+        '#5eead4',   // 2500-3000 — teal-300
+        4000,
+        '#bef264',   // 3000-4000 — lime-300
+        5000,
+        '#fde047',   // 4000-5000 — yellow-300
+        7000,
+        '#fbbf24',   // 5000-7000 — amber-400
+        10000,
+        '#d97706',   // > 7000   — amber-600
+      ],
     ],
     []
   )
@@ -223,22 +209,12 @@ export default function MapContainer() {
     (evt: MapLayerMouseEvent) => {
       const feature = evt.features?.[0]
 
-      if (feature && feature.properties) {
-        const layerId = feature.layer?.id
-
-        if (layerId === 'building-fill') {
-          const props = feature.properties as HoveredBuildingProperties
-          setTooltipContent({ type: 'building', props })
-          setHoveredAreaCode(null)
-        } else {
-          const props = feature.properties as HoveredFeatureProperties
-          setTooltipContent({ type: 'area', props })
-          setHoveredAreaCode(props.area_code)
-        }
+      if (feature && feature.properties && feature.layer?.id === 'building-price-fill') {
+        const props = feature.properties as HoveredBuildingProperties
+        setTooltipContent({ type: 'building', props })
         setTooltipPosition({ x: evt.point.x, y: evt.point.y })
         setCursor('pointer')
       } else {
-        setHoveredAreaCode(null)
         setTooltipContent(null)
         setTooltipPosition(null)
         setCursor('')
@@ -248,7 +224,6 @@ export default function MapContainer() {
   )
 
   const handleMouseLeave = useCallback(() => {
-    setHoveredAreaCode(null)
     setTooltipContent(null)
     setTooltipPosition(null)
     setCursor('')
@@ -258,28 +233,171 @@ export default function MapContainer() {
     (evt: MapLayerMouseEvent) => {
       const feature = evt.features?.[0]
       if (!feature || !feature.properties) return
+      if (feature.layer?.id !== 'building-price-fill') return
 
-      const layerId = feature.layer?.id
+      const props = feature.properties as HoveredBuildingProperties
+      // Only open details panel for residential buildings
+      if (props.is_residential === false) return
 
-      if (layerId === 'building-fill') {
-        // Click on a building -> show building details panel
-        const props = feature.properties as HoveredBuildingProperties
-        setSelectedBuilding(props.id)
-        setIsSidebarOpen(true)
-        return
-      }
-
-      // Click on Voronoi area
-      const props = feature.properties as HoveredFeatureProperties
-      setSelectedBuilding(null)
-      setSelectedArea({
-        id: props.id,
-        areaCode: props.area_code,
-        name: props.name,
-      })
+      setSelectedBuilding(props.id)
       setIsSidebarOpen(true)
     },
-    [setSelectedArea, setSelectedBuilding, setIsSidebarOpen]
+    [setSelectedBuilding, setIsSidebarOpen]
+  )
+
+  // -------------------------------------------------------
+  // Basemap color overrides — "Blue-gray & Teal" palette
+  // -------------------------------------------------------
+
+  /**
+   * Override basemap infrastructure colors on map load.
+   *
+   * Blue-gray roads (#4a5c6c) with width-based hierarchy,
+   * pink-tinted railways (#8a5c6e), blue-gray buildings (#3a4a56),
+   * and vivid teal water (#12484c). The muted blue-gray tones
+   * stay neutral against the warm Voronoi price gradient while
+   * teal fills the spectral gap that the price colors don't use.
+   *
+   * NOTE: reuseMaps caches the map instance — onLoad only fires once.
+   * After changing this code, open a NEW browser tab to see changes.
+   */
+  const handleMapLoad = useCallback(
+    (evt: { target: MaplibreMap }) => {
+      const map = evt.target
+      /** Helper: safely set a paint property (layer may not exist in this style) */
+      const paint = (layer: string, prop: string, value: string | number | boolean) => {
+        if (map.getLayer(layer)) {
+          map.setPaintProperty(layer, prop, value)
+        }
+      }
+
+      // =======================================================
+      // ROADS — blue-gray, width-based hierarchy
+      // =======================================================
+
+      // Roads — blue-gray, single lane per type, width by importance
+      const roadColor = '#4a5c6c'
+
+      // Service / path (thinnest)
+      for (const id of [
+        'road_service_fill', 'road_path',
+        'tunnel_service_fill', 'tunnel_path',
+        'bridge_service_fill', 'bridge_path',
+      ]) {
+        paint(id, 'line-color', roadColor)
+        paint(id, 'line-width', 0.5)
+      }
+
+      // Minor roads
+      for (const id of ['road_minor_fill', 'tunnel_minor_fill', 'bridge_minor_fill']) {
+        paint(id, 'line-color', roadColor)
+        paint(id, 'line-width', 0.8)
+      }
+
+      // Secondary roads
+      for (const id of ['road_sec_fill_noramp', 'tunnel_sec_fill', 'bridge_sec_fill']) {
+        paint(id, 'line-color', roadColor)
+        paint(id, 'line-width', 1.2)
+      }
+
+      // Primary roads
+      for (const id of [
+        'road_pri_fill_noramp', 'road_pri_fill_ramp',
+        'tunnel_pri_fill', 'bridge_pri_fill',
+      ]) {
+        paint(id, 'line-color', roadColor)
+        paint(id, 'line-width', 1.6)
+      }
+
+      // Trunk roads
+      for (const id of [
+        'road_trunk_fill_noramp', 'road_trunk_fill_ramp',
+        'tunnel_trunk_fill', 'bridge_trunk_fill',
+      ]) {
+        paint(id, 'line-color', roadColor)
+        paint(id, 'line-width', 2)
+      }
+
+      // Motorways (thickest)
+      for (const id of [
+        'road_mot_fill_noramp', 'road_mot_fill_ramp',
+        'tunnel_mot_fill', 'bridge_mot_fill',
+      ]) {
+        paint(id, 'line-color', roadColor)
+        paint(id, 'line-width', 2.5)
+      }
+
+      // Hide all road casings (outlines)
+      for (const id of [
+        'road_service_case', 'road_minor_case',
+        'road_sec_case_noramp',
+        'road_pri_case_noramp', 'road_pri_case_ramp',
+        'road_trunk_case_noramp', 'road_trunk_case_ramp',
+        'road_mot_case_noramp', 'road_mot_case_ramp',
+        'tunnel_service_case', 'tunnel_minor_case', 'tunnel_sec_case',
+        'tunnel_pri_case', 'tunnel_trunk_case', 'tunnel_mot_case',
+        'bridge_service_case', 'bridge_minor_case', 'bridge_sec_case',
+        'bridge_pri_case', 'bridge_trunk_case', 'bridge_mot_case',
+      ]) {
+        paint(id, 'line-opacity', 0)
+      }
+
+      // =======================================================
+      // RAILWAYS — pink-tinted, visible from zoom 8+
+      // =======================================================
+
+      // Show railways from zoom 8+ (basemap default is ~12)
+      for (const id of ['rail', 'rail_dash', 'tunnel_rail', 'tunnel_rail_dash']) {
+        if (map.getLayer(id)) {
+          map.setLayerZoomRange(id, 8, 24)
+        }
+      }
+
+      paint('rail', 'line-color', '#8a5c6e')
+      paint('rail', 'line-width', 1.5)
+      paint('rail_dash', 'line-color', '#b07890')
+      paint('rail_dash', 'line-width', 1)
+      paint('tunnel_rail', 'line-color', '#8a5c6e')
+      paint('tunnel_rail', 'line-width', 1.5)
+      paint('tunnel_rail_dash', 'line-color', '#b07890')
+      paint('tunnel_rail_dash', 'line-width', 1)
+
+      // =======================================================
+      // BASEMAP BUILDINGS — blue-gray (fill only, no outline)
+      // =======================================================
+
+      paint('building', 'fill-color', 'transparent')
+      paint('building', 'fill-outline-color', 'transparent')
+      paint('building', 'fill-antialias', false)   // disable outline rendering
+      paint('building-top', 'fill-color', '#3a4a56')
+      paint('building-top', 'fill-outline-color', '#3a4a56')
+      paint('building-top', 'fill-antialias', false) // disable outline rendering
+
+      // =======================================================
+      // AEROWAYS — match road color
+      // =======================================================
+
+      paint('aeroway-runway', 'line-color', roadColor)
+      paint('aeroway-taxiway', 'line-color', roadColor)
+
+      // =======================================================
+      // WATER — vivid teal (spectral gap in price palette)
+      // =======================================================
+
+      paint('water', 'fill-color', '#12484c')
+      paint('waterway', 'line-color', '#20888e')
+
+      // Water labels — bright teal for contrast
+      for (const id of [
+        'watername_ocean',
+        'watername_sea',
+        'watername_lake',
+        'watername_lake_line',
+      ]) {
+        paint(id, 'text-color', '#38a8b0')
+      }
+    },
+    []
   )
 
   // -------------------------------------------------------
@@ -298,11 +416,9 @@ export default function MapContainer() {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
+        onLoad={handleMapLoad}
         reuseMaps
       >
-        {/* Navigation controls (zoom +/-, compass) */}
-        <NavigationControl position="top-left" showCompass visualizePitch />
-
         {/* Voronoi area fill layer */}
         {geojson && (
           <Source id="areas" type="geojson" data={geojson}>
@@ -313,53 +429,52 @@ export default function MapContainer() {
               paint={{
                 'fill-color': fillColorExpression,
                 'fill-opacity': fillOpacityExpression,
+                'fill-antialias': false,
               }}
             />
           </Source>
         )}
 
-        {/* Building layers — visible at zoom >= 14 */}
-        {buildings && showBuildings && (
-          <Source id="buildings" type="geojson" data={buildings}>
-            <Layer
-              id="building-fill"
-              type="fill"
-              paint={{
-                'fill-color': buildingColorExpression,
-                'fill-opacity': 0.85,
-              }}
-            />
-            <Layer
-              id="building-outline"
-              type="line"
-              paint={{
-                'line-color': 'rgba(255, 255, 255, 0.3)',
-                'line-width': 0.5,
-              }}
-            />
-          </Source>
-        )}
+        {/* Building layers — vector tiles, always mounted so MapLibre manages tile lifecycle.
+            minzoom on Source prevents tile fetching below z14; minzoom on Layer prevents rendering. */}
+        <Source
+          id="building-tiles"
+          type="vector"
+          tiles={[buildingTileUrl]}
+          minzoom={14}
+          maxzoom={16}
+        >
+          <Layer
+            id="building-price-fill"
+            type="fill"
+            source-layer="buildings"
+            minzoom={14}
+            paint={{
+              'fill-color': buildingColorExpression,
+              'fill-opacity': 0.95,
+            }}
+          />
+          <Layer
+            id="building-outline"
+            type="line"
+            source-layer="buildings"
+            minzoom={14}
+            paint={{
+              'line-color': 'rgba(255, 255, 255, 0.15)',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 1.2] as unknown as ExpressionSpecification,
+              'line-blur': 0.5,
+            }}
+          />
+        </Source>
       </Map>
 
-      {/* Hover tooltip */}
-      {tooltipContent && tooltipPosition && (
-        <>
-          {tooltipContent.type === 'area' ? (
-            <MapTooltip
-              areaName={tooltipContent.props.name}
-              areaCode={tooltipContent.props.area_code}
-              price={tooltipContent.props.price_per_sqm_avg}
-              x={tooltipPosition.x}
-              y={tooltipPosition.y}
-            />
-          ) : (
-            <BuildingTooltip
-              props={tooltipContent.props}
-              x={tooltipPosition.x}
-              y={tooltipPosition.y}
-            />
-          )}
-        </>
+      {/* Building hover tooltip */}
+      {tooltipContent && tooltipPosition && tooltipContent.type === 'building' && (
+        <BuildingTooltip
+          props={tooltipContent.props}
+          x={tooltipPosition.x}
+          y={tooltipPosition.y}
+        />
       )}
 
       {/* Legend */}
@@ -404,7 +519,28 @@ function BuildingTooltip({
   x: number
   y: number
 }) {
-  const price = props.estimated_price_per_sqm
+  const isResidential = props.is_residential !== false
+
+  if (!isResidential) {
+    return (
+      <div
+        className="absolute z-40 pointer-events-none"
+        style={{
+          left: x + 12,
+          top: y - 24,
+          transform: 'translateY(-100%)',
+        }}
+      >
+        <div className="glass rounded-lg px-3 py-2 shadow-glass-sm">
+          <div className="text-sm text-muted-foreground">
+            Ei asuinkäytössä
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const price = props.price
   const priceStr =
     price !== null
       ? `${new Intl.NumberFormat('fi-FI').format(Math.round(price))} €/m²`

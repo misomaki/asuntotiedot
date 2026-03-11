@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Inter, Inconsolata, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 
@@ -9,9 +9,9 @@ const inter = Inter({
   display: "swap",
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const inconsolata = Inconsolata({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-brand",
   display: "swap",
 });
 
@@ -22,22 +22,23 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Asuntokartta \u2013 Suomen asuntohinnat kartalla",
+  title: "Talotutka \u2013 Suomen asuntohinnat, n\u00e4htyn\u00e4",
   description:
-    "Interaktiivinen karttasovellus Suomen asuntojen hinta-arvioiden, ik\u00e4rakenteen ja tilastotietojen tarkasteluun. Tarkastele asuntojen neliöhintoja postinumeroalueittain.",
+    "Interaktiivinen karttasovellus Suomen asuntojen hinta-arvioiden, ik\u00e4rakenteen ja tilastotietojen tarkasteluun. Rakennuskohtaiset hinta-arviot avoimesta datasta.",
   keywords: [
     "asuntohinnat",
     "Suomi",
     "kartta",
     "neliöhinta",
-    "asuntokartta",
-    "hintakartta",
+    "talotutka",
+    "hinta-arvio",
+    "tilastokeskus",
   ],
-  authors: [{ name: "Asuntokartta" }],
+  authors: [{ name: "Talotutka" }],
   openGraph: {
-    title: "Asuntokartta \u2013 Suomen asuntohinnat kartalla",
+    title: "Talotutka \u2013 Suomen asuntohinnat, n\u00e4htyn\u00e4",
     description:
-      "Tarkastele Suomen asuntojen hinta-arvioita interaktiivisella kartalla.",
+      "Rakennuskohtaiset hinta-arviot avoimesta datasta. Tarkastele Suomen asuntomarkkinaa interaktiivisella kartalla.",
     type: "website",
     locale: "fi_FI",
   },
@@ -51,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="fi"
-      className={`dark ${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
+      className={`dark ${inter.variable} ${inconsolata.variable} ${jetbrainsMono.variable} `}
       suppressHydrationWarning
     >
       <body className="antialiased">
