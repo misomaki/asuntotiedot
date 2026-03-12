@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { Search, Menu, X } from 'lucide-react'
+import { Search, Menu, X, ChevronDown } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
@@ -51,6 +51,10 @@ export function Header() {
 
   // Mobile menu state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Year picker state
+  const [isYearOpen, setIsYearOpen] = useState(false)
+  const yearContainerRef = useRef<HTMLDivElement>(null)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -152,7 +156,7 @@ export function Header() {
     [searchResults, handleSelectArea]
   )
 
-  // Close search dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -160,6 +164,12 @@ export function Header() {
         !searchContainerRef.current.contains(e.target as Node)
       ) {
         setIsSearchFocused(false)
+      }
+      if (
+        yearContainerRef.current &&
+        !yearContainerRef.current.contains(e.target as Node)
+      ) {
+        setIsYearOpen(false)
       }
     }
 
@@ -196,30 +206,10 @@ export function Header() {
             </span>
           </h1>
 
-          {/* Right: Year selector + Search (desktop) / Hamburger (mobile) */}
+          {/* Right: Search + Year selector (desktop) / Hamburger (mobile) */}
           <div className="flex items-center gap-2 ml-auto flex-shrink-0">
             {isDesktop ? (
               <div className="flex items-center gap-2">
-                {/* Year selector */}
-                <select
-                  value={filters.year}
-                  onChange={(e) => updateFilter('year', Number(e.target.value))}
-                  aria-label="Valitse vuosi"
-                  className={cn(
-                    'h-8 px-2 text-xs font-mono font-bold rounded-lg',
-                    'border-2 border-[#1a1a1a] bg-pink text-[#1a1a1a]',
-                    'shadow-hard-sm',
-                    'focus:outline-none focus:ring-2 focus:ring-pink',
-                    'transition-colors cursor-pointer'
-                  )}
-                >
-                  {YEARS.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-
                 {/* Search input */}
                 <div ref={searchContainerRef} className="relative">
                   <div
@@ -227,7 +217,7 @@ export function Header() {
                       'flex items-center gap-2 rounded-lg border-2 bg-white',
                       'transition-all duration-200',
                       isSearchFocused
-                        ? 'border-pink w-64 shadow-hard-sm'
+                        ? 'border-pink-baby w-64 shadow-hard-sm'
                         : 'border-[#1a1a1a] w-48'
                     )}
                   >
@@ -258,10 +248,9 @@ export function Header() {
                         'absolute top-full left-0 right-0 mt-1.5',
                         'rounded-lg border-2 border-[#1a1a1a] bg-white',
                         'shadow-hard overflow-hidden',
-                        'animate-fade-in'
                       )}
                     >
-                      {searchResults.map((area) => (
+                      {searchResults.map((area, i) => (
                         <button
                           key={area.areaCode}
                           type="button"
@@ -270,9 +259,11 @@ export function Header() {
                             'w-full px-3 py-2 text-left',
                             'flex items-center gap-2',
                             'text-xs text-[#1a1a1a]',
-                            'hover:bg-pink-pale transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-pink-pale'
+                            'hover:bg-pink-baby transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-pink-baby',
+                            'animate-slide-up'
                           )}
+                          style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'both' }}
                         >
                           <span
                             className="font-mono text-[#999] flex-shrink-0"
@@ -289,6 +280,61 @@ export function Header() {
                     </div>
                   )}
                 </div>
+
+                {/* Year selector */}
+                <div ref={yearContainerRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsYearOpen((prev) => !prev)}
+                    aria-label="Valitse vuosi"
+                    aria-expanded={isYearOpen}
+                    className={cn(
+                      'neo-press',
+                      'h-8 px-3 text-xs font-mono font-bold rounded-lg',
+                      'border-2 border-[#1a1a1a] bg-pink-baby text-[#1a1a1a]',
+                      'shadow-hard-sm',
+                      'flex items-center gap-1.5',
+                      'focus:outline-none focus:ring-2 focus:ring-pink-baby',
+                      'cursor-pointer select-none'
+                    )}
+                  >
+                    {filters.year}
+                    <ChevronDown size={12} className={cn('transition-transform', isYearOpen && 'rotate-180')} />
+                  </button>
+
+                  {isYearOpen && (
+                    <div
+                      className={cn(
+                        'absolute top-full right-0 mt-1.5 z-50',
+                        'rounded-lg border-2 border-[#1a1a1a] bg-white',
+                        'shadow-hard overflow-hidden',
+                        'min-w-[80px]',
+                      )}
+                    >
+                      {YEARS.map((year, i) => (
+                        <button
+                          key={year}
+                          type="button"
+                          onClick={() => {
+                            updateFilter('year', year)
+                            setIsYearOpen(false)
+                          }}
+                          className={cn(
+                            'w-full px-3 py-1.5 text-left',
+                            'text-xs font-mono font-bold text-[#1a1a1a]',
+                            'hover:bg-pink-baby transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-pink-baby',
+                            year === filters.year && 'bg-pink-baby text-[#1a1a1a]',
+                            'animate-slide-up',
+                          )}
+                          style={{ animationDelay: `${i * 20}ms`, animationFillMode: 'both' }}
+                        >
+                          {year}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <button
@@ -297,7 +343,7 @@ export function Header() {
                 className={cn(
                   'h-8 w-8 rounded-md flex items-center justify-center',
                   'text-[#666] hover:text-[#1a1a1a]',
-                  'hover:bg-pink-pale transition-colors',
+                  'hover:bg-pink-baby transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink'
                 )}
                 aria-label={isMobileMenuOpen ? 'Sulje valikko' : 'Avaa valikko'}
@@ -364,8 +410,8 @@ export function Header() {
                         'w-full px-3 py-2.5 text-left',
                         'flex items-center gap-2',
                         'text-sm text-[#1a1a1a]',
-                        'hover:bg-pink-pale transition-colors',
-                        'focus-visible:outline-none focus-visible:bg-pink-pale'
+                        'hover:bg-pink-baby transition-colors',
+                        'focus-visible:outline-none focus-visible:bg-pink-baby'
                       )}
                     >
                       <span

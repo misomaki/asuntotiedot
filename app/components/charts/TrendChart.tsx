@@ -244,7 +244,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
   return (
     <div
       className={cn(
-        'rounded-xl border-2 border-[#1a1a1a] bg-white p-4 shadow-hard-sm',
+        'neo-lift rounded-xl border-2 border-[#1a1a1a] bg-white p-4 shadow-hard-sm',
         className
       )}
     >

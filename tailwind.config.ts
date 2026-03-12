@@ -19,6 +19,7 @@ const config: Config = {
           DEFAULT: "#ff90e8",
           deep: "#e870d0",
           light: "#ffb8f0",
+          baby: "#ffd8f4",
           pale: "#fff0fb",
         },
         yellow: {
@@ -77,18 +78,18 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors – pink → peach → yellow → mint
+        // Price scale colors – sage (cheap) → sand → rose → plum (expensive)
         price: {
-          1: "#b84080",
-          2: "#d4508c",
-          3: "#ff6b9d",
-          4: "#ff90b8",
-          5: "#ffb0c8",
-          6: "#ffd4a8",
-          7: "#ffe08a",
-          8: "#e8f060",
-          9: "#a8e8a0",
-          10: "#60d4a0",
+          1: "#b8d8c8",
+          2: "#c8daba",
+          3: "#dce0a8",
+          4: "#e8daa0",
+          5: "#e4cca0",
+          6: "#e0bca8",
+          7: "#dca8b0",
+          8: "#d498b0",
+          9: "#c888a8",
+          10: "#b478a0",
         },
       },
 
@@ -123,6 +124,8 @@ const config: Config = {
         "slide-right": "slideRight 0.3s ease-out",
         "scale-in": "scaleIn 0.2s ease-out",
         shimmer: "shimmer 2s infinite linear",
+        "pop-in": "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "count-up": "countUp 0.4s ease-out",
       },
 
       keyframes: {
@@ -153,6 +156,14 @@ const config: Config = {
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        popIn: {
+          "0%": { transform: "scale(0.8)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        countUp: {
+          "0%": { transform: "translateY(8px)", opacity: "0", filter: "blur(2px)" },
+          "100%": { transform: "translateY(0)", opacity: "1", filter: "blur(0)" },
         },
       },
 

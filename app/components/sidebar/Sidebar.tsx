@@ -130,13 +130,13 @@ export function Sidebar() {
               type="button"
               onClick={handleStartCompare}
               className={cn(
+                'neo-press',
                 'w-full flex items-center justify-center gap-2',
                 'px-4 py-2.5 rounded-lg',
                 'bg-pink-pale hover:bg-pink-light',
                 'text-pink-deep hover:text-[#1a1a1a]',
                 'border-2 border-[#1a1a1a]',
                 'shadow-hard-sm',
-                'transition-all duration-200',
                 'text-sm font-medium',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               )}

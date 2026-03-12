@@ -16,11 +16,11 @@ import { useMapData } from '@/app/hooks/useMapData'
 // managed natively by MapLibre (no React-level data fetching needed)
 import { getMapLibreColorExpression, PRICE_BREAKS, BUILDING_PRICE_COLORS } from '@/app/lib/colorScales'
 import MapLegend from './MapLegend'
-import MapControls from './MapControls'
+// MapControls removed — reset button no longer needed
 
-/** CartoCDN Dark Matter basemap (free, no token required) */
+/** CartoCDN Positron basemap — light, warm overrides (free, no token required) */
 const MAP_STYLE =
-  'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+  'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 /** Minimum zoom level at which individual buildings appear */
 const BUILDING_ZOOM_THRESHOLD = 14
@@ -148,20 +148,19 @@ export default function MapContainer() {
           0.8,
         ]
       }
-      return 0.8 as unknown as ExpressionSpecification
+      return 0.7 as unknown as ExpressionSpecification
     },
     [isCompareMode, selectedAreaCode, comparedAreaCode]
   )
 
-  /** Building fill color — warm-shifted palette to contrast against the cool Voronoi terrain.
-   *  Voronoi uses cool teals/greens; buildings use warm-shifted versions so they
-   *  stand out even when the price (and thus hue) is similar.
+  /** Building fill color — same sage→plum hue range as Voronoi but deeper/crisper.
+   *  Buildings read as precise data points on the softer Voronoi terrain.
    *  Colors from BUILDING_PRICE_COLORS, breaks from PRICE_BREAKS (colorScales.ts). */
   const buildingColorExpression = useMemo(
     (): ExpressionSpecification => {
       const interpolate: unknown[] = [
         'interpolate', ['linear'], ['coalesce', ['get', 'price'], 0],
-        0, '#6b7280',   // no price — gray-500
+        0, '#ccc8c4',   // no price — warm neutral
       ]
       for (let i = 0; i < PRICE_BREAKS.length; i++) {
         interpolate.push(PRICE_BREAKS[i], BUILDING_PRICE_COLORS[i])
@@ -171,7 +170,7 @@ export default function MapContainer() {
       return [
         'case',
         ['==', ['get', 'is_residential'], false],
-        '#2a3040',   // non-residential — dark muted gray
+        '#b8b4b0',   // non-residential — quiet warm gray
         interpolate,
       ] as unknown as ExpressionSpecification
     },
@@ -240,13 +239,11 @@ export default function MapContainer() {
   // -------------------------------------------------------
 
   /**
-   * Override basemap infrastructure colors on map load.
+   * Override Positron basemap colors for quiet, recessive Neliöt aesthetic.
    *
-   * Blue-gray roads (#4a5c6c) with width-based hierarchy,
-   * pink-tinted railways (#8a5c6e), blue-gray buildings (#3a4a56),
-   * and vivid teal water (#12484c). The muted blue-gray tones
-   * stay neutral against the warm Voronoi price gradient while
-   * teal fills the spectral gap that the price colors don't use.
+   * Cool paper background (#f4f2ee), muted blue water (#d8e4ec),
+   * neutral roads (#d0ccc8), light buildings (#e4e0dc),
+   * and soft labels (#78746e). Basemap recedes so Voronoi terrain reads clearly.
    *
    * NOTE: reuseMaps caches the map instance — onLoad only fires once.
    * After changing this code, open a NEW browser tab to see changes.
@@ -262,11 +259,31 @@ export default function MapContainer() {
       }
 
       // =======================================================
-      // ROADS — blue-gray, width-based hierarchy
+      // BACKGROUND — cool paper white (recedes behind Voronoi)
       // =======================================================
 
-      // Roads — blue-gray, single lane per type, width by importance
-      const roadColor = '#4a5c6c'
+      paint('background', 'background-color', '#f4f2ee')
+
+      // =======================================================
+      // LANDCOVER & LANDUSE — pale sage / warm tones
+      // =======================================================
+
+      for (const id of ['landcover-grass', 'landcover-wood', 'landcover_grass', 'landcover_wood']) {
+        paint(id, 'fill-color', '#eceee8')
+      }
+      for (const id of ['landuse-cemetery', 'landuse-commercial', 'landuse-industrial', 'landuse-residential',
+        'landuse_cemetery', 'landuse_commercial', 'landuse_industrial', 'landuse_residential']) {
+        paint(id, 'fill-color', '#f0eeea')
+      }
+      for (const id of ['park', 'park_outline']) {
+        paint(id, 'fill-color', '#e6ece2')
+      }
+
+      // =======================================================
+      // ROADS — warm grey, width-based hierarchy, no casings
+      // =======================================================
+
+      const roadColor = '#d0ccc8'
 
       // Service / path (thinnest)
       for (const id of [
@@ -317,7 +334,7 @@ export default function MapContainer() {
         paint(id, 'line-width', 2.5)
       }
 
-      // Hide all road casings (outlines)
+      // Hide all road casings (outlines) for clean look
       for (const id of [
         'road_service_case', 'road_minor_case',
         'road_sec_case_noramp',
@@ -333,35 +350,34 @@ export default function MapContainer() {
       }
 
       // =======================================================
-      // RAILWAYS — pink-tinted, visible from zoom 8+
+      // RAILWAYS — subtle warm tone, visible from zoom 8+
       // =======================================================
 
-      // Show railways from zoom 8+ (basemap default is ~12)
       for (const id of ['rail', 'rail_dash', 'tunnel_rail', 'tunnel_rail_dash']) {
         if (map.getLayer(id)) {
           map.setLayerZoomRange(id, 8, 24)
         }
       }
 
-      paint('rail', 'line-color', '#8a5c6e')
+      paint('rail', 'line-color', '#ccc8c4')
       paint('rail', 'line-width', 1.5)
-      paint('rail_dash', 'line-color', '#b07890')
+      paint('rail_dash', 'line-color', '#d8d4d0')
       paint('rail_dash', 'line-width', 1)
-      paint('tunnel_rail', 'line-color', '#8a5c6e')
+      paint('tunnel_rail', 'line-color', '#ccc8c4')
       paint('tunnel_rail', 'line-width', 1.5)
-      paint('tunnel_rail_dash', 'line-color', '#b07890')
+      paint('tunnel_rail_dash', 'line-color', '#d8d4d0')
       paint('tunnel_rail_dash', 'line-width', 1)
 
       // =======================================================
-      // BASEMAP BUILDINGS — blue-gray (fill only, no outline)
+      // BASEMAP BUILDINGS — warm taupe (fill only, no outline)
       // =======================================================
 
       paint('building', 'fill-color', 'transparent')
       paint('building', 'fill-outline-color', 'transparent')
-      paint('building', 'fill-antialias', false)   // disable outline rendering
-      paint('building-top', 'fill-color', '#3a4a56')
-      paint('building-top', 'fill-outline-color', '#3a4a56')
-      paint('building-top', 'fill-antialias', false) // disable outline rendering
+      paint('building', 'fill-antialias', false)
+      paint('building-top', 'fill-color', '#e4e0dc')
+      paint('building-top', 'fill-outline-color', '#e4e0dc')
+      paint('building-top', 'fill-antialias', false)
 
       // =======================================================
       // AEROWAYS — match road color
@@ -371,20 +387,32 @@ export default function MapContainer() {
       paint('aeroway-taxiway', 'line-color', roadColor)
 
       // =======================================================
-      // WATER — vivid teal (spectral gap in price palette)
+      // WATER — soft powder blue
       // =======================================================
 
-      paint('water', 'fill-color', '#12484c')
-      paint('waterway', 'line-color', '#20888e')
+      paint('water', 'fill-color', '#d8e4ec')
+      paint('waterway', 'line-color', '#c4d8e4')
 
-      // Water labels — bright teal for contrast
+      // Water labels — muted blue
       for (const id of [
         'watername_ocean',
         'watername_sea',
         'watername_lake',
         'watername_lake_line',
       ]) {
-        paint(id, 'text-color', '#38a8b0')
+        paint(id, 'text-color', '#94a4b0')
+      }
+
+      // =======================================================
+      // LABELS — warm charcoal
+      // =======================================================
+
+      for (const id of [
+        'place_city', 'place_town', 'place_village',
+        'place_hamlet', 'place_suburb', 'place_neighbourhood',
+        'place_city_r', 'place_town_r', 'place_village_r',
+      ]) {
+        paint(id, 'text-color', '#78746e')
       }
     },
     []
@@ -441,7 +469,7 @@ export default function MapContainer() {
             minzoom={14}
             paint={{
               'fill-color': buildingColorExpression,
-              'fill-opacity': 0.95,
+              'fill-opacity': 0.88,
             }}
           />
           <Layer
@@ -450,9 +478,9 @@ export default function MapContainer() {
             source-layer="buildings"
             minzoom={14}
             paint={{
-              'line-color': 'rgba(255, 255, 255, 0.15)',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 1.2] as unknown as ExpressionSpecification,
-              'line-blur': 0.5,
+              'line-color': 'rgba(60, 50, 45, 0.18)',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 14, 0.4, 16, 0.8] as unknown as ExpressionSpecification,
+              'line-blur': 0,
             }}
           />
         </Source>
@@ -469,9 +497,6 @@ export default function MapContainer() {
 
       {/* Legend */}
       <MapLegend />
-
-      {/* Custom controls */}
-      <MapControls />
 
       {/* Compare mode indicator */}
       {isCompareMode && !selectedArea && comparedArea && (
@@ -514,11 +539,12 @@ function BuildingTooltip({
   if (!isResidential) {
     return (
       <div
-        className="absolute z-40 pointer-events-none"
+        className="absolute z-40 pointer-events-none animate-scale-in"
         style={{
           left: x + 12,
           top: y - 24,
           transform: 'translateY(-100%)',
+          transformOrigin: 'bottom left',
         }}
       >
         <div className="glass rounded-lg px-3 py-2 shadow-glass-sm">
@@ -543,11 +569,12 @@ function BuildingTooltip({
 
   return (
     <div
-      className="absolute z-40 pointer-events-none"
+      className="absolute z-40 pointer-events-none animate-scale-in"
       style={{
         left: x + 12,
         top: y - 24,
         transform: 'translateY(-100%)',
+        transformOrigin: 'bottom left',
       }}
     >
       <div className="glass rounded-lg px-3 py-2 shadow-glass-sm">

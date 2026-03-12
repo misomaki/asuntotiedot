@@ -28,9 +28,11 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
 
 ## Design-periaatteet
 
-- **Sävy:** Puhdas, asiantunteva, datavisualisointiin optimoitu 
-- **Väripaletti:** Tummahko karttatausta, kirkkaat choropleth-värit datalle
-- **Typografia:** Monumentteja – selkeä sans-serif datanumerot, hieman persoonallisempi otsikko
+- **Sävy:** Neobrutalistinen — leikkisä, rohkea, datapainotteinen
+- **Väripaletti:** Valkoinen tausta, pastelli-aksentit (pink #ff90e8, yellow #ffc900, mint #23c8a0). Hintaskaala: sage→plum
+- **Typografia:** Libre Franklin (display 900), DM Sans (body), IBM Plex Mono (data)
+- **Komponentit:** 2px mustat reunat, hard shadow (4px 4px 0px #1a1a1a), border-radius 12px
+- **Mikro-liikkeet:** neo-press (nappi painuu), neo-lift (kortti nousee), stagger pop-in, price counter roll-up
 - **Kartta edellä:** Kartta vie 70–80% näkymästä, UI-elementit kelluvat päälle
 - **Mobiili huomioitu:** Responsive, mutta desktop-first koska data-rikkaat näkymät
 
@@ -160,7 +162,7 @@ CREATE TABLE demographic_stats (
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-# Kartta: MapLibre + CartoCDN Dark Matter – ei vaadi API-tokenia
+# Kartta: MapLibre + CartoCDN Positron – ei vaadi API-tokenia
 ```
 
 ## Datalähteet ja API:t – tekniset muistiinpanot
@@ -196,9 +198,10 @@ SUPABASE_SERVICE_ROLE_KEY=
 estimated_price = base_price × age_factor × water_factor × floor_factor
 ```
 - `base_price` = StatFin €/m² alueen + vuoden + talotyypin mukaan
-- `age_factor`: uusi (≤5v) = 1.10, vanha (>100v) = 0.83
+  - Omakotitalo fallback: rivitalo × 1.10 → kerrostalo × 0.90
+- `age_factor`: uusi (≤5v) = 1.25-1.35, vanha (>100v) = 0.92 (validated 2026-03)
 - `water_factor`: <50m = 1.15, >500m = 1.00
-- `floor_factor`: ≥5 krs = 1.03, ≥8 krs = 1.05
+- `floor_factor`: kerrostalo ≥8 krs = 1.03, ≥5 krs = 1.01; rivitalo 1-krs = 1.05 (yksitasoinen premium)
 
 ## Claude-ohjeet tässä projektissa
 
@@ -237,28 +240,30 @@ estimated_price = base_price × age_factor × water_factor × floor_factor
 
 ### Kartta-arkkitehtuuri ja visualisointi
 
-- **Basemap:** CartoCDN Dark Matter (free, no token) – `dark-matter-gl-style`
+- **Basemap:** CartoCDN Positron (free, no token) – `positron-gl-style` with quiet neutral overrides
 - **Voronoi-tessellation:** Hintavisualisointi käyttää d3-delaunay Voronoi-soluja IDW-interpoloinnilla, EI postinumeroalueita
 - **Voronoi = terrain-taso:** Voronoi renderöidään ALLA basemap-elementtien (`beforeId="water"`). Vesistöt, rakennukset, tiet ja labelit piirtyvät Voronoin PÄÄLLE
 - **Tiheys:** Voronoi-solujen tulee olla erittäin tiheitä (~15 000 Helsinki, ~2 700 muut) jotta värigradietti näyttää sileältä
 - **EI solurajoja:** Voronoi-solujen välillä EI saa olla outline/border-viivoja. Käytä `fill-antialias: false` Voronoi-layerissä
 - **Kerrosjärjestys basemapissa:** background → landcover → landuse → park → boundary → **VORONOI FILL** → water → building → roads → labels → **BUILDING FILL** (zoom ≥14)
 - **IDW-interpolointi:** Smooth price gradients anchor-pisteiden välillä (power=2)
-- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan **warm-shifted paletilla** joka kontrastoi Voronoin viileitä teal-sävyjä (ks. `buildingColorExpression` MapContainer.tsx:ssä). Rakennukset käyttävät emerald→green→lime→yellow→orange skaalaa, EI samoja teal-värejä kuin Voronoi — muuten rakennukset sulautuvat taustaan. Klikkaus avaa BuildingPanel-sivupaneelin.
+- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan: sage→ochre→rose→plum (sama sävyalue kuin Voronoi, mutta syvempi/terävämpi). Klikkaus avaa BuildingPanel-sivupaneelin.
 - **Interaktio:** Vain rakennukset ovat interaktiivisia (hover + click). Voronoi EI ole interaktiivinen — ei hover-highlightia, ei klikkiä.
 
 ### Basemap-tyylien ylikirjoitus (`handleMapLoad`)
 
-Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`onLoad`). Tämä on kriittinen kokonaisuus — **kaikki** basemapin tielayerit pitää käsitellä, muuten ne näkyvät Dark Matterin oletusväreinä (vaaleanpunaiset tiet, mustat viivat).
+Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`onLoad`). Tämä on kriittinen kokonaisuus — **kaikki** basemapin tielayerit pitää käsitellä, muuten ne näkyvät Positronin oletusväreinä.
 
-**Nykyinen väripaletti:**
-- **Tiet:** Siniharmaa `#4a5c6c`, leveys tietyypin mukaan (0.5–2.5px), ei casings-viivoja
-- **Rautatiet:** Vaaleanpunainen sävy `#8a5c6e` / `#b07890`, näkyvät zoom 8+
-- **Basemap-rakennukset:** Siniharmaa `#3a4a56`, `fill-antialias: false` (ei outlinea)
-- **Vesi:** Teal `#12484c`, vesiväylät `#20888e`, labelit `#38a8b0`
+**Nykyinen väripaletti (Quiet Terrain):**
+- **Tausta:** Cool paper `#f4f2ee`
+- **Tiet:** Neutral grey `#d0ccc8`, leveys tietyypin mukaan (0.5–2.5px), ei casings-viivoja
+- **Rautatiet:** `#ccc8c4` / `#d8d4d0`, näkyvät zoom 8+
+- **Basemap-rakennukset:** Light taupe `#e4e0dc`, `fill-antialias: false` (ei outlinea)
+- **Vesi:** Muted blue `#d8e4ec`, vesiväylät `#c4d8e4`, labelit `#94a4b0`
+- **Labelit:** Soft charcoal `#78746e`
 - **Lentokentät:** `aeroway-runway` ja `aeroway-taxiway` tievärillä
 
-**CartoCDN Dark Matter -layerien nimeämislogiikka (tiet):**
+**CartoCDN Positron -layerien nimeämislogiikka (tiet):**
 - Muoto: `{konteksti}_{tietyyppi}_{tyyppi}_{ramppi}`
 - Konteksti: `road_`, `tunnel_`, `bridge_`
 - Tietyyppi: `service`, `path`, `minor`, `sec`, `pri`, `trunk`, `mot`
@@ -268,13 +273,14 @@ Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`o
 - **Rautatiet:** `rail`, `rail_dash`, `tunnel_rail`, `tunnel_rail_dash`
 - **Fill-layerit (rakennukset):** `building` (läpinäkyvä pohja) ja `building-top` (näkyvä katto). Molemmat tarvitsevat `fill-antialias: false` tai outline-väri == fill-väri.
 
-### Rakennuskerroksen värikontrasti (kriittinen)
+### Karttakerrosten väriharmonia (kriittinen)
 
-- Rakennusten (`buildingColorExpression`) ja Voronoin (`colorScales.ts`) väripaletit **EIVÄT saa olla samat**
-- Voronoi käyttää viileitä sävyjä: indigo → teal → lime → yellow → orange
-- Rakennukset käyttävät **warm-shifted** sävyjä: indigo → emerald → green → lime → yellow → orange
-- Kriittinen hintaväli on 2000–3000 €/m² (suurin osa omakotitaloista) — tässä kontrastin on oltava selkein
-- Jos muutat kumpaakaan palettia, varmista ettei väriarvot mene päällekkäin samassa hintahaarukassa
+- **Kolme kerrosta:** Basemap (recessiivinen) → Voronoi (terrain wash) → Buildings (crispit detaljit)
+- **Voronoi:** Sage→sand→rose→plum (`PRICE_COLORS` in `colorScales.ts`), opacity 0.7
+- **Rakennukset:** Sama sävyalue mutta syvempi/terävämpi (`BUILDING_PRICE_COLORS`), opacity 0.88
+- **Basemap:** Hyvin neutraali — ei kilpaile Voronoin tai rakennusten värien kanssa
+- Rakennusten outline on tumma hairline `rgba(60,50,45,0.18)`, ei valkoinen hehku
+- Non-residential: quiet grey `#b8b4b0`, no-price: warm neutral `#ccc8c4`
 - `get_buildings_in_bbox` RPC suodattaa pois rakennukset joilla ei ole hintaa (`estimated_price_per_sqm IS NOT NULL`) — testaus tällä API:lla ei näytä hinnattomia rakennuksia
 - `get_buildings_mvt` (MVT-tiilet) palauttaa KAIKKI rakennukset, myös hinnattomat — kartalla näkyy enemmän rakennuksia kuin GeoJSON-API palauttaa
 

@@ -11,7 +11,7 @@ interface LogoMarkProps {
  */
 export function LogoMark({ className, size = 30 }: LogoMarkProps) {
   const stroke = '#1a1a1a'
-  const fill = '#ff90e8'
+  const fill = '#ffd8f4'
   const accent = '#ffc900'
   const sw = 2.4
   const r = 3

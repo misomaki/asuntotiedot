@@ -25,9 +25,9 @@ function isLight(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150
 }
 
-// Price legend: warm pink → peach → yellow → mint
-const PRICE_COLORS   = ['#b84080','#d4508c','#ff6b9d','#ff90b8','#ffb0c8','#ffd4a8','#ffe08a','#e8f060','#a8e8a0','#60d4a0']
-const PRICE_COLORS_D = ['#4a1830','#6a2040','#8c3060','#b84080','#e060a0','#ffa070','#ffc040','#e0d060','#80c880','#40b090']
+// Price legend: sage (cheap) → sand → rose → plum (expensive)
+const PRICE_COLORS   = ['#b8d8c8','#c8daba','#dce0a8','#e8daa0','#e4cca0','#e0bca8','#dca8b0','#d498b0','#c888a8','#b478a0']
+const PRICE_COLORS_D = ['#506858','#607050','#787840','#807838','#7c6838','#785848','#744850','#683c50','#5c3048','#4c2840']
 
 // Shared demo data
 const STATS = [
@@ -512,7 +512,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
       </div>
 
       {/* ── Map Legend ── */}
-      <SectionTitle font={ff.display} color={c.text1} label="Map Legend" sub="Pink-to-mint gradient in a friendly rounded card" />
+      <SectionTitle font={ff.display} color={c.text1} label="Map Legend" sub="Sage (cheap) to plum (expensive) — quiet, harmonious gradient" />
       <div style={{ ...card(c.cardBg, { padding: '22px 26px', display: 'inline-flex', flexDirection: 'column', gap: 10, marginBottom: 56 }) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
           <div style={{ fontFamily: ff.display, fontSize: 13, fontWeight: 700, color: c.text1, letterSpacing: '-0.01em' }}>Hinta €/m²</div>
@@ -598,7 +598,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
       </div>
 
       {/* ── Basemap ── */}
-      <SectionTitle font={ff.display} color={c.text1} label="Basemap" sub="CartoCDN Positron with warm overrides — cream water, soft roads, no visual clutter" />
+      <SectionTitle font={ff.display} color={c.text1} label="Basemap" sub="CartoCDN Positron with quiet neutral overrides — recessive paper bg, muted water and roads" />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 56 }}>
         <div style={{ ...card(c.cardBg, { borderRadius: 14 }), padding: 28 }}>
           <div style={{ position: 'absolute', top: -1, left: 20, right: 20, height: 4, background: c.mint, borderRadius: '0 0 4px 4px' }} />
@@ -610,13 +610,13 @@ function GumroadStyle({ dark }: { dark: boolean }) {
 
           <div style={{ fontFamily: ff.body, fontSize: 12, color: c.text2, marginBottom: 10, fontWeight: 600 }}>Layer colour overrides:</div>
           {[
-            { layer: 'Water', color: '#d4e8f0', swatch: '#d4e8f0', note: 'Soft powder blue' },
-            { layer: 'Landcover', color: '#e8f0e0', swatch: '#e8f0e0', note: 'Pale sage' },
-            { layer: 'Buildings', color: '#e0d8d0', swatch: '#e0d8d0', note: 'Warm taupe' },
-            { layer: 'Roads', color: '#c8c0b8', swatch: '#c8c0b8', note: 'Warm grey' },
+            { layer: 'Water', color: '#d8e4ec', swatch: '#d8e4ec', note: 'Muted blue' },
+            { layer: 'Landcover', color: '#eceee8', swatch: '#eceee8', note: 'Pale sage' },
+            { layer: 'Buildings', color: '#e4e0dc', swatch: '#e4e0dc', note: 'Light taupe' },
+            { layer: 'Roads', color: '#d0ccc8', swatch: '#d0ccc8', note: 'Neutral grey' },
             { layer: 'Road casings', color: 'transparent', swatch: 'transparent', note: 'Hidden' },
-            { layer: 'Background', color: '#f5f0e8', swatch: '#f5f0e8', note: 'Warm cream' },
-            { layer: 'Labels', color: '#666058', swatch: '#666058', note: 'Warm charcoal' },
+            { layer: 'Background', color: '#f4f2ee', swatch: '#f4f2ee', note: 'Cool paper' },
+            { layer: 'Labels', color: '#78746e', swatch: '#78746e', note: 'Soft charcoal' },
           ].map(row => (
             <div key={row.layer} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <div style={{
@@ -634,7 +634,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
 
         <div style={{ ...card(c.cardBg, { borderRadius: 14 }), padding: 28 }}>
           <div style={{ position: 'absolute', top: -1, left: 20, right: 20, height: 4, background: c.yellow, borderRadius: '0 0 4px 4px' }} />
-          <div style={{ fontFamily: ff.display, fontSize: 16, fontWeight: 800, color: c.text1, letterSpacing: '-0.02em', marginBottom: 16 }}>Preview — Warm Positron</div>
+          <div style={{ fontFamily: ff.display, fontSize: 16, fontWeight: 800, color: c.text1, letterSpacing: '-0.02em', marginBottom: 16 }}>Preview — Quiet Positron</div>
 
           <div style={{
             height: 220,
@@ -642,19 +642,19 @@ function GumroadStyle({ dark }: { dark: boolean }) {
             border: `${c.borderW}px solid ${c.borderColor}`,
             overflow: 'hidden',
             position: 'relative',
-            background: '#f5f0e8',
+            background: '#f4f2ee',
           }}>
-            <div style={{ position: 'absolute', top: '15%', right: '5%', width: '35%', height: '40%', background: '#d4e8f0', borderRadius: '60% 40% 50% 50%', opacity: 0.9 }} />
-            <div style={{ position: 'absolute', bottom: '10%', left: '8%', width: '18%', height: '15%', background: '#d4e8f0', borderRadius: '40% 60% 50% 50%', opacity: 0.7 }} />
-            <div style={{ position: 'absolute', top: '55%', left: '15%', width: '22%', height: '18%', background: '#e8f0e0', borderRadius: 8, opacity: 0.8 }} />
+            <div style={{ position: 'absolute', top: '15%', right: '5%', width: '35%', height: '40%', background: '#d8e4ec', borderRadius: '60% 40% 50% 50%', opacity: 0.9 }} />
+            <div style={{ position: 'absolute', bottom: '10%', left: '8%', width: '18%', height: '15%', background: '#d8e4ec', borderRadius: '40% 60% 50% 50%', opacity: 0.7 }} />
+            <div style={{ position: 'absolute', top: '55%', left: '15%', width: '22%', height: '18%', background: '#eceee8', borderRadius: 8, opacity: 0.8 }} />
 
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 200 120" preserveAspectRatio="none">
-              <line x1="40" y1="0" x2="40" y2="120" stroke="#c8c0b8" strokeWidth="1.5" />
-              <line x1="100" y1="0" x2="100" y2="120" stroke="#c8c0b8" strokeWidth="2" />
-              <line x1="160" y1="0" x2="160" y2="120" stroke="#c8c0b8" strokeWidth="1" />
-              <line x1="0" y1="30" x2="200" y2="30" stroke="#c8c0b8" strokeWidth="1" />
-              <line x1="0" y1="70" x2="200" y2="70" stroke="#c8c0b8" strokeWidth="2" />
-              <line x1="0" y1="100" x2="200" y2="100" stroke="#c8c0b8" strokeWidth="1" />
+              <line x1="40" y1="0" x2="40" y2="120" stroke="#d0ccc8" strokeWidth="1.5" />
+              <line x1="100" y1="0" x2="100" y2="120" stroke="#d0ccc8" strokeWidth="2" />
+              <line x1="160" y1="0" x2="160" y2="120" stroke="#d0ccc8" strokeWidth="1" />
+              <line x1="0" y1="30" x2="200" y2="30" stroke="#d0ccc8" strokeWidth="1" />
+              <line x1="0" y1="70" x2="200" y2="70" stroke="#d0ccc8" strokeWidth="2" />
+              <line x1="0" y1="100" x2="200" y2="100" stroke="#d0ccc8" strokeWidth="1" />
               <line x1="70" y1="25" x2="70" y2="105" stroke="#d8d0c8" strokeWidth="0.5" />
               <line x1="130" y1="20" x2="130" y2="85" stroke="#d8d0c8" strokeWidth="0.5" />
             </svg>
@@ -669,21 +669,76 @@ function GumroadStyle({ dark }: { dark: boolean }) {
                 position: 'absolute',
                 left: `${b.x / 2}%`, top: `${b.y / 1.2}%`,
                 width: `${b.w / 2}%`, height: `${b.h / 1.2}%`,
-                background: '#e0d8d0', borderRadius: 2,
+                background: '#e4e0dc', borderRadius: 2,
               }} />
             ))}
 
             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${c.pink}15, ${c.yellow}10, ${c.mint}12)`, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: '22%', left: '42%', fontFamily: ff.body, fontSize: 8, color: '#666058', fontWeight: 500 }}>Kamppi</div>
-            <div style={{ position: 'absolute', top: '62%', left: '55%', fontFamily: ff.body, fontSize: 7, color: '#666058', fontWeight: 400 }}>Punavuori</div>
-            <div style={{ position: 'absolute', top: '8%', right: '15%', fontFamily: ff.body, fontSize: 7, color: '#8899aa', fontStyle: 'italic' }}>Töölönlahti</div>
+            <div style={{ position: 'absolute', top: '22%', left: '42%', fontFamily: ff.body, fontSize: 8, color: '#78746e', fontWeight: 500 }}>Kamppi</div>
+            <div style={{ position: 'absolute', top: '62%', left: '55%', fontFamily: ff.body, fontSize: 7, color: '#78746e', fontWeight: 400 }}>Punavuori</div>
+            <div style={{ position: 'absolute', top: '8%', right: '15%', fontFamily: ff.body, fontSize: 7, color: '#94a4b0', fontStyle: 'italic' }}>Töölönlahti</div>
           </div>
 
           <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span style={pill(c.pinkPale, c.pinkDeep, { fontSize: 10 })}>Warm cream base</span>
+            <span style={pill(c.pinkPale, c.pinkDeep, { fontSize: 10 })}>Cool paper base</span>
             <span style={pill(c.yellowPale, '#8a6a00', { fontSize: 10 })}>No road casings</span>
-            <span style={pill(dark ? '#1a2a2a' : '#e0f5f0', dark ? c.mintLight : '#0a5a40', { fontSize: 10 })}>Soft building fills</span>
+            <span style={pill(dark ? '#1a2a2a' : '#e0f5f0', dark ? c.mintLight : '#0a5a40', { fontSize: 10 })}>Recessive layers</span>
           </div>
+        </div>
+      </div>
+
+      {/* ── Micro-Movements ── */}
+      <SectionTitle font={ff.display} color={c.text1} label="Micro-Movements" sub="Neobrutalist press, lift, and stagger animations" />
+      <div style={{ display: 'flex', gap: 20, marginBottom: 56, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {/* Press demo */}
+        <div style={{ textAlign: 'center' }}>
+          <button className="neo-press" style={{
+            ...card(c.pink, { borderRadius: 10 }),
+            padding: '14px 28px',
+            fontFamily: ff.display,
+            fontSize: 14,
+            fontWeight: 700,
+            color: c.borderColor,
+            cursor: 'pointer',
+            border: `${c.borderW}px solid ${c.borderColor}`,
+            boxShadow: c.shadowSm,
+            background: c.pink,
+          }}>
+            neo-press
+          </button>
+          <div style={{ fontFamily: ff.mono, fontSize: 10, color: c.text3, marginTop: 8 }}>Click me — shadow collapses</div>
+        </div>
+        {/* Lift demo */}
+        <div style={{ textAlign: 'center' }}>
+          <div className="neo-lift" style={{
+            ...card(c.yellow, { borderRadius: 10 }),
+            padding: '14px 28px',
+            fontFamily: ff.display,
+            fontSize: 14,
+            fontWeight: 700,
+            color: c.borderColor,
+            cursor: 'default',
+          }}>
+            neo-lift
+          </div>
+          <div style={{ fontFamily: ff.mono, fontSize: 10, color: c.text3, marginTop: 8 }}>Hover — card floats up</div>
+        </div>
+        {/* Stagger demo */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[c.pink, c.yellow, c.mint, c.peach, c.lavender].map((col, i) => (
+              <div key={i} className="animate-pop-in" style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                background: col,
+                border: `${c.borderW}px solid ${c.borderColor}`,
+                animationDelay: `${i * 60}ms`,
+                animationFillMode: 'both',
+              }} />
+            ))}
+          </div>
+          <div style={{ fontFamily: ff.mono, fontSize: 10, color: c.text3, marginTop: 8 }}>pop-in stagger</div>
         </div>
       </div>
 

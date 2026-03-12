@@ -65,23 +65,23 @@ export function BuildingPanel() {
     setSelectedBuilding(null)
   }
 
-  if (isLoading) return <BuildingPanelSkeleton onBack={handleBack} />
+  if (isLoading || (!building && !fetchFailed)) {
+    return <BuildingPanelSkeleton onBack={handleBack} />
+  }
 
   if (!building) {
     return (
       <div className="flex flex-col items-center justify-center h-40 gap-2">
         <p className="text-sm text-muted-foreground">
-          {fetchFailed ? 'Rakennustietoja ei löytynyt.' : 'Ladataan tietoja…'}
+          Rakennustietoja ei löytynyt.
         </p>
-        {fetchFailed && (
-          <button
-            type="button"
-            onClick={handleBack}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Takaisin
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleBack}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Takaisin
+        </button>
       </div>
     )
   }
@@ -141,10 +141,10 @@ export function BuildingPanel() {
 
       {/* Price estimate */}
       {hasPrice && (
-        <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] p-4 space-y-3 shadow-hard-sm">
+        <div className="neo-lift rounded-xl bg-pink-pale border-2 border-[#1a1a1a] p-4 space-y-3 shadow-hard-sm">
           <div className="text-sm text-muted-foreground">Hinta-arvio</div>
-          <div className="text-3xl font-bold text-foreground tabular-nums">
-            {formatPrice(price)} €/m²
+          <div className="text-3xl font-bold text-foreground tabular-nums animate-count-up">
+            <AnimatedPrice value={price} /> €/m²
           </div>
         </div>
       )}
@@ -246,7 +246,7 @@ function AttributeCard({
   value: string
 }) {
   return (
-    <div className="rounded-lg bg-white border-2 border-[#1a1a1a] p-3 space-y-1 shadow-hard-sm">
+    <div className="neo-lift rounded-lg bg-white border-2 border-[#1a1a1a] p-3 space-y-1 shadow-hard-sm">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         {icon}
         <span className="text-[11px]">{label}</span>
@@ -311,6 +311,38 @@ function BuildingPanelSkeleton({ onBack }: { onBack: () => void }) {
       <Skeleton className="h-40 rounded-xl" />
     </div>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Animated price counter
+// ---------------------------------------------------------------------------
+
+function AnimatedPrice({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0)
+  const frameRef = useRef<number>(0)
+
+  useEffect(() => {
+    const duration = 500
+    const start = performance.now()
+    const from = 0
+    const to = Math.round(value)
+
+    function tick(now: number) {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(from + (to - from) * eased))
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(tick)
+      }
+    }
+
+    frameRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frameRef.current)
+  }, [value])
+
+  return <>{new Intl.NumberFormat('fi-FI').format(display)}</>
 }
 
 // ---------------------------------------------------------------------------

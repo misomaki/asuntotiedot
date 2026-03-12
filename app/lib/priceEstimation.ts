@@ -7,6 +7,13 @@
  * 3. Floor count
  */
 
+/** Omakotitalo fallback multipliers when no direct StatFin OKT data exists.
+ *  Validated 2026-03: OKT prices are typically above RT in same area. */
+export const OKT_FALLBACK = {
+  fromRivitalo: 1.10,
+  fromKerrostalo: 0.90,
+} as const
+
 export interface PriceEstimationInput {
   /** Real StatFin €/m² for this postal code + year + property type */
   basePrice: number
@@ -18,6 +25,8 @@ export interface PriceEstimationInput {
   floorCount: number | null
   /** Reference year for age calculation */
   referenceYear: number
+  /** Property type for type-specific floor factor (optional for backward compat) */
+  propertyType?: 'kerrostalo' | 'rivitalo' | 'omakotitalo'
 }
 
 export interface PriceEstimationResult {
@@ -38,18 +47,20 @@ export function computeAgeFactor(
 
   // U-shaped curve: 1960s-70s panel houses (age ~50-60) are cheapest,
   // pre-war buildings (age 80-100+) recover value.
-  if (age <= 0) return 1.15
-  if (age <= 5) return 1.10
-  if (age <= 10) return 1.05
-  if (age <= 20) return 1.00
-  if (age <= 30) return 0.95
-  if (age <= 40) return 0.88
-  if (age <= 50) return 0.78   // late 70s panels
-  if (age <= 60) return 0.72   // 60s-70s panels (valley — cheapest)
-  if (age <= 70) return 0.75   // post-war, starting recovery
-  if (age <= 80) return 0.80   // 1940s-50s recovery
-  if (age <= 100) return 0.85  // pre-war, good value retention
-  return 0.88                   // historical, often renovated, character premium
+  // Validated 2026-03 against Etuovi asking prices — new construction
+  // premiums increased significantly, age valley softened.
+  if (age <= 0) return 1.35    // brand new / under construction
+  if (age <= 5) return 1.25    // very new
+  if (age <= 10) return 1.15   // recent
+  if (age <= 20) return 1.05   // modern
+  if (age <= 30) return 0.95   // keep
+  if (age <= 40) return 0.90   // aging
+  if (age <= 50) return 0.82   // late 70s panels
+  if (age <= 60) return 0.78   // 60s-70s panels (valley — cheapest)
+  if (age <= 70) return 0.80   // post-war, starting recovery
+  if (age <= 80) return 0.85   // 1940s-50s recovery
+  if (age <= 100) return 0.90  // pre-war, good value retention
+  return 0.92                   // historical, often renovated, character premium
 }
 
 export function computeWaterFactor(distanceM: number | null): number {
@@ -62,9 +73,20 @@ export function computeWaterFactor(distanceM: number | null): number {
   return 1.0
 }
 
-export function computeFloorFactor(floorCount: number | null): number {
+export function computeFloorFactor(
+  floorCount: number | null,
+  propertyType?: 'kerrostalo' | 'rivitalo' | 'omakotitalo'
+): number {
   if (floorCount === null) return 1.0
 
+  // Rivitalo: single-story commands ~10% premium over two-story
+  // (validated 2026-03 against Etuovi data: yksitasoinen 3,825 vs kaksitasoinen 3,476 €/m²)
+  if (propertyType === 'rivitalo') {
+    if (floorCount === 1) return 1.05   // yksitasoinen premium
+    return 1.0                           // kaksitasoinen baseline
+  }
+
+  // Kerrostalo: taller buildings command slight premium
   if (floorCount >= 8) return 1.03
   if (floorCount >= 5) return 1.01
   return 1.0
@@ -102,7 +124,7 @@ export function estimateBuildingPrice(
 ): PriceEstimationResult {
   const ageFactor = computeAgeFactor(input.constructionYear, input.referenceYear)
   const waterFactor = computeWaterFactor(input.distanceToWaterM)
-  const floorFactor = computeFloorFactor(input.floorCount)
+  const floorFactor = computeFloorFactor(input.floorCount, input.propertyType)
 
   const estimatedPricePerSqm = Math.round(
     input.basePrice * ageFactor * waterFactor * floorFactor

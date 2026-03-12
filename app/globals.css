@@ -51,17 +51,17 @@
   --shadow-hard-lg: 6px 6px 0px #1a1a1a;
   --shadow-pink: 4px 4px 0px #ff90e8;
 
-  /* Price scale – pink → peach → yellow → mint */
-  --price-1: #b84080;
-  --price-2: #d4508c;
-  --price-3: #ff6b9d;
-  --price-4: #ff90b8;
-  --price-5: #ffb0c8;
-  --price-6: #ffd4a8;
-  --price-7: #ffe08a;
-  --price-8: #e8f060;
-  --price-9: #a8e8a0;
-  --price-10: #60d4a0;
+  /* Price scale – sage (cheap) → sand → rose → plum (expensive) */
+  --price-1: #b8d8c8;
+  --price-2: #c8daba;
+  --price-3: #dce0a8;
+  --price-4: #e8daa0;
+  --price-5: #e4cca0;
+  --price-6: #e0bca8;
+  --price-7: #dca8b0;
+  --price-8: #d498b0;
+  --price-9: #c888a8;
+  --price-10: #b478a0;
 
   /* shadcn/ui CSS variables (HSL format for light theme) */
   --background: 0 0% 100%;
@@ -169,6 +169,30 @@
   .glass-subtle {
     background: var(--color-bg-secondary);
     border: 2px solid var(--color-border);
+  }
+
+  /* ── Neobrutalist micro-movements ── */
+
+  /* Button press: shadow collapses, element sinks into the page */
+  .neo-press {
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .neo-press:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #1a1a1a;
+  }
+  .neo-press:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px #1a1a1a;
+  }
+
+  /* Card lift: floats up on hover like picking up a sticker */
+  .neo-lift {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .neo-lift:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px #1a1a1a;
   }
 
   /* Gradient text – brand gradient (pink to mint) */

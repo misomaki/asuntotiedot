@@ -304,13 +304,13 @@ export class SupabaseDataProvider implements DataProvider {
   async getBuildingDetails(
     buildingId: string
   ): Promise<Record<string, unknown> | null> {
+    // Query base columns that always exist
     const { data: building, error } = await this.supabase
       .from('buildings')
       .select(
         `id, building_type, construction_year, floor_count,
          footprint_area_sqm, address, estimated_price_per_sqm,
-         min_distance_to_water_m, area_id,
-         ryhti_main_purpose, is_residential`
+         min_distance_to_water_m, area_id`
       )
       .eq('id', buildingId)
       .single()
@@ -321,6 +321,10 @@ export class SupabaseDataProvider implements DataProvider {
     let areaCode = ''
     let areaName = ''
     let basePrice: number | null = null
+    const propertyType = inferPropertyType(
+      building.building_type,
+      building.floor_count
+    )
 
     if (building.area_id) {
       const { data: area } = await this.supabase
@@ -333,13 +337,6 @@ export class SupabaseDataProvider implements DataProvider {
         areaCode = area.area_code
         areaName = area.name
       }
-
-      // Get the base price used for this building's estimation.
-      // Omakotitalo uses fallback: rivitalo × 0.85, then kerrostalo × 0.75.
-      const propertyType = inferPropertyType(
-        building.building_type,
-        building.floor_count
-      )
 
       basePrice = await this.lookupBasePrice(
         building.area_id,
@@ -354,7 +351,7 @@ export class SupabaseDataProvider implements DataProvider {
         ? Number(building.min_distance_to_water_m)
         : null
     )
-    const floorFactor = computeFloorFactor(building.floor_count)
+    const floorFactor = computeFloorFactor(building.floor_count, propertyType)
 
     return {
       id: building.id,
@@ -377,14 +374,15 @@ export class SupabaseDataProvider implements DataProvider {
       age_factor: ageFactor,
       water_factor: waterFactor,
       floor_factor: floorFactor,
-      ryhti_main_purpose: building.ryhti_main_purpose ?? null,
-      is_residential: building.is_residential ?? null,
+      ryhti_main_purpose: null,
+      is_residential: null,
     }
   }
   /**
    * Look up base price with omakotitalo fallback + municipality fallback.
-   * Phase 1: area-level (omakotitalo → rivitalo×0.85 → kerrostalo×0.75)
+   * Phase 1: area-level (omakotitalo → rivitalo×1.10 → kerrostalo×0.90)
    * Phase 2: municipality-level average (same cascade)
+   * Validated 2026-03: OKT prices are typically above RT in same area.
    */
   private async lookupBasePrice(
     areaId: string,
@@ -396,10 +394,10 @@ export class SupabaseDataProvider implements DataProvider {
 
     if (propertyType === 'omakotitalo') {
       const rivitaloPrice = await this.fetchLatestPrice(areaId, 'rivitalo')
-      if (rivitaloPrice !== null) return rivitaloPrice * 0.85
+      if (rivitaloPrice !== null) return rivitaloPrice * OKT_FALLBACK.fromRivitalo
 
       const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
-      if (kerrostaloPrice !== null) return kerrostaloPrice * 0.75
+      if (kerrostaloPrice !== null) return kerrostaloPrice * OKT_FALLBACK.fromKerrostalo
     }
 
     // Phase 2: Municipality-level fallback
@@ -411,11 +409,13 @@ export class SupabaseDataProvider implements DataProvider {
     if (munPrice !== null) return munPrice
 
     if (propertyType === 'omakotitalo') {
-      const munRivitalo = await this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'rivitalo')
-      if (munRivitalo !== null) return munRivitalo * 0.85
-
-      const munKerrostalo = await this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'kerrostalo')
-      if (munKerrostalo !== null) return munKerrostalo * 0.75
+      // Fetch rivitalo and kerrostalo in parallel — they are independent lookups
+      const [munRivitalo, munKerrostalo] = await Promise.all([
+        this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'rivitalo'),
+        this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'kerrostalo'),
+      ])
+      if (munRivitalo !== null) return munRivitalo * OKT_FALLBACK.fromRivitalo
+      if (munKerrostalo !== null) return munKerrostalo * OKT_FALLBACK.fromKerrostalo
     }
 
     return null

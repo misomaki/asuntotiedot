@@ -14,7 +14,7 @@ export default function MapLegend() {
 
   return (
     <div className="absolute bottom-6 right-6 z-40">
-      <div className="bg-white border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
+      <div className="neo-lift bg-white border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
         {/* Header / toggle button */}
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
@@ -32,9 +32,13 @@ export default function MapLegend() {
 
         {/* Color scale entries */}
         {isExpanded && (
-          <div className="px-3 pb-2.5 pt-0.5 space-y-1 animate-fade-in">
+          <div className="px-3 pb-2.5 pt-0.5 space-y-1">
             {PRICE_COLORS.map((color, index) => (
-              <div key={index} className="flex items-center gap-2">
+              <div
+                key={index}
+                className="flex items-center gap-2 animate-pop-in"
+                style={{ animationDelay: `${index * 25}ms`, animationFillMode: 'both' }}
+              >
                 <span
                   className="inline-block h-3 w-5 rounded-sm flex-shrink-0 border border-[#1a1a1a]"
                   style={{ backgroundColor: color }}
