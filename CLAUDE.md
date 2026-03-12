@@ -90,6 +90,13 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/003_ryhti_enrichment.sql   # Ryhti staging-taulu + matchaus-funktiot
   /migrations/006_municipality_price_fallback.sql # Kuntatasoinen hintafallback
   /migrations/007_building_classification.sql     # Rakennusluokittelu + MVT-päivitys
+  /migrations/008_validated_price_factors.sql     # Validoidut hintafaktorit (2026-03 Etuovi)
+
+/scripts
+  /validation/
+    validate-prices.ts                # Hinta-arvioiden validointiskripti
+    etuovi-raw-data.md                # Etuovi-vertailudata (92 kohdetta)
+    price-validation-2026-03.md       # Validointiraportti
 ```
 
 ## Tietokantarakenne (Supabase / PostGIS)
@@ -194,14 +201,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 - Molemmat implementoivat saman `DataProvider`-interfacen
 
 ### Hinta-arvioalgoritmi (rakennuskohtainen)
-```
-estimated_price = base_price × age_factor × water_factor × floor_factor
-```
-- `base_price` = StatFin €/m² alueen + vuoden + talotyypin mukaan
-  - Omakotitalo fallback: rivitalo × 1.10 → kerrostalo × 0.90
-- `age_factor`: uusi (≤5v) = 1.25-1.35, vanha (>100v) = 0.92 (validated 2026-03)
-- `water_factor`: <50m = 1.15, >500m = 1.00
-- `floor_factor`: kerrostalo ≥8 krs = 1.03, ≥5 krs = 1.01; rivitalo 1-krs = 1.05 (yksitasoinen premium)
+Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 
 ## Claude-ohjeet tässä projektissa
 
@@ -374,6 +374,99 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-as
 ### Supabase-huomiot (lisää)
 - `.rpc()` JSONB-parametrille anna JavaScript-objekti/array, EI `JSON.stringify()` → muuten "cannot extract elements from a scalar"
 - Migraatiot täytyy ajaa uudelleen SQL Editorissa jos funktioita muutetaan lokaalisti — tietokannassa on edelleen vanha versio kunnes CREATE OR REPLACE ajetaan
+
+## Hinta-arvioiden tarkkuuden ylläpito
+
+Hinta-arviot validoitiin 2026-03 vertaamalla 82 Etuovi.fi-ilmoituksen pyyntihintoja algoritmimme tuottamiin arvioihin. Tarkkuuden ylläpitäminen edellyttää säännöllistä uudelleenvalidointia ja faktorien päivitystä.
+
+### Nykyinen tarkkuus (baseline 2026-03)
+- **Mean Δ%:** -12% (aliarviointi), **Median Δ%:** -14%
+- **KT:** -15%, **RT:** -17%, **OKT:** -5%
+- **Helsinki:** -13%, **Tampere:** -9%, **Turku:** -33% (vähän dataa)
+- Validointiraportti: `scripts/validation/price-validation-2026-03.md`
+- Raakadata: `scripts/validation/etuovi-raw-data.md`
+
+### Kolme paikkaa joissa faktorit elävät (pidä synkassa!)
+
+| Sijainti | Käyttö | Muokkaa kun |
+|----------|--------|-------------|
+| `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
+| `supabase/migrations/008_validated_price_factors.sql` | Tietokanta (`compute_building_price()` RPC) | Faktoriarvo muuttuu |
+| `scripts/validation/validate-prices.ts` | Validointiskripti | Faktoriarvo muuttuu |
+
+**KRIITTINEN:** Kaikki kolme tiedostoa PITÄÄ päivittää yhdessä. Jos muutat esim. age factoria TypeScriptissä mutta unohdat SQL-migraation, tietokannassa lasketut arvot ja frontendin laskemat arvot eroavat.
+
+### OKT_FALLBACK — single source of truth
+- Omakotitalon fallback-kertoimet on määritelty `priceEstimation.ts` → `OKT_FALLBACK`-vakiossa
+- `supabaseDataProvider.ts` importtaa ja käyttää näitä — ÄLÄ hardkoodaa arvoja sinne
+- SQL-migraatiossa sama arvo on toistettava manuaalisesti (ei voi importata TS:stä)
+
+### Milloin uudelleenvalidoida
+
+1. **Vuosittain** — markkinahinnat muuttuvat, age bracket -rajat siirtyvät
+2. **Kun StatFin-data päivittyy** — uusi vuosidata voi muuttaa base price -tasoja
+3. **Kun lisätään uusia kaupunkeja** — faktorit on kalibroitu Helsinki/Tampere/Turku-datalla
+4. **Kun algoritmi muuttuu** — uudet tekijät (esim. energiatodistus, asuinaluetyyppi)
+
+### Validointiprosessi (step-by-step)
+
+```bash
+# 1. Kerää vertailudata Etuovista (≥60 kohdetta, kaikki talotyypit, eri kaupungit)
+#    Tallenna: scripts/validation/etuovi-raw-data.md
+
+# 2. Aja validointiskripti
+source ~/.nvm/nvm.sh && nvm use 20
+npx tsx scripts/validation/validate-prices.ts
+
+# 3. Analysoi tulokset (raportti tulostuu terminaaliin + päivittää .md-tiedoston)
+#    Tarkasta: Mean Δ%, jakauma talotyypeittäin ja kaupungeittain
+
+# 4. Jos faktorit muuttuvat:
+#    a) Päivitä app/lib/priceEstimation.ts (TypeScript-faktorit)
+#    b) Luo uusi SQL-migraatio (esim. 009_*.sql) joka päivittää compute_building_price()
+#    c) Päivitä scripts/validation/validate-prices.ts (samat faktorit)
+#    d) Päivitä tämä CLAUDE.md (algoritmi-kuvaus + baseline-luvut)
+
+# 5. Aja migraatio ja laske hinnat uudelleen:
+#    a) Aja uusi SQL-migraatio Supabase SQL Editorissa
+#    b) Resetoi: UPDATE buildings SET estimation_year = NULL;
+#    c) npx tsx scripts/data-import/05-compute-building-prices.ts
+```
+
+### Tunnetut rajoitukset ja kehityskohteet
+
+- **Turku aliedustettu:** Vain 3 kohdetta validoinnissa → faktorit eivät välttämättä toimi siellä
+- **Vesikerroin validoimaton:** Etuovi-ilmoituksista ei saada vesistöetäisyyttä → water_factor = 1.0 validoinnissa
+- **Pyyntihinnat vs toteutuneet:** Etuovi = asking prices, toteutuneet hinnat ovat ~5-10% alhaisempia
+- **Uudistuotanto-premium aliarvioitu:** Mean Δ% -16% uusilla (≤5v) → new construction premium saattaa olla ≥1.40
+- **Keskustabonus puuttuu:** Tampere/Turku keskusta aliarvioitu ~35-45% → city center premium puuttuu algoritmista
+- **Energiatodistus puuttuu:** Vaikuttaa erityisesti 1960-80-luvun rakennusten hintaan
+- **Remonttitaso puuttuu:** Remontoitu 70-luvun talo voi olla kalliimpi kuin remontoimaton 2000-luvun talo
+
+### Hinta-arvioalgoritmin tarkka kuvaus
+
+```
+estimated_price = base_price × age_factor × water_factor × floor_factor
+```
+
+**Base price** = StatFin €/m² (postinumero + vuosi + talotyyppi)
+- Omakotitalo fallback: ei omaa StatFin-dataa → rivitalo × 1.10 → kerrostalo × 0.90
+
+**Age factor** (U-käyrä, validated 2026-03):
+```
+≤0v: 1.35   (uudistuotanto)      ≤50v: 0.82 (70-luvun elementit)
+≤5v: 1.25   (hyvin uusi)         ≤60v: 0.78 (laakso — halvin)
+≤10v: 1.15  (tuore)              ≤70v: 0.80 (sodanjälkeinen elpyminen)
+≤20v: 1.05  (moderni)            ≤80v: 0.85 (1940-50-luku)
+≤30v: 0.95  (ylläpito)           ≤100v: 0.90 (sotaa edeltävä)
+≤40v: 0.90  (ikääntyvä)          >100v: 0.92 (historiallinen, remontoitu)
+```
+
+**Water factor:** ≤50m: 1.15, ≤100m: 1.10, ≤200m: 1.06, ≤500m: 1.03, >500m: 1.00
+
+**Floor factor** (talotyyppikohtainen):
+- Rivitalo: 1-krs = 1.05 (yksitasoinen premium), 2-krs = 1.00
+- Kerrostalo: ≥8 krs = 1.03, ≥5 krs = 1.01, <5 krs = 1.00
 
 ## Seuraavat vaiheet
 
