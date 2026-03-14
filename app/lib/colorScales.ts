@@ -1,16 +1,16 @@
 export const PRICE_BREAKS = [1000, 1500, 2000, 2500, 3000, 4000, 5000, 7000]
 
 export const PRICE_COLORS = [
-  '#b8d8c8', // < 1000  (pale sage — cheapest)
-  '#c8daba', // 1000-1500 (soft green)
-  '#dce0a8', // 1500-2000 (hay)
-  '#e8daa0', // 2000-2500 (warm sand)
-  '#e4cca0', // 2500-3000 (wheat)
-  '#e0bca8', // 3000-4000 (soft clay)
-  '#dca8b0', // 4000-5000 (dusty rose)
-  '#d498b0', // 5000-7000 (muted rose)
-  '#c888a8', // 7000-10000 (antique mauve)
-  '#b478a0', // > 10000  (deep mauve — most expensive)
+  '#a8e8d0', // < 1000  (pale mint — cheapest)
+  '#b0e4c0', // 1000-1500 (soft mint-green)
+  '#c8e4a8', // 1500-2000 (mint-lime)
+  '#dce498', // 2000-2500 (lime-gold)
+  '#ecdca0', // 2500-3000 (warm gold)
+  '#f0cca0', // 3000-4000 (peach-gold)
+  '#f0b8b0', // 4000-5000 (soft peach-rose)
+  '#eca8c0', // 5000-7000 (rose)
+  '#e898c4', // 7000-10000 (candy rose)
+  '#e088c0', // > 10000  (deep rose-pink — most expensive)
 ]
 
 export const PRICE_LABELS = [
@@ -22,11 +22,12 @@ export const PRICE_LABELS = [
   '3 000\u20134 000',
   '4 000\u20135 000',
   '5 000\u20137 000',
-  '> 7 000',
+  '7 000\u201310 000',
+  '> 10 000',
 ]
 
 export function getColorForPrice(price: number | null): string {
-  if (price === null || price === 0) return '#dcd8d4'
+  if (price === null || price === 0) return '#d8d4d0'
   for (let i = 0; i < PRICE_BREAKS.length; i++) {
     if (price < PRICE_BREAKS[i]) return PRICE_COLORS[i]
   }
@@ -34,19 +35,35 @@ export function getColorForPrice(price: number | null): string {
 }
 
 /**
- * Building palette — same sage→plum hue range as Voronoi but deeper/crisper.
+ * Building palette — lighter fills that pop via outline contrast.
+ * Same mint→pink hue range as Voronoi, slightly more saturated.
  * Index 0 = below PRICE_BREAKS[0], last = above max break.
  */
 export const BUILDING_PRICE_COLORS = [
-  '#88c4a4',   // < 1000  — sage (cheapest)
-  '#a0c890',   // 1000-1500 — green tea
-  '#c0c880',   // 1500-2000 — olive hay
-  '#d0c080',   // 2000-2500 — warm ochre
-  '#ccb088',   // 2500-3000 — clay
-  '#c89898',   // 3000-4000 — terracotta rose
-  '#c08498',   // 4000-5000 — rose
-  '#b47498',   // 5000-7000 — berry
-  '#a06898',   // > 7000   — plum (most expensive)
+  '#90e8c8',   // < 1000  — light mint
+  '#a0e0b8',   // 1000-1500 — soft green-mint
+  '#b8e098',   // 1500-2000 — light lime
+  '#d0dc88',   // 2000-2500 — lime-gold
+  '#e4d498',   // 2500-3000 — warm gold
+  '#ecc098',   // 3000-4000 — peach-gold
+  '#ecaaa8',   // 4000-5000 — soft rose
+  '#e498b8',   // 5000-7000 — rose
+  '#dc88b8',   // 7000-10000 — rose-pink
+  '#d078b0',   // > 10000  — deep rose-pink
+]
+
+/** Darker versions of BUILDING_PRICE_COLORS for outlines — same hue, more contrast. */
+export const BUILDING_OUTLINE_COLORS = [
+  '#48a880',   // < 1000
+  '#58a070',   // 1000-1500
+  '#70a050',   // 1500-2000
+  '#889838',   // 2000-2500
+  '#a09050',   // 2500-3000
+  '#a87850',   // 3000-4000
+  '#a86060',   // 4000-5000
+  '#a05070',   // 5000-7000
+  '#984878',   // 7000-10000
+  '#883870',   // > 10000
 ]
 
 export function getMapLibreColorExpression(): unknown[] {
@@ -55,7 +72,7 @@ export function getMapLibreColorExpression(): unknown[] {
     ['linear'],
     ['coalesce', ['get', 'price_per_sqm_avg'], 0],
   ]
-  expr.push(0, '#dcd8d4')
+  expr.push(0, '#d8d4d0')
   for (let i = 0; i < PRICE_BREAKS.length; i++) {
     expr.push(PRICE_BREAKS[i], PRICE_COLORS[i])
   }

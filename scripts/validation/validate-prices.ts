@@ -7,7 +7,7 @@
  */
 
 import { supabase } from '../data-import/lib/supabaseAdmin'
-import { computeAgeFactor, computeWaterFactor, computeFloorFactor } from '../../app/lib/priceEstimation'
+import { computeAgeFactor, computeWaterFactor, computeFloorFactor, OKT_FALLBACK } from '../../app/lib/priceEstimation'
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 
@@ -188,6 +188,7 @@ interface ValidationResult {
   ageFactor: number
   waterFactor: number
   floorFactor: number
+  neighborhoodFactor: number
   ourEstimate: number | null
   deltaPct: number | null
 }
@@ -260,10 +261,10 @@ async function lookupBasePrice(
 
   if (propertyType === 'omakotitalo') {
     const rivitaloPrice = await fetchLatestPrice(areaId, 'rivitalo')
-    if (rivitaloPrice) return { price: rivitaloPrice.price * 1.10, source: `rivitalo×1.10@area` }
+    if (rivitaloPrice) return { price: rivitaloPrice.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@area` }
 
     const kerrostaloPrice = await fetchLatestPrice(areaId, 'kerrostalo')
-    if (kerrostaloPrice) return { price: kerrostaloPrice.price * 0.90, source: `kerrostalo×0.90@area` }
+    if (kerrostaloPrice) return { price: kerrostaloPrice.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@area` }
   }
 
   // Phase 2: Municipality-level fallback
@@ -272,13 +273,36 @@ async function lookupBasePrice(
 
   if (propertyType === 'omakotitalo') {
     const munRivitalo = await fetchMunicipalityAvgPrice(municipality, 'rivitalo')
-    if (munRivitalo) return { price: munRivitalo.price * 1.10, source: `rivitalo×1.10@municipality` }
+    if (munRivitalo) return { price: munRivitalo.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@municipality` }
 
     const munKerrostalo = await fetchMunicipalityAvgPrice(municipality, 'kerrostalo')
-    if (munKerrostalo) return { price: munKerrostalo.price * 0.90, source: `kerrostalo×0.90@municipality` }
+    if (munKerrostalo) return { price: munKerrostalo.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@municipality` }
   }
 
   return null
+}
+
+async function fetchNeighborhoodFactor(
+  areaId: string,
+  propertyType: string
+): Promise<number> {
+  // Single query fetches both exact type and 'all' fallback
+  const { data } = await supabase
+    .from('neighborhood_factors')
+    .select('factor, property_type')
+    .eq('area_id', areaId)
+    .in('property_type', [propertyType, 'all'])
+    .gte('sample_count', 3)
+
+  if (!data?.length) return 1.0
+
+  const exact = data.find((r) => r.property_type === propertyType)
+  if (exact?.factor) return Number(exact.factor)
+
+  const universal = data.find((r) => r.property_type === 'all')
+  if (universal?.factor) return Number(universal.factor)
+
+  return 1.0
 }
 
 // Municipality codes
@@ -361,8 +385,14 @@ async function main() {
     }
     const floorFactor = computeFloorFactor(floorCount, ptMap[listing.type])
 
+    // Look up neighborhood factor
+    let neighborhoodFactor = 1.0
+    if (areaInfo) {
+      neighborhoodFactor = await fetchNeighborhoodFactor(areaInfo.id, propertyType)
+    }
+
     const ourEstimate = basePrice !== null
-      ? Math.round(basePrice * ageFactor * waterFactor * floorFactor)
+      ? Math.round(basePrice * ageFactor * waterFactor * floorFactor * neighborhoodFactor)
       : null
 
     const deltaPct = ourEstimate !== null
@@ -383,6 +413,7 @@ async function main() {
       ageFactor,
       waterFactor,
       floorFactor,
+      neighborhoodFactor,
       ourEstimate,
       deltaPct,
     })
@@ -463,15 +494,16 @@ async function main() {
 
 ## Full Comparison Table
 
-| # | City | Area | Type | Year | Asking €/m² | Base | Age× | Floor× | Our €/m² | Δ% | Source |
-|---|------|------|------|------|-------------|------|------|--------|----------|-----|--------|
+| # | City | Area | Type | Year | Asking €/m² | Base | Age× | Floor× | Nbhd× | Our €/m² | Δ% | Source |
+|---|------|------|------|------|-------------|------|------|--------|-------|----------|-----|--------|
 `
 
   for (const r of results) {
     const base = r.basePrice !== null ? r.basePrice : '—'
     const est = r.ourEstimate !== null ? r.ourEstimate : '—'
     const delta = r.deltaPct !== null ? `${r.deltaPct > 0 ? '+' : ''}${r.deltaPct}%` : '—'
-    md += `| ${r.id} | ${r.city} | ${r.area} | ${r.type} | ${r.year ?? '?'} | ${r.askingPpsqm} | ${base} | ${r.ageFactor} | ${r.floorFactor} | ${est} | ${delta} | ${r.basePriceSource} |\n`
+    const nbhd = r.neighborhoodFactor !== 1 ? r.neighborhoodFactor.toFixed(2) : '1'
+    md += `| ${r.id} | ${r.city} | ${r.area} | ${r.type} | ${r.year ?? '?'} | ${r.askingPpsqm} | ${base} | ${r.ageFactor} | ${r.floorFactor} | ${nbhd} | ${est} | ${delta} | ${r.basePriceSource} |\n`
   }
 
   // ─── Analysis ────────────────────────────────────────────────────────────

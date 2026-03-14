@@ -22,6 +22,7 @@ import {
   computeWaterFactor,
   computeFloorFactor,
   inferPropertyType,
+  OKT_FALLBACK,
 } from './priceEstimation'
 
 export class SupabaseDataProvider implements DataProvider {
@@ -353,6 +354,15 @@ export class SupabaseDataProvider implements DataProvider {
     )
     const floorFactor = computeFloorFactor(building.floor_count, propertyType)
 
+    // Look up neighborhood correction factor
+    let neighborhoodFactor = 1.0
+    if (building.area_id) {
+      neighborhoodFactor = await this.lookupNeighborhoodFactor(
+        building.area_id,
+        propertyType
+      )
+    }
+
     return {
       id: building.id,
       area_code: areaCode,
@@ -374,6 +384,7 @@ export class SupabaseDataProvider implements DataProvider {
       age_factor: ageFactor,
       water_factor: waterFactor,
       floor_factor: floorFactor,
+      neighborhood_factor: neighborhoodFactor,
       ryhti_main_purpose: null,
       is_residential: null,
     }
@@ -419,6 +430,34 @@ export class SupabaseDataProvider implements DataProvider {
     }
 
     return null
+  }
+
+  /**
+   * Look up neighborhood correction factor from market data.
+   * Single query fetches both exact type and 'all' fallback, then cascades client-side.
+   * Fallback: exact type → 'all' → 1.0
+   * (Municipality median fallback is handled in the SQL function for batch computation)
+   */
+  private async lookupNeighborhoodFactor(
+    areaId: string,
+    propertyType: string
+  ): Promise<number> {
+    const { data } = await this.supabase
+      .from('neighborhood_factors')
+      .select('factor, property_type')
+      .eq('area_id', areaId)
+      .in('property_type', [propertyType, 'all'])
+      .gte('sample_count', 3)
+
+    if (!data?.length) return 1.0
+
+    const exact = data.find((r) => r.property_type === propertyType)
+    if (exact?.factor) return Number(exact.factor)
+
+    const universal = data.find((r) => r.property_type === 'all')
+    if (universal?.factor) return Number(universal.factor)
+
+    return 1.0
   }
 
   private async fetchLatestPrice(

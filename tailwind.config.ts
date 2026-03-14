@@ -78,18 +78,18 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors – sage (cheap) → sand → rose → plum (expensive)
+        // Price scale colors – mint (cheap) → gold → rose → pink (expensive)
         price: {
-          1: "#b8d8c8",
-          2: "#c8daba",
-          3: "#dce0a8",
-          4: "#e8daa0",
-          5: "#e4cca0",
-          6: "#e0bca8",
-          7: "#dca8b0",
-          8: "#d498b0",
-          9: "#c888a8",
-          10: "#b478a0",
+          1: "#a8e8d0",
+          2: "#b0e4c0",
+          3: "#c8e4a8",
+          4: "#dce498",
+          5: "#ecdca0",
+          6: "#f0cca0",
+          7: "#f0b8b0",
+          8: "#eca8c0",
+          9: "#e898c4",
+          10: "#e088c0",
         },
       },
 

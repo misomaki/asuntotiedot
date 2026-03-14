@@ -211,6 +211,12 @@ export function BuildingPanel() {
               neutral={building.floor_factor === 1}
               positive={building.floor_factor > 1}
             />
+            <FactorRow
+              label="Aluekerroin"
+              value={formatFactor(building.neighborhood_factor)}
+              neutral={building.neighborhood_factor === 1}
+              positive={building.neighborhood_factor > 1}
+            />
 
             <div className="border-t border-border pt-2 mt-2 flex items-center justify-between font-medium">
               <span className="text-foreground">Lopullinen arvio</span>

@@ -86,6 +86,7 @@ export interface BuildingWithPrice {
   age_factor: number
   water_factor: number
   floor_factor: number
+  neighborhood_factor: number
   ryhti_main_purpose: string | null
   is_residential: boolean | null
 }

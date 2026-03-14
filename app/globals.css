@@ -51,17 +51,17 @@
   --shadow-hard-lg: 6px 6px 0px #1a1a1a;
   --shadow-pink: 4px 4px 0px #ff90e8;
 
-  /* Price scale – sage (cheap) → sand → rose → plum (expensive) */
-  --price-1: #b8d8c8;
-  --price-2: #c8daba;
-  --price-3: #dce0a8;
-  --price-4: #e8daa0;
-  --price-5: #e4cca0;
-  --price-6: #e0bca8;
-  --price-7: #dca8b0;
-  --price-8: #d498b0;
-  --price-9: #c888a8;
-  --price-10: #b478a0;
+  /* Price scale – mint (cheap) → gold → rose → pink (expensive) */
+  --price-1: #a8e8d0;
+  --price-2: #b0e4c0;
+  --price-3: #c8e4a8;
+  --price-4: #dce498;
+  --price-5: #ecdca0;
+  --price-6: #f0cca0;
+  --price-7: #f0b8b0;
+  --price-8: #eca8c0;
+  --price-9: #e898c4;
+  --price-10: #e088c0;
 
   /* shadcn/ui CSS variables (HSL format for light theme) */
   --background: 0 0% 100%;

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type CSSProperties } from 'react'
+import { PRICE_COLORS } from '@/app/lib/colorScales'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Helpers
@@ -25,9 +26,8 @@ function isLight(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150
 }
 
-// Price legend: sage (cheap) → sand → rose → plum (expensive)
-const PRICE_COLORS   = ['#b8d8c8','#c8daba','#dce0a8','#e8daa0','#e4cca0','#e0bca8','#dca8b0','#d498b0','#c888a8','#b478a0']
-const PRICE_COLORS_D = ['#506858','#607050','#787840','#807838','#7c6838','#785848','#744850','#683c50','#5c3048','#4c2840']
+// Dark variant of price colors (style-guide-only, no canonical source)
+const PRICE_COLORS_D = ['#3a7860','#407848','#587838','#707428','#786830','#785438','#784048','#703458','#682c60','#602c58']
 
 // Shared demo data
 const STATS = [
@@ -512,7 +512,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
       </div>
 
       {/* ── Map Legend ── */}
-      <SectionTitle font={ff.display} color={c.text1} label="Map Legend" sub="Sage (cheap) to plum (expensive) — quiet, harmonious gradient" />
+      <SectionTitle font={ff.display} color={c.text1} label="Map Legend" sub="Mint (cheap) to pink (expensive) — brand-aligned gradient" />
       <div style={{ ...card(c.cardBg, { padding: '22px 26px', display: 'inline-flex', flexDirection: 'column', gap: 10, marginBottom: 56 }) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
           <div style={{ fontFamily: ff.display, fontSize: 13, fontWeight: 700, color: c.text1, letterSpacing: '-0.01em' }}>Hinta €/m²</div>
@@ -598,7 +598,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
       </div>
 
       {/* ── Basemap ── */}
-      <SectionTitle font={ff.display} color={c.text1} label="Basemap" sub="CartoCDN Positron with quiet neutral overrides — recessive paper bg, muted water and roads" />
+      <SectionTitle font={ff.display} color={c.text1} label="Basemap" sub="CartoCDN Positron with quiet neutral overrides — warm paper bg, deeper blue water, recessive roads" />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 56 }}>
         <div style={{ ...card(c.cardBg, { borderRadius: 14 }), padding: 28 }}>
           <div style={{ position: 'absolute', top: -1, left: 20, right: 20, height: 4, background: c.mint, borderRadius: '0 0 4px 4px' }} />
@@ -610,12 +610,12 @@ function GumroadStyle({ dark }: { dark: boolean }) {
 
           <div style={{ fontFamily: ff.body, fontSize: 12, color: c.text2, marginBottom: 10, fontWeight: 600 }}>Layer colour overrides:</div>
           {[
-            { layer: 'Water', color: '#d8e4ec', swatch: '#d8e4ec', note: 'Muted blue' },
+            { layer: 'Water', color: '#c8dce8', swatch: '#c8dce8', note: 'Deeper blue' },
             { layer: 'Landcover', color: '#eceee8', swatch: '#eceee8', note: 'Pale sage' },
-            { layer: 'Buildings', color: '#e4e0dc', swatch: '#e4e0dc', note: 'Light taupe' },
+            { layer: 'Buildings', color: '#e8e4e0', swatch: '#e8e4e0', note: 'Light taupe' },
             { layer: 'Roads', color: '#d0ccc8', swatch: '#d0ccc8', note: 'Neutral grey' },
             { layer: 'Road casings', color: 'transparent', swatch: 'transparent', note: 'Hidden' },
-            { layer: 'Background', color: '#f4f2ee', swatch: '#f4f2ee', note: 'Cool paper' },
+            { layer: 'Background', color: '#f5f3f0', swatch: '#f5f3f0', note: 'Warm paper' },
             { layer: 'Labels', color: '#78746e', swatch: '#78746e', note: 'Soft charcoal' },
           ].map(row => (
             <div key={row.layer} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -642,10 +642,10 @@ function GumroadStyle({ dark }: { dark: boolean }) {
             border: `${c.borderW}px solid ${c.borderColor}`,
             overflow: 'hidden',
             position: 'relative',
-            background: '#f4f2ee',
+            background: '#f5f3f0',
           }}>
-            <div style={{ position: 'absolute', top: '15%', right: '5%', width: '35%', height: '40%', background: '#d8e4ec', borderRadius: '60% 40% 50% 50%', opacity: 0.9 }} />
-            <div style={{ position: 'absolute', bottom: '10%', left: '8%', width: '18%', height: '15%', background: '#d8e4ec', borderRadius: '40% 60% 50% 50%', opacity: 0.7 }} />
+            <div style={{ position: 'absolute', top: '15%', right: '5%', width: '35%', height: '40%', background: '#c8dce8', borderRadius: '60% 40% 50% 50%', opacity: 0.9 }} />
+            <div style={{ position: 'absolute', bottom: '10%', left: '8%', width: '18%', height: '15%', background: '#c8dce8', borderRadius: '40% 60% 50% 50%', opacity: 0.7 }} />
             <div style={{ position: 'absolute', top: '55%', left: '15%', width: '22%', height: '18%', background: '#eceee8', borderRadius: 8, opacity: 0.8 }} />
 
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 200 120" preserveAspectRatio="none">
@@ -669,7 +669,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
                 position: 'absolute',
                 left: `${b.x / 2}%`, top: `${b.y / 1.2}%`,
                 width: `${b.w / 2}%`, height: `${b.h / 1.2}%`,
-                background: '#e4e0dc', borderRadius: 2,
+                background: '#e8e4e0', borderRadius: 2,
               }} />
             ))}
 

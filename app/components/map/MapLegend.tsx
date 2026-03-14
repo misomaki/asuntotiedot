@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { PRICE_COLORS, PRICE_LABELS } from '@/app/lib/colorScales'
+import { PRICE_COLORS, PRICE_LABELS, BUILDING_OUTLINE_COLORS } from '@/app/lib/colorScales'
 
 /**
  * Map legend showing the price color scale.
@@ -40,8 +40,11 @@ export default function MapLegend() {
                 style={{ animationDelay: `${index * 25}ms`, animationFillMode: 'both' }}
               >
                 <span
-                  className="inline-block h-3 w-5 rounded-sm flex-shrink-0 border border-[#1a1a1a]"
-                  style={{ backgroundColor: color }}
+                  className="inline-block h-3 w-5 rounded-sm flex-shrink-0"
+                  style={{
+                    backgroundColor: color,
+                    border: `1.5px solid ${BUILDING_OUTLINE_COLORS[Math.min(index, BUILDING_OUTLINE_COLORS.length - 1)]}`,
+                  }}
                 />
                 <span className="text-xs text-[#666] font-mono whitespace-nowrap">
                   {PRICE_LABELS[index]}

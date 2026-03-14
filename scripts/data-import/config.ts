@@ -32,6 +32,21 @@ export const CITIES: CityConfig[] = [
     postalPrefixes: ['90'],
     bbox: [25.25, 64.85, 25.70, 65.15],
   },
+  {
+    name: 'Jyväskylä',
+    postalPrefixes: ['40'],
+    bbox: [25.55, 62.15, 25.95, 62.35],
+  },
+  {
+    name: 'Kuopio',
+    postalPrefixes: ['70'],
+    bbox: [27.50, 62.82, 27.90, 63.00],
+  },
+  {
+    name: 'Lahti',
+    postalPrefixes: ['15'],
+    bbox: [25.55, 60.93, 25.80, 61.05],
+  },
 ]
 
 /** All postal prefixes across all cities */

@@ -29,7 +29,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
 ## Design-periaatteet
 
 - **Sävy:** Neobrutalistinen — leikkisä, rohkea, datapainotteinen
-- **Väripaletti:** Valkoinen tausta, pastelli-aksentit (pink #ff90e8, yellow #ffc900, mint #23c8a0). Hintaskaala: sage→plum
+- **Väripaletti:** Valkoinen tausta, pastelli-aksentit (pink #ff90e8, yellow #ffc900, mint #23c8a0). Hintaskaala: mint→gold→pink
 - **Typografia:** Libre Franklin (display 900), DM Sans (body), IBM Plex Mono (data)
 - **Komponentit:** 2px mustat reunat, hard shadow (4px 4px 0px #1a1a1a), border-radius 12px
 - **Mikro-liikkeet:** neo-press (nappi painuu), neo-lift (kortti nousee), stagger pop-in, price counter roll-up
@@ -80,6 +80,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     05-compute-building-prices.ts     # Rakennuskohtaiset hinta-arviot
     06-enrich-from-ryhti.ts           # Rikastus Ryhti-rakennusrekisteristä (SYKE)
     07-classify-buildings.ts          # Rakennusluokittelu (residential/non-residential)
+    09-compute-neighborhood-factors.ts # Aluekertoimien laskenta Etuovi-datasta
     /config.ts                        # Kaupungit, postinumeroprefixet
     /lib/supabaseAdmin.ts             # Admin-client importeille
     /lib/pxwebClient.ts               # PxWeb API helper
@@ -91,6 +92,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/006_municipality_price_fallback.sql # Kuntatasoinen hintafallback
   /migrations/007_building_classification.sql     # Rakennusluokittelu + MVT-päivitys
   /migrations/008_validated_price_factors.sql     # Validoidut hintafaktorit (2026-03 Etuovi)
+  /migrations/009_neighborhood_factors.sql        # Aluekertoimet (neighborhood_factors) + _etuovi_staging
 
 /scripts
   /validation/
@@ -201,6 +203,9 @@ SUPABASE_SERVICE_ROLE_KEY=
 - Molemmat implementoivat saman `DataProvider`-interfacen
 
 ### Hinta-arvioalgoritmi (rakennuskohtainen)
+```
+estimated_price = base_price × age_factor × water_factor × floor_factor × neighborhood_factor
+```
 Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 
 ## Claude-ohjeet tässä projektissa
@@ -247,7 +252,7 @@ Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 - **EI solurajoja:** Voronoi-solujen välillä EI saa olla outline/border-viivoja. Käytä `fill-antialias: false` Voronoi-layerissä
 - **Kerrosjärjestys basemapissa:** background → landcover → landuse → park → boundary → **VORONOI FILL** → water → building → roads → labels → **BUILDING FILL** (zoom ≥14)
 - **IDW-interpolointi:** Smooth price gradients anchor-pisteiden välillä (power=2)
-- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan: sage→ochre→rose→plum (sama sävyalue kuin Voronoi, mutta syvempi/terävämpi). Klikkaus avaa BuildingPanel-sivupaneelin.
+- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan: mint→gold→rose→pink (sama sävyalue kuin Voronoi, mutta syvempi/terävämpi). Klikkaus avaa BuildingPanel-sivupaneelin.
 - **Interaktio:** Vain rakennukset ovat interaktiivisia (hover + click). Voronoi EI ole interaktiivinen — ei hover-highlightia, ei klikkiä.
 
 ### Basemap-tyylien ylikirjoitus (`handleMapLoad`)
@@ -255,11 +260,11 @@ Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`onLoad`). Tämä on kriittinen kokonaisuus — **kaikki** basemapin tielayerit pitää käsitellä, muuten ne näkyvät Positronin oletusväreinä.
 
 **Nykyinen väripaletti (Quiet Terrain):**
-- **Tausta:** Cool paper `#f4f2ee`
+- **Tausta:** Warm paper `#f5f3f0`
 - **Tiet:** Neutral grey `#d0ccc8`, leveys tietyypin mukaan (0.5–2.5px), ei casings-viivoja
 - **Rautatiet:** `#ccc8c4` / `#d8d4d0`, näkyvät zoom 8+
-- **Basemap-rakennukset:** Light taupe `#e4e0dc`, `fill-antialias: false` (ei outlinea)
-- **Vesi:** Muted blue `#d8e4ec`, vesiväylät `#c4d8e4`, labelit `#94a4b0`
+- **Basemap-rakennukset:** Light taupe `#e8e4e0`, `fill-antialias: false` (ei outlinea)
+- **Vesi:** Deeper blue `#c8dce8`, vesiväylät `#b8d0e0`, labelit `#88a0b4`
 - **Labelit:** Soft charcoal `#78746e`
 - **Lentokentät:** `aeroway-runway` ja `aeroway-taxiway` tievärillä
 
@@ -276,11 +281,11 @@ Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`o
 ### Karttakerrosten väriharmonia (kriittinen)
 
 - **Kolme kerrosta:** Basemap (recessiivinen) → Voronoi (terrain wash) → Buildings (crispit detaljit)
-- **Voronoi:** Sage→sand→rose→plum (`PRICE_COLORS` in `colorScales.ts`), opacity 0.7
-- **Rakennukset:** Sama sävyalue mutta syvempi/terävämpi (`BUILDING_PRICE_COLORS`), opacity 0.88
+- **Voronoi:** Mint→gold→rose→pink (`PRICE_COLORS` in `colorScales.ts`), opacity 0.7
+- **Rakennukset:** Lighter fill (0.68 opacity) + color-matched darker outline (`BUILDING_OUTLINE_COLORS`), width 1.2–2.0px, blur 0.4
 - **Basemap:** Hyvin neutraali — ei kilpaile Voronoin tai rakennusten värien kanssa
-- Rakennusten outline on tumma hairline `rgba(60,50,45,0.18)`, ei valkoinen hehku
-- Non-residential: quiet grey `#b8b4b0`, no-price: warm neutral `#ccc8c4`
+- Rakennusten outline on saman sävyn tummempi versio (ei musta), esim. mint fill `#90e8c8` → outline `#48a880`
+- Non-residential: quiet grey `#c8c4c0`, no-price: warm neutral `#d8d4d0`
 - `get_buildings_in_bbox` RPC suodattaa pois rakennukset joilla ei ole hintaa (`estimated_price_per_sqm IS NOT NULL`) — testaus tällä API:lla ei näytä hinnattomia rakennuksia
 - `get_buildings_mvt` (MVT-tiilet) palauttaa KAIKKI rakennukset, myös hinnattomat — kartalla näkyy enemmän rakennuksia kuin GeoJSON-API palauttaa
 
@@ -348,7 +353,7 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-as
 - **Vesistöt:** 3 351 + etäisyyslaskenta 308 474 rakennukselle
 - **Rakennusvuosi:** 299 206 / 318 650 (94%) — OSM 12% + Ryhti 82%
 - **Kerrostieto:** 296 659 / 318 650 (93%)
-- **Hinta-arvio:** 308 474 / 308 474 (100%) — kuntatasoinen fallback alueille joilla ei StatFin-dataa (migraatio 006)
+- **Hinta-arvio:** 677 058 / 677 058 (100%) — kuntatasoinen fallback + neighborhood factors (migraatiot 006, 009)
 - **Rakennusluokittelu:** `is_residential` (3-tasoinen: Ryhti main_purpose → OSM building_type → pinta-alaheuristiikka)
 
 ### Overpass API -huomiot
@@ -379,22 +384,40 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-as
 
 Hinta-arviot validoitiin 2026-03 vertaamalla 82 Etuovi.fi-ilmoituksen pyyntihintoja algoritmimme tuottamiin arvioihin. Tarkkuuden ylläpitäminen edellyttää säännöllistä uudelleenvalidointia ja faktorien päivitystä.
 
-### Nykyinen tarkkuus (baseline 2026-03)
-- **Mean Δ%:** -12% (aliarviointi), **Median Δ%:** -14%
-- **KT:** -15%, **RT:** -17%, **OKT:** -5%
-- **Helsinki:** -13%, **Tampere:** -9%, **Turku:** -33% (vähän dataa)
+### Nykyinen tarkkuus (baseline 2026-03-14, with neighborhood factors)
+- **Mean Δ%:** -8% (aliarviointi), **Median Δ%:** -14%
+- **KT:** -10%, **RT:** -13%, **OKT:** -1%
+- **Helsinki:** -8%, **Tampere:** -6%, **Turku:** -33% (vähän dataa)
+- **Mean |Δ%|:** 21%, **Std Dev:** 24%
 - Validointiraportti: `scripts/validation/price-validation-2026-03.md`
 - Raakadata: `scripts/validation/etuovi-raw-data.md`
+- Etuovi-ilmoitukset (1 134 kpl, 9 kaupunkia): `scripts/data-import/etuovi-listings.csv`
+- Neighborhood factors: 346 kpl (72 high, 66 medium, 208 low), avg 1.09
 
 ### Kolme paikkaa joissa faktorit elävät (pidä synkassa!)
 
 | Sijainti | Käyttö | Muokkaa kun |
 |----------|--------|-------------|
 | `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
-| `supabase/migrations/008_validated_price_factors.sql` | Tietokanta (`compute_building_price()` RPC) | Faktoriarvo muuttuu |
+| `supabase/migrations/008_validated_price_factors.sql` | Tietokanta (`compute_building_price()` RPC) — age/water/floor faktorit | Faktoriarvo muuttuu |
+| `supabase/migrations/009_neighborhood_factors.sql` | Tietokanta — neighborhood factor lookup + `_etuovi_staging` + `neighborhood_factors` taulut | Neighborhood factor -logiikka muuttuu |
 | `scripts/validation/validate-prices.ts` | Validointiskripti | Faktoriarvo muuttuu |
+| `scripts/data-import/09-compute-neighborhood-factors.ts` | Laskee neighborhood factorit Etuovi-datasta | Factor-laskentalogiikka muuttuu |
 
-**KRIITTINEN:** Kaikki kolme tiedostoa PITÄÄ päivittää yhdessä. Jos muutat esim. age factoria TypeScriptissä mutta unohdat SQL-migraation, tietokannassa lasketut arvot ja frontendin laskemat arvot eroavat.
+**KRIITTINEN:** TypeScript-faktorit (`priceEstimation.ts`) ja SQL-faktorit (migraatiot) PITÄÄ päivittää yhdessä. Jos muutat esim. age factoria TypeScriptissä mutta unohdat SQL-migraation, tietokannassa lasketut arvot ja frontendin laskemat arvot eroavat.
+
+### Neighborhood factor -järjestelmä
+
+- **`_etuovi_staging`**: Etuovi.fi-ilmoitusten raakadata (postal_code, property_type, asking_price_per_sqm, area_id)
+- **`neighborhood_factors`**: Lasketut aluekohtaiset kertoimet (area_id, property_type, factor, sample_count, confidence)
+- **Lookup-kaskadi** (supabaseDataProvider + SQL, vähintään sample_count ≥ 3):
+  1. Tarkka area_id + property_type → factor (sample_count ≥ 3)
+  2. Fallback: area_id + 'all' → factor
+  3. Fallback (vain SQL): kunnan mediaani korkealla/keskitasoisella luottamuksella
+  4. Final fallback: 1.0
+- **Luottamustasot:** high (≥5 listingsiä), medium (3-4), low (1-2), default (ei dataa)
+- **Clamping:** factor rajataan välille [0.70, 1.50]
+- **Päivitys:** Kerää uudet Etuovi-ilmoitukset → `_etuovi_staging` → aja `09-compute-neighborhood-factors.ts`
 
 ### OKT_FALLBACK — single source of truth
 - Omakotitalon fallback-kertoimet on määritelty `priceEstimation.ts` → `OKT_FALLBACK`-vakiossa
@@ -411,23 +434,27 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 82 Etuovi.fi-ilmoituksen pyyntihint
 ### Validointiprosessi (step-by-step)
 
 ```bash
-# 1. Kerää vertailudata Etuovista (≥60 kohdetta, kaikki talotyypit, eri kaupungit)
-#    Tallenna: scripts/validation/etuovi-raw-data.md
+# 1. Kerää vertailudata Etuovista (≥500 kohdetta, kaikki talotyypit, eri kaupungit)
+#    Tallenna ilmoitukset: _etuovi_staging -tauluun (Supabase)
+#    Tallenna raakadata: scripts/validation/etuovi-raw-data.md
 
-# 2. Aja validointiskripti
+# 2. Laske neighborhood factorit uudelleen
 source ~/.nvm/nvm.sh && nvm use 20
+npx tsx scripts/data-import/09-compute-neighborhood-factors.ts
+
+# 3. Aja validointiskripti
 npx tsx scripts/validation/validate-prices.ts
 
-# 3. Analysoi tulokset (raportti tulostuu terminaaliin + päivittää .md-tiedoston)
+# 4. Analysoi tulokset (raportti tulostuu terminaaliin + päivittää .md-tiedoston)
 #    Tarkasta: Mean Δ%, jakauma talotyypeittäin ja kaupungeittain
 
-# 4. Jos faktorit muuttuvat:
+# 5. Jos faktorit muuttuvat:
 #    a) Päivitä app/lib/priceEstimation.ts (TypeScript-faktorit)
-#    b) Luo uusi SQL-migraatio (esim. 009_*.sql) joka päivittää compute_building_price()
+#    b) Luo uusi SQL-migraatio joka päivittää compute_building_price()
 #    c) Päivitä scripts/validation/validate-prices.ts (samat faktorit)
 #    d) Päivitä tämä CLAUDE.md (algoritmi-kuvaus + baseline-luvut)
 
-# 5. Aja migraatio ja laske hinnat uudelleen:
+# 6. Aja migraatio ja laske hinnat uudelleen:
 #    a) Aja uusi SQL-migraatio Supabase SQL Editorissa
 #    b) Resetoi: UPDATE buildings SET estimation_year = NULL;
 #    c) npx tsx scripts/data-import/05-compute-building-prices.ts
@@ -435,22 +462,21 @@ npx tsx scripts/validation/validate-prices.ts
 
 ### Tunnetut rajoitukset ja kehityskohteet
 
-- **Turku aliedustettu:** Vain 3 kohdetta validoinnissa → faktorit eivät välttämättä toimi siellä
-- **Vesikerroin validoimaton:** Etuovi-ilmoituksista ei saada vesistöetäisyyttä → water_factor = 1.0 validoinnissa
-- **Pyyntihinnat vs toteutuneet:** Etuovi = asking prices, toteutuneet hinnat ovat ~5-10% alhaisempia
-- **Uudistuotanto-premium aliarvioitu:** Mean Δ% -16% uusilla (≤5v) → new construction premium saattaa olla ≥1.40
-- **Keskustabonus puuttuu:** Tampere/Turku keskusta aliarvioitu ~35-45% → city center premium puuttuu algoritmista
+- **Neighborhood factor -dataa kerättävä lisää:** Tarvitaan ≥5 listingsiä per alue+talotyyppi luotettavaan faktoriin → kerää lisää Etuovi-dataa harvaan peitettyihin alueisiin
+- **Vesikerroin validoimaton:** Etuovi-ilmoituksista ei saada vesistöetäisyyttä → water_factor = 1.0 validoinnissa ja factor-laskennassa
+- **Pyyntihinnat vs toteutuneet:** Etuovi = asking prices, toteutuneet hinnat ovat ~5-10% alhaisempia → neighborhood factor kompensoi osittain
 - **Energiatodistus puuttuu:** Vaikuttaa erityisesti 1960-80-luvun rakennusten hintaan
 - **Remonttitaso puuttuu:** Remontoitu 70-luvun talo voi olla kalliimpi kuin remontoimaton 2000-luvun talo
+- **Neighborhood factor aikariippuva:** Markkina-alueelliset hintasuhteet muuttuvat — faktorit pitää laskea uudelleen vuosittain
 
 ### Hinta-arvioalgoritmin tarkka kuvaus
 
 ```
-estimated_price = base_price × age_factor × water_factor × floor_factor
+estimated_price = base_price × age_factor × water_factor × floor_factor × neighborhood_factor
 ```
 
 **Base price** = StatFin €/m² (postinumero + vuosi + talotyyppi)
-- Omakotitalo fallback: ei omaa StatFin-dataa → rivitalo × 1.10 → kerrostalo × 0.90
+- Omakotitalo fallback: ei omaa StatFin-dataa → rivitalo × OKT_FALLBACK.fromRivitalo (1.10) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.90)
 
 **Age factor** (U-käyrä, validated 2026-03):
 ```
@@ -467,6 +493,13 @@ estimated_price = base_price × age_factor × water_factor × floor_factor
 **Floor factor** (talotyyppikohtainen):
 - Rivitalo: 1-krs = 1.05 (yksitasoinen premium), 2-krs = 1.00
 - Kerrostalo: ≥8 krs = 1.03, ≥5 krs = 1.01, <5 krs = 1.00
+
+**Neighborhood factor** (aluekerroin):
+- Laskettu Etuovi.fi-ilmoituksista: `factor = avg(asking_price) / avg(algorithmic_estimate)`
+- Lookup: area_id + property_type → area_id + 'all' → municipality median → 1.0
+- Clamping: [0.70, 1.50]
+- Minimum sample_count: 3 (low confidence factors ignored in lookup)
+- Tyypillinen vaihteluväli: 0.70 (lähiöt) – 1.50 (premium-alueet)
 
 ## Seuraavat vaiheet
 

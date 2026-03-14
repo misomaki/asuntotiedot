@@ -14,7 +14,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
-import { getMapLibreColorExpression, PRICE_BREAKS, BUILDING_PRICE_COLORS } from '@/app/lib/colorScales'
+import { getMapLibreColorExpression, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS } from '@/app/lib/colorScales'
 import MapLegend from './MapLegend'
 // MapControls removed — reset button no longer needed
 
@@ -153,14 +153,13 @@ export default function MapContainer() {
     [isCompareMode, selectedAreaCode, comparedAreaCode]
   )
 
-  /** Building fill color — same sage→plum hue range as Voronoi but deeper/crisper.
-   *  Buildings read as precise data points on the softer Voronoi terrain.
+  /** Building fill color — lighter mint→pink fills that pop via strong outlines.
    *  Colors from BUILDING_PRICE_COLORS, breaks from PRICE_BREAKS (colorScales.ts). */
   const buildingColorExpression = useMemo(
     (): ExpressionSpecification => {
       const interpolate: unknown[] = [
         'interpolate', ['linear'], ['coalesce', ['get', 'price'], 0],
-        0, '#ccc8c4',   // no price — warm neutral
+        0, '#d8d4d0',   // no price — warm neutral
       ]
       for (let i = 0; i < PRICE_BREAKS.length; i++) {
         interpolate.push(PRICE_BREAKS[i], BUILDING_PRICE_COLORS[i])
@@ -170,7 +169,29 @@ export default function MapContainer() {
       return [
         'case',
         ['==', ['get', 'is_residential'], false],
-        '#b8b4b0',   // non-residential — quiet warm gray
+        '#c8c4c0',   // non-residential — quiet warm gray
+        interpolate,
+      ] as unknown as ExpressionSpecification
+    },
+    []
+  )
+
+  /** Building outline color — darker version of fill, same hue per price band. */
+  const buildingOutlineColorExpression = useMemo(
+    (): ExpressionSpecification => {
+      const interpolate: unknown[] = [
+        'interpolate', ['linear'], ['coalesce', ['get', 'price'], 0],
+        0, '#b0aca8',   // no price — darker neutral
+      ]
+      for (let i = 0; i < PRICE_BREAKS.length; i++) {
+        interpolate.push(PRICE_BREAKS[i], BUILDING_OUTLINE_COLORS[i])
+      }
+      interpolate.push(10000, BUILDING_OUTLINE_COLORS[BUILDING_OUTLINE_COLORS.length - 1])
+
+      return [
+        'case',
+        ['==', ['get', 'is_residential'], false],
+        '#a8a4a0',   // non-residential — darker gray
         interpolate,
       ] as unknown as ExpressionSpecification
     },
@@ -262,7 +283,7 @@ export default function MapContainer() {
       // BACKGROUND — cool paper white (recedes behind Voronoi)
       // =======================================================
 
-      paint('background', 'background-color', '#f4f2ee')
+      paint('background', 'background-color', '#f5f3f0')
 
       // =======================================================
       // LANDCOVER & LANDUSE — pale sage / warm tones
@@ -375,8 +396,8 @@ export default function MapContainer() {
       paint('building', 'fill-color', 'transparent')
       paint('building', 'fill-outline-color', 'transparent')
       paint('building', 'fill-antialias', false)
-      paint('building-top', 'fill-color', '#e4e0dc')
-      paint('building-top', 'fill-outline-color', '#e4e0dc')
+      paint('building-top', 'fill-color', '#e8e4e0')
+      paint('building-top', 'fill-outline-color', '#e8e4e0')
       paint('building-top', 'fill-antialias', false)
 
       // =======================================================
@@ -390,8 +411,8 @@ export default function MapContainer() {
       // WATER — soft powder blue
       // =======================================================
 
-      paint('water', 'fill-color', '#d8e4ec')
-      paint('waterway', 'line-color', '#c4d8e4')
+      paint('water', 'fill-color', '#c8dce8')
+      paint('waterway', 'line-color', '#b8d0e0')
 
       // Water labels — muted blue
       for (const id of [
@@ -400,7 +421,7 @@ export default function MapContainer() {
         'watername_lake',
         'watername_lake_line',
       ]) {
-        paint(id, 'text-color', '#94a4b0')
+        paint(id, 'text-color', '#88a0b4')
       }
 
       // =======================================================
@@ -469,7 +490,7 @@ export default function MapContainer() {
             minzoom={14}
             paint={{
               'fill-color': buildingColorExpression,
-              'fill-opacity': 0.88,
+              'fill-opacity': 0.68,
             }}
           />
           <Layer
@@ -478,9 +499,9 @@ export default function MapContainer() {
             source-layer="buildings"
             minzoom={14}
             paint={{
-              'line-color': 'rgba(60, 50, 45, 0.18)',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 14, 0.4, 16, 0.8] as unknown as ExpressionSpecification,
-              'line-blur': 0,
+              'line-color': buildingOutlineColorExpression,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1.2, 16, 2.0] as unknown as ExpressionSpecification,
+              'line-blur': 0.4,
             }}
           />
         </Source>

@@ -27,6 +27,8 @@ export interface PriceEstimationInput {
   referenceYear: number
   /** Property type for type-specific floor factor (optional for backward compat) */
   propertyType?: 'kerrostalo' | 'rivitalo' | 'omakotitalo'
+  /** Neighborhood correction factor from market data (defaults to 1.0) */
+  neighborhoodFactor?: number
 }
 
 export interface PriceEstimationResult {
@@ -35,6 +37,7 @@ export interface PriceEstimationResult {
   ageFactor: number
   waterFactor: number
   floorFactor: number
+  neighborhoodFactor: number
 }
 
 export function computeAgeFactor(
@@ -125,9 +128,10 @@ export function estimateBuildingPrice(
   const ageFactor = computeAgeFactor(input.constructionYear, input.referenceYear)
   const waterFactor = computeWaterFactor(input.distanceToWaterM)
   const floorFactor = computeFloorFactor(input.floorCount, input.propertyType)
+  const neighborhoodFactor = input.neighborhoodFactor ?? 1.0
 
   const estimatedPricePerSqm = Math.round(
-    input.basePrice * ageFactor * waterFactor * floorFactor
+    input.basePrice * ageFactor * waterFactor * floorFactor * neighborhoodFactor
   )
 
   return {
@@ -136,5 +140,6 @@ export function estimateBuildingPrice(
     ageFactor,
     waterFactor,
     floorFactor,
+    neighborhoodFactor,
   }
 }
