@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { cn } from '@/app/lib/utils'
+import { formatNumber } from '@/app/lib/formatters'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { Badge } from '@/app/components/ui/badge'
 import {
@@ -191,7 +192,7 @@ export function BuildingPanel() {
           <div className="space-y-2 text-sm">
             <FactorRow
               label="Alueen perushinta"
-              value={`${formatPrice(building.base_price)} €/m²`}
+              value={`${formatBuildingPrice(building.base_price)} €/m²`}
             />
             <FactorRow
               label="Ikäkerroin"
@@ -221,7 +222,7 @@ export function BuildingPanel() {
             <div className="border-t border-border pt-2 mt-2 flex items-center justify-between font-medium">
               <span className="text-foreground">Lopullinen arvio</span>
               <span className="text-foreground tabular-nums">
-                {formatPrice(price)} €/m²
+                {formatBuildingPrice(price)} €/m²
               </span>
             </div>
           </div>
@@ -252,7 +253,7 @@ function AttributeCard({
   value: string
 }) {
   return (
-    <div className="neo-lift rounded-lg bg-white border-2 border-[#1a1a1a] p-3 space-y-1 shadow-hard-sm">
+    <div className="neo-lift rounded-lg bg-[#FFFBF5] border-2 border-[#1a1a1a] p-3 space-y-1 shadow-hard-sm">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         {icon}
         <span className="text-[11px]">{label}</span>
@@ -348,16 +349,16 @@ function AnimatedPrice({ value }: { value: number }) {
     return () => cancelAnimationFrame(frameRef.current)
   }, [value])
 
-  return <>{new Intl.NumberFormat('fi-FI').format(display)}</>
+  return <>{formatNumber(display)}</>
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatPrice(price: number | null): string {
+function formatBuildingPrice(price: number | null): string {
   if (price === null) return '–'
-  return new Intl.NumberFormat('fi-FI').format(Math.round(price))
+  return formatNumber(Math.round(price))
 }
 
 function formatFactor(factor: number): string {

@@ -29,7 +29,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
 ## Design-periaatteet
 
 - **Sävy:** Neobrutalistinen — leikkisä, rohkea, datapainotteinen
-- **Väripaletti:** Valkoinen tausta, pastelli-aksentit (pink #ff90e8, yellow #ffc900, mint #23c8a0). Hintaskaala: mint→gold→pink
+- **Väripaletti:** Valkoinen tausta, pastelli-aksentit (pink #ff90e8, yellow #ffc900, mint #23c8a0). Hintaskaala: ivory→amber→pink (lämmin spektri, ei vihreitä — basemap omistaa viileät sävyt)
 - **Typografia:** Libre Franklin (display 900), DM Sans (body), IBM Plex Mono (data)
 - **Komponentit:** 2px mustat reunat, hard shadow (4px 4px 0px #1a1a1a), border-radius 12px
 - **Mikro-liikkeet:** neo-press (nappi painuu), neo-lift (kortti nousee), stagger pop-in, price counter roll-up
@@ -204,7 +204,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ### Hinta-arvioalgoritmi (rakennuskohtainen)
 ```
-estimated_price = base_price × age_factor × water_factor × floor_factor × neighborhood_factor
+estimated_price = base_price × age_factor × water_factor* × floor_factor × neighborhood_factor*
+(* water ja neighborhood faktorit vaimennetaan vanhoille rakennuksille, ks. dampenPremium)
 ```
 Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 
@@ -252,21 +253,22 @@ Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 - **EI solurajoja:** Voronoi-solujen välillä EI saa olla outline/border-viivoja. Käytä `fill-antialias: false` Voronoi-layerissä
 - **Kerrosjärjestys basemapissa:** background → landcover → landuse → park → boundary → **VORONOI FILL** → water → building → roads → labels → **BUILDING FILL** (zoom ≥14)
 - **IDW-interpolointi:** Smooth price gradients anchor-pisteiden välillä (power=2)
-- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan: mint→gold→rose→pink (sama sävyalue kuin Voronoi, mutta syvempi/terävämpi). Klikkaus avaa BuildingPanel-sivupaneelin.
+- **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan: ivory→amber→rose→pink (sama lämmin sävyalue kuin Voronoi, mutta syvempi/terävämpi). Klikkaus avaa BuildingPanel-sivupaneelin.
 - **Interaktio:** Vain rakennukset ovat interaktiivisia (hover + click). Voronoi EI ole interaktiivinen — ei hover-highlightia, ei klikkiä.
 
 ### Basemap-tyylien ylikirjoitus (`handleMapLoad`)
 
 Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`onLoad`). Tämä on kriittinen kokonaisuus — **kaikki** basemapin tielayerit pitää käsitellä, muuten ne näkyvät Positronin oletusväreinä.
 
-**Nykyinen väripaletti (Quiet Terrain):**
-- **Tausta:** Warm paper `#f5f3f0`
-- **Tiet:** Neutral grey `#d0ccc8`, leveys tietyypin mukaan (0.5–2.5px), ei casings-viivoja
-- **Rautatiet:** `#ccc8c4` / `#d8d4d0`, näkyvät zoom 8+
-- **Basemap-rakennukset:** Light taupe `#e8e4e0`, `fill-antialias: false` (ei outlinea)
-- **Vesi:** Deeper blue `#c8dce8`, vesiväylät `#b8d0e0`, labelit `#88a0b4`
-- **Labelit:** Soft charcoal `#78746e`
+**Nykyinen väripaletti (Cool Infrastructure):**
+- **Tausta:** Cool paper `#f5f4f2`
+- **Tiet:** Cool grey `#b8b6b4`, leveys tietyypin mukaan (0.5–2.5px), ei casings-viivoja
+- **Rautatiet:** `#c0bfbd` / `#d0cfcd`, näkyvät zoom 8+
+- **Basemap-rakennukset:** Cool grey `#e2e1df`, `fill-antialias: false` (ei outlinea)
+- **Vesi:** Deeper blue `#9bbcd4`, vesiväylät `#88b0cc`, labelit `#88a0b4`
+- **Labelit:** Cool charcoal `#706c66`
 - **Lentokentät:** `aeroway-runway` ja `aeroway-taxiway` tievärillä
+- **PERIAATE:** Basemap = viileä spektri (harmaat, siniset, vihreät). Hintavärit = lämmin spektri (ivory→amber→pink). Eivät koskaan sekoitu.
 
 **CartoCDN Positron -layerien nimeämislogiikka (tiet):**
 - Muoto: `{konteksti}_{tietyyppi}_{tyyppi}_{ramppi}`
@@ -280,11 +282,12 @@ Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`o
 
 ### Karttakerrosten väriharmonia (kriittinen)
 
-- **Kolme kerrosta:** Basemap (recessiivinen) → Voronoi (terrain wash) → Buildings (crispit detaljit)
-- **Voronoi:** Mint→gold→rose→pink (`PRICE_COLORS` in `colorScales.ts`), opacity 0.7
-- **Rakennukset:** Lighter fill (0.68 opacity) + color-matched darker outline (`BUILDING_OUTLINE_COLORS`), width 1.2–2.0px, blur 0.4
-- **Basemap:** Hyvin neutraali — ei kilpaile Voronoin tai rakennusten värien kanssa
-- Rakennusten outline on saman sävyn tummempi versio (ei musta), esim. mint fill `#90e8c8` → outline `#48a880`
+- **Kolme kerrosta:** Basemap (viileä, recessiivinen) → Voronoi (lämmin terrain wash) → Buildings (lämmin, terävämpi)
+- **Voronoi:** Ivory→amber→rose→pink (`PRICE_COLORS` in `colorScales.ts`), opacity 0.7
+- **Rakennukset:** Deeper warm fill + color-matched darker outline (`BUILDING_OUTLINE_COLORS`), width 1.2–2.0px, blur 0.4
+- **Basemap:** Viileä harmaa/sininen/vihreä — ei kilpaile lämpimien hintavärien kanssa
+- Rakennusten outline on saman sävyn tummempi versio (ei musta), esim. amber fill `#debb90` → outline `#887458`
+- **KRIITTINEN:** Hintaväreissä EI saa olla vihreitä tai sinisiä sävyjä — ne kuuluvat basemapiin (puistot, vesi, tiet). Hintavärit pysyvät lämpimässä spektrissä (keltainen/oranssi/pinkki).
 - Non-residential: quiet grey `#c8c4c0`, no-price: warm neutral `#d8d4d0`
 - `get_buildings_in_bbox` RPC suodattaa pois rakennukset joilla ei ole hintaa (`estimated_price_per_sqm IS NOT NULL`) — testaus tällä API:lla ei näytä hinnattomia rakennuksia
 - `get_buildings_mvt` (MVT-tiilet) palauttaa KAIKKI rakennukset, myös hinnattomat — kartalla näkyy enemmän rakennuksia kuin GeoJSON-API palauttaa
@@ -327,7 +330,7 @@ npx tsx scripts/data-import/02-import-statfin-prices.ts  # ✅ 7373 hintarecordi
 
 # Vaihe 3: Rakennukset, vesistöt, hinta-arviot
 npx tsx scripts/data-import/03-import-buildings.ts       # ✅ 318 650 rakennusta (Overpass API)
-npx tsx scripts/data-import/04-import-water-bodies.ts    # ✅ 3 351 vesistöä + etäisyyslaskenta
+npx tsx scripts/data-import/04-import-water-bodies.ts    # ✅ 4 716 vesistöä (858 järveä+merta jäljellä suodatuksen jälkeen)
 npx tsx scripts/data-import/05-compute-building-prices.ts # ✅ ~80 000 rakennusta sai hinta-arvion
 
 # Vaihe 4: Aja migraatio 003 SQL Editorissa
@@ -349,10 +352,10 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-as
 ### Datan nykytilanne
 - **Alueet:** 406 postinumeroaluetta, 402 väestötietoa
 - **Hinnat:** 7 373 hintarecordia (StatFin, 2009-2024)
-- **Rakennukset:** 318 650 (OSM Overpass API)
-- **Vesistöt:** 3 351 + etäisyyslaskenta 308 474 rakennukselle
-- **Rakennusvuosi:** 299 206 / 318 650 (94%) — OSM 12% + Ryhti 82%
-- **Kerrostieto:** 296 659 / 318 650 (93%)
+- **Rakennukset:** ~700 000 (OSM Overpass API)
+- **Vesistöt:** 858 (848 järveä >1ha + 10 merta), suodatettu 4 716:sta (lammet, joet, altaat poistettu)
+- **Rakennusvuosi:** ~598 000 / ~700 000 (85%) — OSM ~12% + Ryhti ~73%. Loput ~15% eivät matchaa Ryhti-rekisteriin 50m säteellä.
+- **Kerrostieto:** ~93% kattavuus
 - **Hinta-arvio:** 677 058 / 677 058 (100%) — kuntatasoinen fallback + neighborhood factors (migraatiot 006, 009)
 - **Rakennusluokittelu:** `is_residential` (3-tasoinen: Ryhti main_purpose → OSM building_type → pinta-alaheuristiikka)
 
@@ -382,17 +385,17 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-as
 
 ## Hinta-arvioiden tarkkuuden ylläpito
 
-Hinta-arviot validoitiin 2026-03 vertaamalla 82 Etuovi.fi-ilmoituksen pyyntihintoja algoritmimme tuottamiin arvioihin. Tarkkuuden ylläpitäminen edellyttää säännöllistä uudelleenvalidointia ja faktorien päivitystä.
+Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihintoja algoritmimme tuottamiin arvioihin. Tarkkuuden ylläpitäminen edellyttää säännöllistä uudelleenvalidointia ja faktorien päivitystä.
 
-### Nykyinen tarkkuus (baseline 2026-03-14, with neighborhood factors)
-- **Mean Δ%:** -8% (aliarviointi), **Median Δ%:** -14%
-- **KT:** -10%, **RT:** -13%, **OKT:** -1%
-- **Helsinki:** -8%, **Tampere:** -6%, **Turku:** -33% (vähän dataa)
-- **Mean |Δ%|:** 21%, **Std Dev:** 24%
+### Nykyinen tarkkuus (baseline 2026-03-15, dampening + year=0 filter + no mun median nbhd)
+- **Mean Δ%:** -8% (aliarviointi), **Median Δ%:** -13%
+- **KT:** -9%, **RT:** -13%, **OKT:** -1%
+- **Helsinki:** -9%, **Tampere:** -3%, **Turku:** -33% (vähän dataa)
+- **Mean |Δ%|:** 20%, **Std Dev:** 23%
 - Validointiraportti: `scripts/validation/price-validation-2026-03.md`
 - Raakadata: `scripts/validation/etuovi-raw-data.md`
 - Etuovi-ilmoitukset (1 134 kpl, 9 kaupunkia): `scripts/data-import/etuovi-listings.csv`
-- Neighborhood factors: 346 kpl (72 high, 66 medium, 208 low), avg 1.09
+- Neighborhood factors: 221 kpl (58 high, 58 medium, 105 low), avg 1.13
 
 ### Kolme paikkaa joissa faktorit elävät (pidä synkassa!)
 
@@ -401,6 +404,9 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 82 Etuovi.fi-ilmoituksen pyyntihint
 | `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
 | `supabase/migrations/008_validated_price_factors.sql` | Tietokanta (`compute_building_price()` RPC) — age/water/floor faktorit | Faktoriarvo muuttuu |
 | `supabase/migrations/009_neighborhood_factors.sql` | Tietokanta — neighborhood factor lookup + `_etuovi_staging` + `neighborhood_factors` taulut | Neighborhood factor -logiikka muuttuu |
+| `supabase/migrations/011_premium_dampening.sql` | Tietokanta — premium dampening + municipality median fallback | Dampening-logiikka muuttuu |
+| `supabase/migrations/012_fix_neighborhood_factor_cascade.sql` | Tietokanta — poistettu municipality median nbhd-faktorista | Neighborhood factor -kaskadi muuttuu |
+| `supabase/migrations/013_water_distance_lake_sea_only.sql` | Tietokanta — vesistöetäisyys vain järvet+meri, EPSG:3067 | Vesistösuodatus tai etäisyyslaskenta muuttuu |
 | `scripts/validation/validate-prices.ts` | Validointiskripti | Faktoriarvo muuttuu |
 | `scripts/data-import/09-compute-neighborhood-factors.ts` | Laskee neighborhood factorit Etuovi-datasta | Factor-laskentalogiikka muuttuu |
 
@@ -410,11 +416,11 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 82 Etuovi.fi-ilmoituksen pyyntihint
 
 - **`_etuovi_staging`**: Etuovi.fi-ilmoitusten raakadata (postal_code, property_type, asking_price_per_sqm, area_id)
 - **`neighborhood_factors`**: Lasketut aluekohtaiset kertoimet (area_id, property_type, factor, sample_count, confidence)
-- **Lookup-kaskadi** (supabaseDataProvider + SQL, vähintään sample_count ≥ 3):
+- **Lookup-kaskadi** (supabaseDataProvider + SQL + validation, kaikki synkassa):
   1. Tarkka area_id + property_type → factor (sample_count ≥ 3)
-  2. Fallback: area_id + 'all' → factor
-  3. Fallback (vain SQL): kunnan mediaani korkealla/keskitasoisella luottamuksella
-  4. Final fallback: 1.0
+  2. Fallback: area_id + 'all' → factor (sample_count ≥ 3)
+  3. Final fallback: 1.0
+  - **EI municipality-median-fallbackia** nbhd-faktoreille — harvan datan kanssa se vääristää (esim. Tampere KT median 1.12 vain 3 alueesta). Municipality median käytetään VAIN base price -fallbackissa.
 - **Luottamustasot:** high (≥5 listingsiä), medium (3-4), low (1-2), default (ei dataa)
 - **Clamping:** factor rajataan välille [0.70, 1.50]
 - **Päivitys:** Kerää uudet Etuovi-ilmoitukset → `_etuovi_staging` → aja `09-compute-neighborhood-factors.ts`
@@ -488,7 +494,10 @@ estimated_price = base_price × age_factor × water_factor × floor_factor × ne
 ≤40v: 0.90  (ikääntyvä)          >100v: 0.92 (historiallinen, remontoitu)
 ```
 
-**Water factor:** ≤50m: 1.15, ≤100m: 1.10, ≤200m: 1.06, ≤500m: 1.03, >500m: 1.00
+**Water factor** (vain järvet >1ha ja meri, ei lampia/jokia/altaita):
+≤50m: 1.15, ≤100m: 1.10, ≤200m: 1.06, ≤500m: 1.03, >500m: 1.00
+- Etäisyys lasketaan EPSG:3067 (ETRS-TM35FIN) -projektiossa, Euklidinen metrimatka
+- Vesistögeometriat yksinkertaistettu ST_Simplify(0.0005°) ja pre-transformoitu 3067:ään
 
 **Floor factor** (talotyyppikohtainen):
 - Rivitalo: 1-krs = 1.05 (yksitasoinen premium), 2-krs = 1.00
@@ -496,10 +505,20 @@ estimated_price = base_price × age_factor × water_factor × floor_factor × ne
 
 **Neighborhood factor** (aluekerroin):
 - Laskettu Etuovi.fi-ilmoituksista: `factor = avg(asking_price) / avg(algorithmic_estimate)`
-- Lookup: area_id + property_type → area_id + 'all' → municipality median → 1.0
+- Ilmoitukset joilla `construction_year = 0/NULL` suodatetaan pois (vääristäisi factoria)
+- Lookup: area_id + property_type → area_id + 'all' → 1.0 (ei municipality mediania — vääristäisi)
 - Clamping: [0.70, 1.50]
 - Minimum sample_count: 3 (low confidence factors ignored in lookup)
 - Tyypillinen vaihteluväli: 0.70 (lähiöt) – 1.50 (premium-alueet)
+
+**Premium dampening** (vanhoille rakennuksille):
+- Kun `age_factor < 0.85` (rakennettu ennen ~1986), premium-faktoreiden (neighborhood, water > 1.0) vaikutusta vaimennetaan
+- `age_factor 0.85` → ei vaimennusta, `age_factor 0.70` → 50% vaimennus
+- Kaava: `dampened = 1.0 + (raw - 1.0) * (1.0 - dampening)` missä `dampening = 0.5 * min(1.0, (0.85 - age_factor) / 0.15)`
+- Discount-faktorit (< 1.0) eivät vaimene — vanhat rakennukset halvemmilla alueilla pitävät täyden alennuksen
+- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `011_premium_dampening.sql`
+
+**Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää
 
 ## Seuraavat vaiheet
 

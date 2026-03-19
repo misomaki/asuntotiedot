@@ -27,7 +27,7 @@ function isLight(hex: string): boolean {
 }
 
 // Dark variant of price colors (style-guide-only, no canonical source)
-const PRICE_COLORS_D = ['#3a7860','#407848','#587838','#707428','#786830','#785438','#784048','#703458','#682c60','#602c58']
+const PRICE_COLORS_D = ['#2c2a24','#302818','#342410','#38220c','#3c2008','#3c1c0c','#3c1818','#3c1428','#401038','#440c48']
 
 // Shared demo data
 const STATS = [
@@ -598,7 +598,7 @@ function GumroadStyle({ dark }: { dark: boolean }) {
       </div>
 
       {/* ── Basemap ── */}
-      <SectionTitle font={ff.display} color={c.text1} label="Basemap" sub="CartoCDN Positron with quiet neutral overrides — warm paper bg, deeper blue water, recessive roads" />
+      <SectionTitle font={ff.display} color={c.text1} label="Basemap" sub="CartoCDN Positron with cool grey overrides — cool paper bg, clear blue water, recessive roads. Price = warm, basemap = cool." />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 56 }}>
         <div style={{ ...card(c.cardBg, { borderRadius: 14 }), padding: 28 }}>
           <div style={{ position: 'absolute', top: -1, left: 20, right: 20, height: 4, background: c.mint, borderRadius: '0 0 4px 4px' }} />

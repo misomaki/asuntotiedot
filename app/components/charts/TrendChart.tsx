@@ -70,7 +70,7 @@ function CustomTooltip(props: Partial<TooltipContentProps<ValueType, NameType>>)
   if (!active || !payload || payload.length === 0) return null
 
   return (
-    <div className="rounded-lg border-2 border-[#1a1a1a] bg-white px-4 py-3 shadow-hard-sm">
+    <div className="rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] px-4 py-3 shadow-hard-sm">
       <p className="mb-2 text-sm font-display font-bold text-[#1a1a1a]">{label}</p>
       <div className="space-y-1.5">
         {payload.map((entry: { dataKey?: string | number; value?: ValueType }) => {
@@ -244,7 +244,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
   return (
     <div
       className={cn(
-        'neo-lift rounded-xl border-2 border-[#1a1a1a] bg-white p-4 shadow-hard-sm',
+        'neo-lift rounded-xl border-2 border-[#1a1a1a] bg-[#FFFBF5] p-4 shadow-hard-sm',
         className
       )}
     >

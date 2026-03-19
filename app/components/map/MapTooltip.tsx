@@ -33,7 +33,7 @@ export default function MapTooltip({
         top: y + 15,
       }}
     >
-      <div className="bg-white border-2 border-[#1a1a1a] rounded-lg px-3 py-2 shadow-hard-sm min-w-[140px]">
+      <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-lg px-3 py-2 shadow-hard-sm min-w-[140px]">
         <p className="text-sm font-display font-bold text-[#1a1a1a] leading-tight">
           {areaName}
         </p>

@@ -10,8 +10,11 @@
 import { supabase } from './lib/supabaseAdmin'
 import { PAAVO_WFS_URL, CITIES, isTargetPostalCode } from './config'
 
-/** Municipality code → name mapping for our target cities */
-const MUNICIPALITY_NAMES: Record<string, string> = {
+/** Whether to import ALL Finnish postal areas (not just target cities) */
+const IMPORT_ALL = process.argv.includes('--all')
+
+/** Municipality code → name mapping (loaded at runtime) */
+let MUNICIPALITY_NAMES: Record<string, string> = {
   '049': 'Espoo',
   '091': 'Helsinki',
   '092': 'Vantaa',
@@ -27,6 +30,27 @@ const MUNICIPALITY_NAMES: Record<string, string> = {
   '106': 'Hyvinkää',
   '753': 'Sipoo',
   '257': 'Kirkkonummi',
+}
+
+/** Fetch all Finnish municipality names from Statistics Finland classification API */
+async function fetchMunicipalityNames(): Promise<Record<string, string>> {
+  console.log('Fetching municipality names from Statistics Finland...')
+  const url = 'https://data.stat.fi/api/classifications/v2/classifications/kunta_1_20240101/classificationItems?content=data&format=json&lang=fi&meta=max'
+  try {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const items = await res.json() as Array<{ code: string; classificationItemNames: Array<{ name: string }> }>
+    const names: Record<string, string> = {}
+    for (const item of items) {
+      const name = item.classificationItemNames?.[0]?.name
+      if (name) names[item.code] = name
+    }
+    console.log(`  Loaded ${Object.keys(names).length} municipality names`)
+    return names
+  } catch (err) {
+    console.warn('  Could not fetch municipality names, using fallback:', err)
+    return MUNICIPALITY_NAMES
+  }
 }
 
 interface PaavoFeature {
@@ -261,14 +285,23 @@ async function importAreas(features: PaavoFeature[]) {
 async function main() {
   console.log('=== Paavo Areas Import ===\n')
 
+  if (IMPORT_ALL) {
+    console.log('MODE: Importing ALL Finnish postal areas (--all flag)')
+    MUNICIPALITY_NAMES = await fetchMunicipalityNames()
+  } else {
+    console.log('MODE: Importing target cities only (use --all for all Finland)')
+  }
+
   const features = await fetchPaavoData()
-  const targetFeatures = filterTargetAreas(features)
+
+  const targetFeatures = IMPORT_ALL ? features : filterTargetAreas(features)
 
   if (targetFeatures.length === 0) {
-    console.error('No target areas found! Check postal prefix config.')
+    console.error('No areas found!')
     process.exit(1)
   }
 
+  console.log(`Importing ${targetFeatures.length} postal areas...`)
   await importAreas(targetFeatures)
 
   console.log('\n=== Import complete ===')

@@ -8,10 +8,10 @@
    ============================================ */
 
 :root {
-  /* Backgrounds */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8f8f8;
-  --color-bg-tertiary: #f0f0f0;
+  /* Backgrounds – warm cream base */
+  --color-bg-primary: #FFFBF5;
+  --color-bg-secondary: #f8f6f2;
+  --color-bg-tertiary: #f0eeea;
 
   /* Brand pastels */
   --color-pink: #ff90e8;
@@ -25,6 +25,11 @@
   --color-mint-light: #60e8c8;
   --color-peach: #ffad8a;
   --color-lavender: #b8a8ff;
+
+  /* Deep violet — new secondary accent */
+  --color-violet: #7C3AED;
+  --color-violet-light: #A78BFA;
+  --color-violet-pale: #f0e6ff;
 
   /* Accent = pink (primary brand color) */
   --color-accent: #ff90e8;
@@ -45,32 +50,38 @@
   --color-border: #1a1a1a;
   --color-border-hover: #000000;
 
-  /* Neobrutalist shadows */
-  --shadow-hard: 4px 4px 0px #1a1a1a;
-  --shadow-hard-sm: 3px 3px 0px #1a1a1a;
-  --shadow-hard-lg: 6px 6px 0px #1a1a1a;
-  --shadow-pink: 4px 4px 0px #ff90e8;
+  /* Neobrutalist stacked shadows – multi-layer for 3D depth */
+  --shadow-stacked: 1px 1px 0px #1a1a1a, 2px 2px 0px #2a2a2a, 3px 3px 0px #3a3a3a, 4px 4px 0px #4a4a4a;
+  --shadow-stacked-sm: 1px 1px 0px #1a1a1a, 2px 2px 0px #2a2a2a, 3px 3px 0px #3a3a3a;
+  --shadow-stacked-lg: 1px 1px 0px #1a1a1a, 2px 2px 0px #262626, 3px 3px 0px #333, 4px 4px 0px #404040, 5px 5px 0px #4d4d4d, 6px 6px 0px #595959;
+  --shadow-stacked-accent: 1px 1px 0px #e870d0, 2px 2px 0px #d060c0, 3px 3px 0px #b850a8, 4px 4px 0px #a04090;
+  /* Legacy aliases */
+  --shadow-hard: var(--shadow-stacked);
+  --shadow-hard-sm: var(--shadow-stacked-sm);
+  --shadow-hard-lg: var(--shadow-stacked-lg);
+  --shadow-pink: var(--shadow-stacked-accent);
 
-  /* Price scale – mint (cheap) → gold → rose → pink (expensive) */
-  --price-1: #a8e8d0;
-  --price-2: #b0e4c0;
-  --price-3: #c8e4a8;
-  --price-4: #dce498;
-  --price-5: #ecdca0;
-  --price-6: #f0cca0;
-  --price-7: #f0b8b0;
-  --price-8: #eca8c0;
-  --price-9: #e898c4;
-  --price-10: #e088c0;
+  /* Price scale – ivory (cheap) → amber → rose → pink (expensive) */
+  /* Must match PRICE_COLORS in app/lib/colorScales.ts */
+  --price-1: #f2efe8;
+  --price-2: #efe6d4;
+  --price-3: #ecdcc0;
+  --price-4: #e8d0ac;
+  --price-5: #e4c49c;
+  --price-6: #e0b498;
+  --price-7: #dca4a0;
+  --price-8: #dc98b8;
+  --price-9: #e488cc;
+  --price-10: #f080e0;
 
   /* shadcn/ui CSS variables (HSL format for light theme) */
-  --background: 0 0% 100%;
+  --background: 40 100% 99%;
   --foreground: 0 0% 10%;
 
-  --card: 0 0% 100%;
+  --card: 40 100% 99%;
   --card-foreground: 0 0% 10%;
 
-  --popover: 0 0% 100%;
+  --popover: 40 100% 99%;
   --popover-foreground: 0 0% 10%;
 
   --primary: 316 100% 78%;
@@ -121,10 +132,11 @@
     letter-spacing: -0.02em;
   }
 
-  /* Brand wordmark uses display font bold */
+  /* Brand wordmark uses Fraunces – quirky, distinctive soft serif */
   .font-brand {
-    font-family: var(--font-display), 'Libre Franklin', sans-serif;
+    font-family: var(--font-brand), 'Fraunces', serif;
     font-weight: 900;
+    font-variation-settings: 'WONK' 1, 'opsz' 36;
   }
 
   /* Data numbers use monospace */
@@ -173,26 +185,26 @@
 
   /* ── Neobrutalist micro-movements ── */
 
-  /* Button press: shadow collapses, element sinks into the page */
+  /* Button press: stacked shadow expands on hover, collapses on click */
   .neo-press {
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
   .neo-press:hover {
     transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0px #1a1a1a;
+    box-shadow: 1px 1px 0px #1a1a1a, 2px 2px 0px #262626, 3px 3px 0px #333, 4px 4px 0px #404040, 5px 5px 0px #4d4d4d;
   }
   .neo-press:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0px 0px 0px #1a1a1a;
+    transform: translate(4px, 4px);
+    box-shadow: none;
   }
 
-  /* Card lift: floats up on hover like picking up a sticker */
+  /* Card lift: stacked shadow grows on hover */
   .neo-lift {
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .neo-lift:hover {
     transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0px #1a1a1a;
+    box-shadow: 1px 1px 0px #1a1a1a, 2px 2px 0px #262626, 3px 3px 0px #333, 4px 4px 0px #404040, 5px 5px 0px #4d4d4d, 6px 6px 0px #595959;
   }
 
   /* Gradient text – brand gradient (pink to mint) */
@@ -209,6 +221,24 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* ── Accessibility: reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    .neo-press,
+    .neo-lift {
+      transition: none;
+    }
+    .neo-press:hover,
+    .neo-lift:hover {
+      transform: none;
+    }
+    .animate-pop-in,
+    .animate-fade-in,
+    .animate-scale-in,
+    .animate-count-up {
+      animation: none !important;
+    }
   }
 
   /* Neobrutalist pill */

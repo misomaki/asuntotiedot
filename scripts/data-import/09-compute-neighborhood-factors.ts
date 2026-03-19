@@ -97,8 +97,17 @@ async function main() {
   let matched = 0
   let unmatched = 0
 
+  let skippedNoYear = 0
+
   for (const listing of listings as EtuoviListing[]) {
     if (!listing.area_id || !listing.asking_price_per_sqm) continue
+
+    // Skip listings with unknown construction year — they get age_factor=1.0
+    // which inflates the computed neighborhood factor for old buildings
+    if (!listing.construction_year || listing.construction_year === 0) {
+      skippedNoYear++
+      continue
+    }
 
     const pt = listing.property_type || 'kerrostalo'
 
@@ -155,6 +164,7 @@ async function main() {
     matched++
   }
 
+  console.log(`Skipped (no year):     ${skippedNoYear}`)
   console.log(`Matched to base price: ${matched}`)
   console.log(`No base price found:   ${unmatched}`)
   console.log(`Factor groups:         ${groups.size}\n`)

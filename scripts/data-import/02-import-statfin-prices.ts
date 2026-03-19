@@ -309,8 +309,15 @@ async function queryCity(
   return cells
 }
 
+/** Whether to import ALL Finnish postal areas (not just target cities) */
+const IMPORT_ALL = process.argv.includes('--all')
+
 async function main() {
   console.log('=== StatFin Price Import ===\n')
+
+  if (IMPORT_ALL) {
+    console.log('MODE: Importing ALL postal codes (--all flag)\n')
+  }
 
   const areaIdMap = await fetchPostalCodes()
   const metadata = await fetchMetadata()
@@ -322,32 +329,55 @@ async function main() {
 
   let totalInserted = 0
 
-  for (const city of CITIES) {
-    // Filter postal codes for this city
-    const cityPostalCodes = metadata.postalCodes.filter((pc) =>
-      city.postalPrefixes.some((prefix) => pc.startsWith(prefix))
-    )
+  if (IMPORT_ALL) {
+    // Import ALL postal codes that exist in both PxWeb and our database
+    const allPostalCodes = metadata.postalCodes.filter((pc) => areaIdMap.has(pc))
+    console.log(`\nAll Finland: ${allPostalCodes.length} postal codes in both PxWeb and DB`)
 
-    if (cityPostalCodes.length === 0) {
-      console.log(`\nNo postal codes found for ${city.name} in PxWeb data`)
-      continue
+    // PxWeb 100k cell limit — batch by ~200 postal codes
+    const BATCH_SIZE = 200
+    for (let i = 0; i < allPostalCodes.length; i += BATCH_SIZE) {
+      const batch = allPostalCodes.slice(i, i + BATCH_SIZE)
+      const batchLabel = `Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(allPostalCodes.length / BATCH_SIZE)} (${batch.length} codes)`
+
+      const inserted = await importPricesForCity(
+        batchLabel,
+        batch,
+        areaIdMap,
+        metadata.years,
+        allTypes,
+        metadata.metrics
+      )
+
+      totalInserted += inserted
+      await sleep(500) // rate limit
     }
+  } else {
+    for (const city of CITIES) {
+      // Filter postal codes for this city
+      const cityPostalCodes = metadata.postalCodes.filter((pc) =>
+        city.postalPrefixes.some((prefix) => pc.startsWith(prefix))
+      )
 
-    console.log(`\n${city.name}: ${cityPostalCodes.length} postal codes available`)
+      if (cityPostalCodes.length === 0) {
+        console.log(`\nNo postal codes found for ${city.name} in PxWeb data`)
+        continue
+      }
 
-    const inserted = await importPricesForCity(
-      city.name,
-      cityPostalCodes,
-      areaIdMap,
-      metadata.years,
-      allTypes,
-      metadata.metrics
-    )
+      console.log(`\n${city.name}: ${cityPostalCodes.length} postal codes available`)
 
-    totalInserted += inserted
+      const inserted = await importPricesForCity(
+        city.name,
+        cityPostalCodes,
+        areaIdMap,
+        metadata.years,
+        allTypes,
+        metadata.metrics
+      )
 
-    // Respect rate limits
-    await sleep(500)
+      totalInserted += inserted
+      await sleep(500)
+    }
   }
 
   console.log(`\n=== Import complete: ${totalInserted} total price records ===`)

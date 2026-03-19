@@ -19,25 +19,25 @@ async function main() {
   console.log('=== Building Price Computation ===\n')
   console.log(`Estimation year: ${ESTIMATION_YEAR}`)
 
-  // Check current state
+  // Check current state (use estimated count to avoid timeout on large tables)
   const { count: totalBuildings } = await supabase
     .from('buildings')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'estimated', head: true })
 
   const { count: withArea } = await supabase
     .from('buildings')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'estimated', head: true })
     .not('area_id', 'is', null)
 
   const { count: needsEstimate } = await supabase
     .from('buildings')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'estimated', head: true })
     .not('area_id', 'is', null)
     .is('estimation_year', null)
 
   const { count: alreadyEstimated } = await supabase
     .from('buildings')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'estimated', head: true })
     .not('estimation_year', 'is', null)
 
   console.log(`Total buildings:        ${totalBuildings}`)
@@ -45,7 +45,8 @@ async function main() {
   console.log(`Already estimated:      ${alreadyEstimated}`)
   console.log(`Needing estimation:     ${needsEstimate}`)
 
-  if (!needsEstimate || needsEstimate === 0) {
+  // Don't bail on null count — it means the query timed out, not 0 rows.
+  if (needsEstimate === 0) {
     console.log('\nAll buildings already have price estimates.')
     return
   }

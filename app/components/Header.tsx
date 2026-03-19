@@ -193,15 +193,15 @@ export function Header() {
         {/* Main header bar */}
         <div
           className={cn(
-            'bg-white border-2 border-[#1a1a1a] rounded-xl h-14 px-4',
+            'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl h-14 px-4',
             'flex items-center gap-4',
             'shadow-hard-sm'
           )}
         >
           {/* Left: Logo + Brand name */}
           <h1 className="flex-shrink-0 flex items-center gap-2">
-            <LogoMark size={28} />
-            <span className="font-display font-black text-base tracking-tight text-[#1a1a1a] hidden md:inline">
+            <LogoMark size={32} />
+            <span className="font-brand text-xl tracking-tight text-[#1a1a1a] hidden md:inline">
               Neliöt
             </span>
           </h1>
@@ -214,16 +214,16 @@ export function Header() {
                 <div ref={searchContainerRef} className="relative">
                   <div
                     className={cn(
-                      'flex items-center gap-2 rounded-lg border-2 bg-white',
+                      'neo-press',
+                      'flex items-center gap-2 h-8 rounded-lg border-2 bg-bg-primary',
+                      'border-[#1a1a1a] shadow-hard-sm',
                       'transition-all duration-200',
-                      isSearchFocused
-                        ? 'border-pink-baby w-64 shadow-hard-sm'
-                        : 'border-[#1a1a1a] w-48'
+                      isSearchFocused ? 'w-64' : 'w-48'
                     )}
                   >
                     <Search
                       size={14}
-                      className="ml-2.5 text-[#999] flex-shrink-0"
+                      className="ml-2.5 text-[#1a1a1a] flex-shrink-0"
                     />
                     <input
                       ref={searchInputRef}
@@ -234,9 +234,9 @@ export function Header() {
                       onKeyDown={handleSearchKeyDown}
                       placeholder="Hae postinumeroa..."
                       className={cn(
-                        'w-full h-8 pr-2.5 text-xs bg-transparent text-[#1a1a1a]',
-                        'placeholder:text-[#999]',
-                        'focus:outline-none font-body'
+                        'w-full pr-2.5 text-xs bg-transparent text-[#1a1a1a]',
+                        'placeholder:text-[#666]',
+                        'focus:outline-none font-mono font-bold'
                       )}
                     />
                   </div>
@@ -246,7 +246,7 @@ export function Header() {
                     <div
                       className={cn(
                         'absolute top-full left-0 right-0 mt-1.5',
-                        'rounded-lg border-2 border-[#1a1a1a] bg-white',
+                        'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                         'shadow-hard overflow-hidden',
                       )}
                     >
@@ -306,7 +306,7 @@ export function Header() {
                     <div
                       className={cn(
                         'absolute top-full right-0 mt-1.5 z-50',
-                        'rounded-lg border-2 border-[#1a1a1a] bg-white',
+                        'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                         'shadow-hard overflow-hidden',
                         'min-w-[80px]',
                       )}
@@ -359,7 +359,7 @@ export function Header() {
         {!isDesktop && isMobileMenuOpen && (
           <div
             className={cn(
-              'bg-white border-2 border-[#1a1a1a] rounded-xl mt-2 p-4',
+              'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl mt-2 p-4',
               'shadow-hard-sm',
               'space-y-3',
               'animate-slide-down'
@@ -367,7 +367,7 @@ export function Header() {
           >
             {/* Mobile search */}
             <div ref={searchContainerRef} className="relative">
-              <div className="flex items-center gap-2 rounded-lg border-2 border-[#1a1a1a] bg-white">
+              <div className="flex items-center gap-2 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary">
                 <Search
                   size={14}
                   className="ml-2.5 text-[#999] flex-shrink-0"
@@ -393,7 +393,7 @@ export function Header() {
                 <div
                   className={cn(
                     'absolute top-full left-0 right-0 mt-1.5 z-50',
-                    'rounded-lg border-2 border-[#1a1a1a] bg-white',
+                    'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                     'shadow-hard overflow-hidden',
                     'animate-fade-in'
                   )}

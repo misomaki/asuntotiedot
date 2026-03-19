@@ -96,6 +96,25 @@ export function computeFloorFactor(
 }
 
 /**
+ * Dampen premium factors for old buildings.
+ *
+ * Old buildings (age_factor < 0.85, i.e. built before ~1986) don't capture
+ * neighborhood or waterfront premiums as strongly as new buildings.
+ * This reduces the premium effect gradually for older buildings.
+ *
+ * - ageFactor >= 0.85: no dampening (returns factor as-is)
+ * - ageFactor = 0.70: full 50% dampening (premium halved)
+ * - Discounts (factor < 1.0) are NOT dampened
+ */
+export function dampenPremium(factor: number, ageFactor: number): number {
+  if (factor <= 1.0 || ageFactor >= 0.85) return factor
+  // Gradual: ageFactor 0.85 → no dampening, 0.70 → full 50% dampening
+  const progress = Math.min(1.0, (0.85 - ageFactor) / 0.15)
+  const dampening = 0.5 * progress
+  return 1.0 + (factor - 1.0) * (1.0 - dampening)
+}
+
+/**
  * Map OSM building type + floor count to Finnish property type.
  */
 export function inferPropertyType(
@@ -126,9 +145,13 @@ export function estimateBuildingPrice(
   input: PriceEstimationInput
 ): PriceEstimationResult {
   const ageFactor = computeAgeFactor(input.constructionYear, input.referenceYear)
-  const waterFactor = computeWaterFactor(input.distanceToWaterM)
+  const rawWaterFactor = computeWaterFactor(input.distanceToWaterM)
   const floorFactor = computeFloorFactor(input.floorCount, input.propertyType)
-  const neighborhoodFactor = input.neighborhoodFactor ?? 1.0
+  const rawNeighborhoodFactor = input.neighborhoodFactor ?? 1.0
+
+  // Dampen premium factors for old buildings
+  const waterFactor = dampenPremium(rawWaterFactor, ageFactor)
+  const neighborhoodFactor = dampenPremium(rawNeighborhoodFactor, ageFactor)
 
   const estimatedPricePerSqm = Math.round(
     input.basePrice * ageFactor * waterFactor * floorFactor * neighborhoodFactor

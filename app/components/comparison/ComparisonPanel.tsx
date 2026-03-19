@@ -86,7 +86,7 @@ function PriceComparisonRow({ label, priceA, priceB }: PriceComparisonRowProps) 
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
       {/* Area 1 price */}
-      <div className="rounded-lg border-2 border-[#1a1a1a] bg-white p-3 space-y-1 shadow-hard-sm">
+      <div className="rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] p-3 space-y-1 shadow-hard-sm">
         <p className="text-sm font-mono tabular-nums text-foreground" data-number>
           {priceA?.price_per_sqm_median != null
             ? formatPricePerSqm(priceA.price_per_sqm_median)
@@ -111,7 +111,7 @@ function PriceComparisonRow({ label, priceA, priceB }: PriceComparisonRowProps) 
       </div>
 
       {/* Area 2 price */}
-      <div className="rounded-lg border-2 border-[#1a1a1a] bg-white p-3 space-y-1 shadow-hard-sm">
+      <div className="rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] p-3 space-y-1 shadow-hard-sm">
         <p className="text-sm font-mono tabular-nums text-foreground" data-number>
           {priceB?.price_per_sqm_median != null
             ? formatPricePerSqm(priceB.price_per_sqm_median)
@@ -150,7 +150,7 @@ function StatComparisonRow({
 }: StatComparisonRowProps) {
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
-      <div className="rounded-lg border-2 border-[#1a1a1a] bg-white p-3 text-center shadow-hard-sm">
+      <div className="rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] p-3 text-center shadow-hard-sm">
         <p className="text-sm font-mono tabular-nums text-foreground" data-number>
           {valueA}
         </p>
@@ -163,7 +163,7 @@ function StatComparisonRow({
         {showDiff && <DifferenceBadge valueA={rawA} valueB={rawB} />}
       </div>
 
-      <div className="rounded-lg border-2 border-[#1a1a1a] bg-white p-3 text-center shadow-hard-sm">
+      <div className="rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] p-3 text-center shadow-hard-sm">
         <p className="text-sm font-mono tabular-nums text-foreground" data-number>
           {valueB}
         </p>

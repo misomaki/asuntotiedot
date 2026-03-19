@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Map, { Source, Layer } from 'react-map-gl/maplibre'
 import type {
   MapLayerMouseEvent,
@@ -14,9 +14,10 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
-import { getMapLibreColorExpression, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS } from '@/app/lib/colorScales'
+import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression } from '@/app/lib/colorScales'
+import { formatPricePerSqm } from '@/app/lib/formatters'
+import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
-// MapControls removed — reset button no longer needed
 
 /** CartoCDN Positron basemap — light, warm overrides (free, no token required) */
 const MAP_STYLE =
@@ -74,10 +75,22 @@ export default function MapContainer() {
     filters.propertyType
   )
 
+  // Fetch municipality polygons for zoomed-out overview
+  const { geojson: municipalityGeojson, priceRange: municipalityPriceRange } = useMunicipalityData(
+    filters.year,
+    filters.propertyType
+  )
+
   // Sync loading state with context
   useEffect(() => {
     setIsLoading(dataLoading)
   }, [dataLoading, setIsLoading])
+
+  // Map instance ref for hover highlight management
+  const mapRef = useRef<MaplibreMap | null>(null)
+
+  // Hovered building UUID — drives the highlight filter on building layers
+  const [hoveredBuildingUuid, setHoveredBuildingUuid] = useState<string | null>(null)
 
   // Local hover state (buildings only — Voronoi is non-interactive)
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(
@@ -121,6 +134,20 @@ export default function MapContainer() {
     []
   )
 
+  // Dynamic color scale for municipality layer based on actual price range
+  const municipalityScale = useMemo(() => {
+    if (!municipalityPriceRange) return null
+    return getDynamicScale(municipalityPriceRange.min, municipalityPriceRange.max)
+  }, [municipalityPriceRange])
+
+  const municipalityColorExpression = useMemo(
+    (): ExpressionSpecification => {
+      if (!municipalityScale) return colorExpression
+      return getDynamicColorExpression(municipalityScale.breaks, municipalityScale.colors) as ExpressionSpecification
+    },
+    [municipalityScale, colorExpression]
+  )
+
   const fillColorExpression = useMemo(
     (): ExpressionSpecification =>
       isCompareMode
@@ -148,7 +175,13 @@ export default function MapContainer() {
           0.8,
         ]
       }
-      return 0.7 as unknown as ExpressionSpecification
+      // Fade Voronoi in as municipality fades out: invisible at z8, full at z10
+      return [
+        'interpolate', ['linear'], ['zoom'],
+        8, 0,
+        9, 0.35,
+        10, 0.7,
+      ] as unknown as ExpressionSpecification
     },
     [isCompareMode, selectedAreaCode, comparedAreaCode]
   )
@@ -221,10 +254,12 @@ export default function MapContainer() {
 
       if (feature && feature.properties && feature.layer?.id === 'building-price-fill') {
         const props = feature.properties as HoveredBuildingProperties
+        setHoveredBuildingUuid(props.id ?? null)
         setTooltipContent({ type: 'building', props })
         setTooltipPosition({ x: evt.point.x, y: evt.point.y })
         setCursor('pointer')
       } else {
+        setHoveredBuildingUuid(null)
         setTooltipContent(null)
         setTooltipPosition(null)
         setCursor('')
@@ -234,6 +269,7 @@ export default function MapContainer() {
   )
 
   const handleMouseLeave = useCallback(() => {
+    setHoveredBuildingUuid(null)
     setTooltipContent(null)
     setTooltipPosition(null)
     setCursor('')
@@ -262,7 +298,7 @@ export default function MapContainer() {
   /**
    * Override Positron basemap colors for quiet, recessive Neliöt aesthetic.
    *
-   * Cool paper background (#f4f2ee), muted blue water (#d8e4ec),
+   * Cool paper background (#f5f4f2), slate-blue water (#9bbcd4),
    * neutral roads (#d0ccc8), light buildings (#e4e0dc),
    * and soft labels (#78746e). Basemap recedes so Voronoi terrain reads clearly.
    *
@@ -272,6 +308,24 @@ export default function MapContainer() {
   const handleMapLoad = useCallback(
     (evt: { target: MaplibreMap }) => {
       const map = evt.target
+      mapRef.current = map
+
+      // ── Generate building texture pattern (synchronous) ──
+      // Subtle diagonal dots — gives buildings a tactile paper grain
+      if (!map.hasImage('building-texture')) {
+        const size = 6
+        const data = new Uint8ClampedArray(size * size * 4) // RGBA
+        // Place two dots at (0,0) and (3,3) with ~6% opacity black
+        for (const [px, py] of [[0, 0], [3, 3]]) {
+          const i = (py * size + px) * 4
+          data[i] = 0       // R
+          data[i + 1] = 0   // G
+          data[i + 2] = 0   // B
+          data[i + 3] = 15  // A (~6%)
+        }
+        map.addImage('building-texture', { width: size, height: size, data }, { pixelRatio: 2 })
+      }
+
       /** Helper: safely set a paint property (layer may not exist in this style) */
       const paint = (layer: string, prop: string, value: string | number | boolean) => {
         if (map.getLayer(layer)) {
@@ -280,31 +334,31 @@ export default function MapContainer() {
       }
 
       // =======================================================
-      // BACKGROUND — cool paper white (recedes behind Voronoi)
+      // BACKGROUND — cool paper (recedes behind warm Voronoi)
       // =======================================================
 
-      paint('background', 'background-color', '#f5f3f0')
+      paint('background', 'background-color', '#f5f4f2')
 
       // =======================================================
-      // LANDCOVER & LANDUSE — pale sage / warm tones
+      // LANDCOVER & LANDUSE — cool neutrals (no warm tones)
       // =======================================================
 
       for (const id of ['landcover-grass', 'landcover-wood', 'landcover_grass', 'landcover_wood']) {
-        paint(id, 'fill-color', '#eceee8')
+        paint(id, 'fill-color', '#e8ebe6')
       }
       for (const id of ['landuse-cemetery', 'landuse-commercial', 'landuse-industrial', 'landuse-residential',
         'landuse_cemetery', 'landuse_commercial', 'landuse_industrial', 'landuse_residential']) {
-        paint(id, 'fill-color', '#f0eeea')
+        paint(id, 'fill-color', '#eeedeb')
       }
       for (const id of ['park', 'park_outline']) {
-        paint(id, 'fill-color', '#e6ece2')
+        paint(id, 'fill-color', '#e0e8de')
       }
 
       // =======================================================
-      // ROADS — warm grey, width-based hierarchy, no casings
+      // ROADS — cool grey (distinct from warm price tones)
       // =======================================================
 
-      const roadColor = '#d0ccc8'
+      const roadColor = '#b8b6b4'
 
       // Service / path (thinnest)
       for (const id of [
@@ -371,7 +425,7 @@ export default function MapContainer() {
       }
 
       // =======================================================
-      // RAILWAYS — subtle warm tone, visible from zoom 8+
+      // RAILWAYS — cool grey, visible from zoom 8+
       // =======================================================
 
       for (const id of ['rail', 'rail_dash', 'tunnel_rail', 'tunnel_rail_dash']) {
@@ -380,24 +434,24 @@ export default function MapContainer() {
         }
       }
 
-      paint('rail', 'line-color', '#ccc8c4')
+      paint('rail', 'line-color', '#c0bfbd')
       paint('rail', 'line-width', 1.5)
-      paint('rail_dash', 'line-color', '#d8d4d0')
+      paint('rail_dash', 'line-color', '#d0cfcd')
       paint('rail_dash', 'line-width', 1)
-      paint('tunnel_rail', 'line-color', '#ccc8c4')
+      paint('tunnel_rail', 'line-color', '#c0bfbd')
       paint('tunnel_rail', 'line-width', 1.5)
-      paint('tunnel_rail_dash', 'line-color', '#d8d4d0')
+      paint('tunnel_rail_dash', 'line-color', '#d0cfcd')
       paint('tunnel_rail_dash', 'line-width', 1)
 
       // =======================================================
-      // BASEMAP BUILDINGS — warm taupe (fill only, no outline)
+      // BASEMAP BUILDINGS — cool grey (fill only, no outline)
       // =======================================================
 
       paint('building', 'fill-color', 'transparent')
       paint('building', 'fill-outline-color', 'transparent')
       paint('building', 'fill-antialias', false)
-      paint('building-top', 'fill-color', '#e8e4e0')
-      paint('building-top', 'fill-outline-color', '#e8e4e0')
+      paint('building-top', 'fill-color', '#e2e1df')
+      paint('building-top', 'fill-outline-color', '#e2e1df')
       paint('building-top', 'fill-antialias', false)
 
       // =======================================================
@@ -408,11 +462,11 @@ export default function MapContainer() {
       paint('aeroway-taxiway', 'line-color', roadColor)
 
       // =======================================================
-      // WATER — soft powder blue
+      // WATER — clear blue (distinct from warm price tones)
       // =======================================================
 
-      paint('water', 'fill-color', '#c8dce8')
-      paint('waterway', 'line-color', '#b8d0e0')
+      paint('water', 'fill-color', '#9bbcd4')
+      paint('waterway', 'line-color', '#88b0cc')
 
       // Water labels — muted blue
       for (const id of [
@@ -425,7 +479,7 @@ export default function MapContainer() {
       }
 
       // =======================================================
-      // LABELS — warm charcoal
+      // LABELS — cool charcoal
       // =======================================================
 
       for (const id of [
@@ -433,7 +487,7 @@ export default function MapContainer() {
         'place_hamlet', 'place_suburb', 'place_neighbourhood',
         'place_city_r', 'place_town_r', 'place_village_r',
       ]) {
-        paint(id, 'text-color', '#78746e')
+        paint(id, 'text-color', '#706c66')
       }
     },
     []
@@ -458,6 +512,27 @@ export default function MapContainer() {
         onLoad={handleMapLoad}
         reuseMaps
       >
+        {/* Municipality choropleth — visible at low zoom, fades as Voronoi takes over */}
+        {municipalityGeojson && (
+          <Source id="municipalities" type="geojson" data={municipalityGeojson}>
+            <Layer
+              id="municipality-fill"
+              type="fill"
+              beforeId="water"
+              paint={{
+                'fill-color': municipalityColorExpression,
+                'fill-opacity': [
+                  'interpolate', ['linear'], ['zoom'],
+                  5, 0.75,
+                  8, 0.65,
+                  9.5, 0,
+                ] as unknown as ExpressionSpecification,
+                'fill-antialias': false,
+              }}
+            />
+          </Source>
+        )}
+
         {/* Voronoi area fill layer */}
         {geojson && (
           <Source id="areas" type="geojson" data={geojson}>
@@ -483,6 +558,7 @@ export default function MapContainer() {
           minzoom={14}
           maxzoom={16}
         >
+          {/* Base building fill */}
           <Layer
             id="building-price-fill"
             type="fill"
@@ -493,6 +569,18 @@ export default function MapContainer() {
               'fill-opacity': 0.68,
             }}
           />
+          {/* Subtle texture overlay — diagonal dot grain on buildings */}
+          <Layer
+            id="building-texture"
+            type="fill"
+            source-layer="buildings"
+            minzoom={15}
+            paint={{
+              'fill-pattern': 'building-texture' as unknown as ExpressionSpecification,
+              'fill-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.5, 0.5] as unknown as ExpressionSpecification,
+            }}
+          />
+          {/* Base building outline */}
           <Layer
             id="building-outline"
             type="line"
@@ -502,6 +590,37 @@ export default function MapContainer() {
               'line-color': buildingOutlineColorExpression,
               'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1.2, 16, 2.0] as unknown as ExpressionSpecification,
               'line-blur': 0.4,
+            }}
+          />
+          {/* Hover highlight — brighter fill on hovered building */}
+          <Layer
+            id="building-hover-fill"
+            type="fill"
+            source-layer="buildings"
+            minzoom={14}
+            filter={hoveredBuildingUuid
+              ? ['==', ['get', 'id'], hoveredBuildingUuid] as unknown as ExpressionSpecification
+              : ['==', ['get', 'id'], ''] as unknown as ExpressionSpecification
+            }
+            paint={{
+              'fill-color': buildingColorExpression,
+              'fill-opacity': 0.92,
+            }}
+          />
+          {/* Hover highlight — thicker, sharper outline on hovered building */}
+          <Layer
+            id="building-hover-outline"
+            type="line"
+            source-layer="buildings"
+            minzoom={14}
+            filter={hoveredBuildingUuid
+              ? ['==', ['get', 'id'], hoveredBuildingUuid] as unknown as ExpressionSpecification
+              : ['==', ['get', 'id'], ''] as unknown as ExpressionSpecification
+            }
+            paint={{
+              'line-color': buildingOutlineColorExpression,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2.4, 16, 3.5] as unknown as ExpressionSpecification,
+              'line-blur': 0,
             }}
           />
         </Source>
@@ -516,13 +635,16 @@ export default function MapContainer() {
         />
       )}
 
-      {/* Legend */}
-      <MapLegend />
+      {/* Legend — switches between municipality and building scale based on zoom */}
+      <MapLegend
+        municipalityScale={municipalityScale}
+        zoom={viewport.zoom}
+      />
 
       {/* Compare mode indicator */}
       {isCompareMode && !selectedArea && comparedArea && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="glass rounded-full px-4 py-2 text-sm text-[var(--color-text-secondary)] flex items-center gap-2 shadow-glass-sm animate-fade-in">
+          <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
             <div className="h-3 w-3 rounded-full bg-purple-500 animate-pulse" />
             Valitse toinen alue vertailuun
           </div>
@@ -532,8 +654,8 @@ export default function MapContainer() {
       {/* Loading indicator */}
       {dataLoading && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="glass rounded-full px-4 py-2 text-sm text-[var(--color-text-secondary)] flex items-center gap-2 shadow-glass-sm animate-fade-in">
-            <span className="inline-block h-3 w-3 rounded-full border-2 border-[var(--color-accent)] border-t-transparent animate-spin" />
+          <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
+            <span className="inline-block h-3 w-3 rounded-full border-2 border-[#1a1a1a] border-t-transparent animate-spin" />
             Ladataan aluedataa...
           </div>
         </div>
@@ -568,7 +690,7 @@ function BuildingTooltip({
           transformOrigin: 'bottom left',
         }}
       >
-        <div className="glass rounded-lg px-3 py-2 shadow-glass-sm">
+        <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl px-3 py-2 shadow-hard-sm">
           <div className="text-sm text-muted-foreground">
             Ei asuinkäytössä
           </div>
@@ -578,9 +700,10 @@ function BuildingTooltip({
   }
 
   const price = props.price
+  const priceColor = price !== null ? getColorForPrice(price) : null
   const priceStr =
     price !== null
-      ? `${new Intl.NumberFormat('fi-FI').format(Math.round(price))} €/m²`
+      ? formatPricePerSqm(price)
       : 'Ei hinta-arviota'
 
   const details: string[] = []
@@ -598,12 +721,23 @@ function BuildingTooltip({
         transformOrigin: 'bottom left',
       }}
     >
-      <div className="glass rounded-lg px-3 py-2 shadow-glass-sm">
-        <div className="text-sm font-semibold text-foreground tabular-nums">
-          {priceStr}
+      <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl px-3 py-2 shadow-hard-sm min-w-[140px]">
+        <div className="flex items-center gap-2">
+          {priceColor && (
+            <span
+              className="inline-block h-3 w-5 rounded-sm flex-shrink-0"
+              style={{
+                backgroundColor: priceColor,
+                border: '1.5px solid rgba(0,0,0,0.2)',
+              }}
+            />
+          )}
+          <span className="text-sm font-display font-bold text-[#1a1a1a] tabular-nums">
+            {priceStr}
+          </span>
         </div>
         {details.length > 0 && (
-          <div className="text-xs text-muted-foreground mt-0.5">
+          <div className="text-xs text-[#999] mt-1 font-body">
             {details.join(' · ')}
           </div>
         )}

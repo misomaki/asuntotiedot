@@ -180,7 +180,7 @@ export function Sidebar() {
             'fixed top-0 left-0 z-30',
             panelWidth,
             'h-full',
-            'bg-white',
+            'bg-[#FFFBF5]',
             'border-r-2 border-[#1a1a1a]',
             'shadow-hard',
             'flex flex-col'

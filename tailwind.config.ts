@@ -1,5 +1,13 @@
 import type { Config } from "tailwindcss";
 
+// Single source of truth for stacked shadow values
+const SHADOW_DARK = "1px 1px 0px #1a1a1a, 2px 2px 0px #2a2a2a, 3px 3px 0px #3a3a3a, 4px 4px 0px #4a4a4a"
+const SHADOW_DARK_SM = "1px 1px 0px #1a1a1a, 2px 2px 0px #2a2a2a, 3px 3px 0px #3a3a3a"
+const SHADOW_DARK_LG = "1px 1px 0px #1a1a1a, 2px 2px 0px #262626, 3px 3px 0px #333, 4px 4px 0px #404040, 5px 5px 0px #4d4d4d, 6px 6px 0px #595959"
+const SHADOW_ACCENT = "1px 1px 0px #e870d0, 2px 2px 0px #d060c0, 3px 3px 0px #b850a8, 4px 4px 0px #a04090"
+const SHADOW_ACCENT_SM = "1px 1px 0px #e870d0, 2px 2px 0px #d060c0, 3px 3px 0px #b850a8"
+const SHADOW_TEAL = "1px 1px 0px #1aa880, 2px 2px 0px #189870, 3px 3px 0px #148860, 4px 4px 0px #107850"
+
 const config: Config = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,10 +17,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Backgrounds – clean white
-        "bg-primary": "#ffffff",
-        "bg-secondary": "#f8f8f8",
-        "bg-glass": "#ffffff",
+        // Backgrounds – warm cream
+        "bg-primary": "#FFFBF5",
+        "bg-secondary": "#f8f6f2",
+        "bg-glass": "#FFFBF5",
 
         // Brand pastels
         pink: {
@@ -33,6 +41,11 @@ const config: Config = {
         },
         peach: "#ffad8a",
         lavender: "#b8a8ff",
+        violet: {
+          DEFAULT: "#7C3AED",
+          light: "#A78BFA",
+          pale: "#f0e6ff",
+        },
 
         // Brand accent = pink
         accent: {
@@ -78,26 +91,27 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors – mint (cheap) → gold → rose → pink (expensive)
+        // Price scale colors – ivory (cheap) → amber → rose → pink (expensive)
+        // Must match PRICE_COLORS in app/lib/colorScales.ts
         price: {
-          1: "#a8e8d0",
-          2: "#b0e4c0",
-          3: "#c8e4a8",
-          4: "#dce498",
-          5: "#ecdca0",
-          6: "#f0cca0",
-          7: "#f0b8b0",
-          8: "#eca8c0",
-          9: "#e898c4",
-          10: "#e088c0",
+          1: "#f2efe8",
+          2: "#efe6d4",
+          3: "#ecdcc0",
+          4: "#e8d0ac",
+          5: "#e4c49c",
+          6: "#e0b498",
+          7: "#dca4a0",
+          8: "#dc98b8",
+          9: "#e488cc",
+          10: "#f080e0",
         },
       },
 
       fontFamily: {
         display: ["var(--font-display)", "Libre Franklin", "sans-serif"],
-        brand: ["var(--font-display)", "Libre Franklin", "sans-serif"],
+        brand: ["var(--font-brand)", "Fraunces", "serif"],
         heading: ["var(--font-display)", "Libre Franklin", "sans-serif"],
-        body: ["var(--font-body)", "DM Sans", "sans-serif"],
+        body: ["var(--font-body)", "Public Sans", "sans-serif"],
         mono: ["var(--font-mono)", "IBM Plex Mono", "monospace"],
       },
 
@@ -168,17 +182,21 @@ const config: Config = {
       },
 
       boxShadow: {
-        // Neobrutalist hard shadows
-        hard: "4px 4px 0px #1a1a1a",
-        "hard-sm": "3px 3px 0px #1a1a1a",
-        "hard-lg": "6px 6px 0px #1a1a1a",
-        "hard-pink": "4px 4px 0px #ff90e8",
-        // Kept for backwards compat
-        glass: "4px 4px 0px #1a1a1a",
-        "glass-sm": "3px 3px 0px #1a1a1a",
-        glow: "4px 4px 0px #ff90e8",
-        "glow-sm": "3px 3px 0px #ff90e8",
-        "glow-teal": "4px 4px 0px #23c8a0",
+        // Stacked multi-layer shadows (3D extruded blocks)
+        stacked: SHADOW_DARK,
+        "stacked-sm": SHADOW_DARK_SM,
+        "stacked-lg": SHADOW_DARK_LG,
+        "stacked-accent": SHADOW_ACCENT,
+        // Legacy aliases
+        hard: SHADOW_DARK,
+        "hard-sm": SHADOW_DARK_SM,
+        "hard-lg": SHADOW_DARK_LG,
+        "hard-pink": SHADOW_ACCENT,
+        glass: SHADOW_DARK,
+        "glass-sm": SHADOW_DARK_SM,
+        glow: SHADOW_ACCENT,
+        "glow-sm": SHADOW_ACCENT_SM,
+        "glow-teal": SHADOW_TEAL,
       },
     },
   },

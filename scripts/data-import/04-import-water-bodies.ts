@@ -12,6 +12,7 @@
  *   - Run supabase/migrations/002_building_functions.sql in SQL Editor
  *
  * Usage: npx tsx scripts/data-import/04-import-water-bodies.ts
+ *        npx tsx scripts/data-import/04-import-water-bodies.ts --distances-only
  */
 
 import { supabase } from './lib/supabaseAdmin'
@@ -25,6 +26,11 @@ interface OverpassElement {
   id: number
   tags?: Record<string, string>
   geometry?: Array<{ lat: number; lon: number }>
+  members?: Array<{
+    type: string
+    role: string
+    geometry?: Array<{ lat: number; lon: number }>
+  }>
 }
 
 async function queryOverpass(query: string): Promise<{ elements: OverpassElement[] }> {
@@ -61,10 +67,53 @@ async function queryOverpass(query: string): Promise<{ elements: OverpassElement
 }
 
 function classifyWaterType(tags: Record<string, string>): string {
+  // Sea & coastal water
   if (tags.water === 'sea' || tags.water === 'bay' || tags.water === 'cove') return 'sea'
+  // Rivers
   if (tags.water === 'river' || tags.waterway === 'riverbank') return 'river'
+  // Ponds & small artificial basins (should NOT affect property price premium)
+  if (tags.water === 'pond' || tags.water === 'basin' || tags.water === 'wastewater'
+    || tags.water === 'reflecting_pool' || tags.water === 'fountain'
+    || tags.water === 'fish_pass' || tags.water === 'moat') return 'pond'
+  // Reservoirs
   if (tags.water === 'reservoir') return 'reservoir'
+  // Explicitly tagged lakes
+  if (tags.water === 'lake' || tags.water === 'oxbow') return 'lake'
+  // Default: natural=water without specific water=* tag
+  // Could be lake or pond — classify as 'lake' and let area filter in SQL handle it
   return 'lake'
+}
+
+/**
+ * Convert an OSM relation's members into a MultiPolygon.
+ * Each outer-role member with geometry becomes a separate polygon.
+ * Large lakes (Pyhäjärvi, Näsijärvi, etc.) are mapped as relations in OSM.
+ */
+function relationToMultiPolygon(
+  members: Array<{ type: string; role: string; geometry?: Array<{ lat: number; lon: number }> }>
+): { type: 'MultiPolygon'; coordinates: number[][][][] } | null {
+  const outerRings: number[][][] = []
+
+  for (const member of members) {
+    // Accept 'outer' role and default '' role (some relations use empty role for outer)
+    if (member.role !== 'outer' && member.role !== '') continue
+    if (!member.geometry || member.geometry.length < 4) continue
+
+    const ring = member.geometry.map((p) => [p.lon, p.lat])
+    // Ensure closed ring
+    const first = ring[0]
+    const last = ring[ring.length - 1]
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      ring.push([first[0], first[1]])
+    }
+    outerRings.push(ring)
+  }
+
+  if (outerRings.length === 0) return null
+  return {
+    type: 'MultiPolygon',
+    coordinates: outerRings.map((ring) => [ring]),
+  }
 }
 
 function wayToMultiPolygon(
@@ -107,13 +156,15 @@ async function importWaterBodies(): Promise<number> {
 
     console.log(`${city.name}: querying water in [${w.toFixed(2)}, ${s.toFixed(2)}, ${e.toFixed(2)}, ${n.toFixed(2)}]`)
 
-    // Query water polygon ways (lakes, ponds, bays, rivers, reservoirs)
+    // Query water polygons: ways AND relations (large lakes are OSM relations)
     const query = `
-      [out:json][timeout:120];
+      [out:json][timeout:180];
       (
         way["natural"="water"](${s},${w},${n},${e});
         way["water"](${s},${w},${n},${e});
         way["waterway"="riverbank"](${s},${w},${n},${e});
+        relation["natural"="water"](${s},${w},${n},${e});
+        relation["water"](${s},${w},${n},${e});
       );
       out body geom;
     `
@@ -122,12 +173,22 @@ async function importWaterBodies(): Promise<number> {
     console.log(`  ${data.elements.length} water features received`)
 
     let added = 0
+    let relations = 0
     for (const el of data.elements) {
-      if (el.type !== 'way') continue
+      if (el.type !== 'way' && el.type !== 'relation') continue
       if (allWater.has(el.id)) continue
-      if (!el.geometry || el.geometry.length < 4) continue
 
-      const multiPoly = wayToMultiPolygon(el.geometry)
+      let multiPoly: { type: 'MultiPolygon'; coordinates: number[][][][] } | null = null
+
+      if (el.type === 'way') {
+        if (!el.geometry || el.geometry.length < 4) continue
+        multiPoly = wayToMultiPolygon(el.geometry)
+      } else if (el.type === 'relation') {
+        if (!el.members) continue
+        multiPoly = relationToMultiPolygon(el.members)
+        if (multiPoly) relations++
+      }
+
       if (!multiPoly) continue
 
       const tags = el.tags ?? {}
@@ -141,6 +202,10 @@ async function importWaterBodies(): Promise<number> {
       added++
     }
 
+    if (relations > 0) {
+      console.log(`  Including ${relations} relation-type water bodies (large lakes)`)
+    }
+
     console.log(`  ${added} new water bodies added (total unique: ${allWater.size})`)
 
     // Overpass rate limit
@@ -150,9 +215,31 @@ async function importWaterBodies(): Promise<number> {
     }
   }
 
-  console.log(`\nInserting ${allWater.size} unique water bodies...`)
+  // Log classification breakdown
+  const typeCounts = new Map<string, number>()
+  for (const w of allWater.values()) {
+    typeCounts.set(w.waterType, (typeCounts.get(w.waterType) ?? 0) + 1)
+  }
+  console.log(`\nWater body classification:`)
+  for (const [type, count] of [...typeCounts.entries()].sort((a, b) => b[1] - a[1])) {
+    const marker = (type === 'lake' || type === 'sea') ? '✓ (counts for price)' : '✗ (excluded)'
+    console.log(`  ${type}: ${count} ${marker}`)
+  }
 
-  // Insert in batches
+  console.log(`\nClearing existing water bodies and re-inserting ${allWater.size}...`)
+
+  // Delete all existing water bodies (full re-import)
+  const { error: deleteError } = await supabase
+    .from('water_bodies')
+    .delete()
+    .gte('id', '00000000-0000-0000-0000-000000000000') // match all rows
+  if (deleteError) {
+    console.error('Failed to delete existing water bodies:', deleteError.message)
+  } else {
+    console.log('  Cleared existing water bodies')
+  }
+
+  // Insert in batches (no upsert — clean table)
   const waterList = Array.from(allWater.values())
   let inserted = 0
   const BATCH_SIZE = 100
@@ -193,15 +280,18 @@ async function computeWaterDistances() {
   console.log('This may take several minutes...\n')
 
   // Check how many buildings need distance computation
+  // Use estimated count to avoid timeout on large tables
   const { count } = await supabase
     .from('buildings')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'estimated', head: true })
     .not('area_id', 'is', null)
     .is('min_distance_to_water_m', null)
 
-  console.log(`Buildings needing water distance: ${count}`)
+  console.log(`Buildings needing water distance: ${count ?? 'unknown (count timed out)'}`)
 
-  if (!count || count === 0) {
+  // Don't bail on null count — it means the query timed out, not that there are 0 rows.
+  // Just proceed and let the RPC loop discover when there are no more rows.
+  if (count === 0) {
     console.log('All buildings already have water distances.')
     return
   }
@@ -213,7 +303,7 @@ async function computeWaterDistances() {
     batchNum++
 
     const { data, error } = await supabase.rpc('compute_water_distances_batch', {
-      p_limit: 500,
+      p_limit: 100,
     })
 
     if (error) {
@@ -225,12 +315,19 @@ SET min_distance_to_water_m = sub.dist
 FROM (
   SELECT b2.id,
     COALESCE(
-      (SELECT MIN(ST_Distance(b2.centroid::geography, w.geometry::geography))
-       FROM (SELECT geometry FROM water_bodies ORDER BY b2.centroid <-> geometry LIMIT 3) w),
+      (SELECT MIN(ST_Distance(b2.geometry::geography, w.geometry::geography))
+       FROM (
+         SELECT geometry FROM water_bodies
+         WHERE water_type IN ('lake', 'sea')
+           AND (water_type = 'sea' OR ST_Area(geometry::geography) > 10000)
+         ORDER BY b2.centroid <-> geometry
+         LIMIT 5
+       ) w),
       99999
     ) AS dist
   FROM buildings b2
-  WHERE b2.centroid IS NOT NULL AND b2.min_distance_to_water_m IS NULL AND b2.area_id IS NOT NULL
+  WHERE b2.centroid IS NOT NULL AND b2.geometry IS NOT NULL
+    AND b2.min_distance_to_water_m IS NULL AND b2.area_id IS NOT NULL
   LIMIT 500
 ) sub
 WHERE b.id = sub.id;
@@ -244,9 +341,9 @@ WHERE b.id = sub.id;
 
     totalUpdated += batchCount
 
-    if (batchNum % 10 === 0 || batchCount < 500) {
+    if (batchNum % 50 === 0 || batchCount < 100) {
       console.log(
-        `  Batch ${batchNum}: +${batchCount} (total: ${totalUpdated}/${count})`
+        `  Batch ${batchNum}: +${batchCount} (total: ${totalUpdated}${count ? `/${count}` : ''})`
       )
     }
   }
@@ -255,15 +352,18 @@ WHERE b.id = sub.id;
 }
 
 async function main() {
-  console.log('=== Water Bodies Import (Overpass API) ===\n')
+  const distancesOnly = process.argv.includes('--distances-only')
 
-  const count = await importWaterBodies()
-
-  if (count > 0) {
+  if (distancesOnly) {
+    console.log('=== Recompute Water Distances Only ===\n')
+    await computeWaterDistances()
+  } else {
+    console.log('=== Water Bodies Import (Overpass API) ===\n')
+    await importWaterBodies()
     await computeWaterDistances()
   }
 
-  console.log('\n=== Import complete ===')
+  console.log('\n=== Complete ===')
 }
 
 main().catch((err) => {

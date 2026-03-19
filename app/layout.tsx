@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Libre_Franklin, DM_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Libre_Franklin, Public_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 
@@ -10,10 +10,17 @@ const libreFranklin = Libre_Franklin({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const dmSans = DM_Sans({
+const publicSans = Public_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-brand",
+  display: "swap",
+  weight: ["800", "900"],
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
@@ -54,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="fi"
-      className={`${libreFranklin.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}
+      className={`${libreFranklin.variable} ${publicSans.variable} ${ibmPlexMono.variable} ${fraunces.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased">

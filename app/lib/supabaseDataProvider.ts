@@ -21,9 +21,11 @@ import {
   computeAgeFactor,
   computeWaterFactor,
   computeFloorFactor,
+  dampenPremium,
   inferPropertyType,
   OKT_FALLBACK,
 } from './priceEstimation'
+import { ALL_POSTAL_PREFIXES } from './cities'
 
 export class SupabaseDataProvider implements DataProvider {
   private supabase: SupabaseClient
@@ -43,45 +45,54 @@ export class SupabaseDataProvider implements DataProvider {
     })
   }
 
+  /** Postal prefixes for cities with dense Voronoi data (from shared cities.ts) */
+  private static VORONOI_PREFIXES = ALL_POSTAL_PREFIXES
+
   async getAreasGeoJSON(
     year: number,
     propertyType: PropertyType
   ): Promise<GeoJSONFeatureCollection> {
-    // Fetch postal code centroids + prices
+    // Fetch postal code centroids + prices — only target cities
+    // (municipality choropleth handles the zoomed-out Finland-wide view)
     const { data: areas, error } = await this.supabase
       .from('areas')
       .select(`
+        id,
         area_code,
         name,
         municipality,
         centroid
       `)
+      .or(
+        SupabaseDataProvider.VORONOI_PREFIXES
+          .map(p => `area_code.like.${p}%`)
+          .join(',')
+      )
 
     if (error) {
       console.error('Error fetching areas:', error.message)
       return { type: 'FeatureCollection', features: [] }
     }
 
-    // Fetch prices for all areas for this year + property type
+    // Build reverse map from the areas we already fetched (no extra query needed)
+    const areaIdToCode = new Map<string, string>()
+    const areaIds: string[] = []
+    for (const a of areas ?? []) {
+      areaIdToCode.set(a.id, a.area_code)
+      areaIds.push(a.id)
+    }
+
+    // Fetch prices scoped to only the target areas
     const { data: prices, error: priceError } = await this.supabase
       .from('price_estimates')
       .select('area_id, price_per_sqm_avg')
+      .in('area_id', areaIds)
       .eq('year', year)
       .eq('property_type', propertyType)
       .not('price_per_sqm_avg', 'is', null)
 
     if (priceError) {
       console.error('Error fetching prices:', priceError.message)
-    }
-
-    // Fetch area IDs for mapping
-    const { data: areaIds } = await this.supabase
-      .from('areas')
-      .select('id, area_code')
-
-    const areaIdToCode = new Map<string, string>()
-    for (const a of areaIds ?? []) {
-      areaIdToCode.set(a.id, a.area_code)
     }
 
     // Build price lookup by area_code
@@ -318,31 +329,34 @@ export class SupabaseDataProvider implements DataProvider {
 
     if (error || !building) return null
 
-    // Fetch area info
-    let areaCode = ''
-    let areaName = ''
-    let basePrice: number | null = null
     const propertyType = inferPropertyType(
       building.building_type,
       building.floor_count
     )
 
+    // Fetch area info, base price, and neighborhood factor in parallel
+    let areaCode = ''
+    let areaName = ''
+    let basePrice: number | null = null
+    let neighborhoodFactor = 1.0
+
     if (building.area_id) {
-      const { data: area } = await this.supabase
-        .from('areas')
-        .select('area_code, name')
-        .eq('id', building.area_id)
-        .single()
+      const [areaResult, basePriceResult, nbhdFactor] = await Promise.all([
+        this.supabase
+          .from('areas')
+          .select('area_code, name')
+          .eq('id', building.area_id)
+          .single(),
+        this.lookupBasePrice(building.area_id, propertyType),
+        this.lookupNeighborhoodFactor(building.area_id, propertyType),
+      ])
 
-      if (area) {
-        areaCode = area.area_code
-        areaName = area.name
+      if (areaResult.data) {
+        areaCode = areaResult.data.area_code
+        areaName = areaResult.data.name
       }
-
-      basePrice = await this.lookupBasePrice(
-        building.area_id,
-        propertyType
-      )
+      basePrice = basePriceResult
+      neighborhoodFactor = nbhdFactor
     }
 
     // Compute the factors for the breakdown
@@ -353,15 +367,6 @@ export class SupabaseDataProvider implements DataProvider {
         : null
     )
     const floorFactor = computeFloorFactor(building.floor_count, propertyType)
-
-    // Look up neighborhood correction factor
-    let neighborhoodFactor = 1.0
-    if (building.area_id) {
-      neighborhoodFactor = await this.lookupNeighborhoodFactor(
-        building.area_id,
-        propertyType
-      )
-    }
 
     return {
       id: building.id,
@@ -416,14 +421,14 @@ export class SupabaseDataProvider implements DataProvider {
     const municipalityAreaIds = await this.resolveMunicipalityAreaIds(areaId)
     if (!municipalityAreaIds) return null
 
-    const munPrice = await this.fetchMunicipalityAvgPrice(municipalityAreaIds, propertyType)
+    const munPrice = await this.fetchMunicipalityMedianPrice(municipalityAreaIds, propertyType)
     if (munPrice !== null) return munPrice
 
     if (propertyType === 'omakotitalo') {
       // Fetch rivitalo and kerrostalo in parallel — they are independent lookups
       const [munRivitalo, munKerrostalo] = await Promise.all([
-        this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'rivitalo'),
-        this.fetchMunicipalityAvgPrice(municipalityAreaIds, 'kerrostalo'),
+        this.fetchMunicipalityMedianPrice(municipalityAreaIds, 'rivitalo'),
+        this.fetchMunicipalityMedianPrice(municipalityAreaIds, 'kerrostalo'),
       ])
       if (munRivitalo !== null) return munRivitalo * OKT_FALLBACK.fromRivitalo
       if (munKerrostalo !== null) return munKerrostalo * OKT_FALLBACK.fromKerrostalo
@@ -434,9 +439,12 @@ export class SupabaseDataProvider implements DataProvider {
 
   /**
    * Look up neighborhood correction factor from market data.
-   * Single query fetches both exact type and 'all' fallback, then cascades client-side.
-   * Fallback: exact type → 'all' → 1.0
-   * (Municipality median fallback is handled in the SQL function for batch computation)
+   * Cascade (matches SQL function compute_building_price, migration 012):
+   *   1. area + exact type, sample_count ≥ 3 (high/medium confidence)
+   *   2. area + 'all', sample_count ≥ 3
+   *   3. Final: 1.0 (neutral)
+   *
+   * No municipality median fallback — with sparse data it creates bias.
    */
   private async lookupNeighborhoodFactor(
     areaId: string,
@@ -503,11 +511,11 @@ export class SupabaseDataProvider implements DataProvider {
   }
 
   /**
-   * Municipality-level average price fallback.
-   * Returns the average price across all postal codes in the same municipality
+   * Municipality-level median price fallback.
+   * Returns the median price across all postal codes in the same municipality
    * for the most recent year with data.
    */
-  private async fetchMunicipalityAvgPrice(
+  private async fetchMunicipalityMedianPrice(
     municipalityAreaIds: string[],
     propertyType: string
   ): Promise<number | null> {
@@ -526,11 +534,14 @@ export class SupabaseDataProvider implements DataProvider {
     const latestYear = (prices[0] as PriceRow).year
     const latestPrices = (prices as PriceRow[]).filter((p) => p.year === latestYear)
 
-    const sum = latestPrices.reduce(
-      (acc, p) => acc + Number(p.price_per_sqm_median ?? p.price_per_sqm_avg),
-      0
-    )
-    return sum / latestPrices.length
+    // Use median instead of average — robust against premium-area outliers
+    const values = latestPrices
+      .map((p) => Number(p.price_per_sqm_median ?? p.price_per_sqm_avg))
+      .sort((a, b) => a - b)
+    const mid = Math.floor(values.length / 2)
+    return values.length % 2 === 0
+      ? (values[mid - 1] + values[mid]) / 2
+      : values[mid]
   }
 }
 

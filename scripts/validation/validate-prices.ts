@@ -7,7 +7,7 @@
  */
 
 import { supabase } from '../data-import/lib/supabaseAdmin'
-import { computeAgeFactor, computeWaterFactor, computeFloorFactor, OKT_FALLBACK } from '../../app/lib/priceEstimation'
+import { computeAgeFactor, computeWaterFactor, computeFloorFactor, dampenPremium, OKT_FALLBACK } from '../../app/lib/priceEstimation'
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 
@@ -240,12 +240,16 @@ async function fetchMunicipalityAvgPrice(
   type PriceRow = { year: number; price_per_sqm_avg: number; price_per_sqm_median: number | null }
   const latestYear = (prices[0] as PriceRow).year
   const latestPrices = (prices as PriceRow[]).filter((p) => p.year === latestYear)
-  const sum = latestPrices.reduce(
-    (acc, p) => acc + Number(p.price_per_sqm_median ?? p.price_per_sqm_avg),
-    0
-  )
+  // Use median instead of average — robust against premium-area outliers
+  const values = latestPrices
+    .map((p) => Number(p.price_per_sqm_median ?? p.price_per_sqm_avg))
+    .sort((a, b) => a - b)
+  const mid = Math.floor(values.length / 2)
+  const median = values.length % 2 === 0
+    ? (values[mid - 1] + values[mid]) / 2
+    : values[mid]
   return {
-    price: sum / latestPrices.length,
+    price: median,
     source: `${propertyType}@municipality(${latestYear})`,
   }
 }
@@ -286,7 +290,8 @@ async function fetchNeighborhoodFactor(
   areaId: string,
   propertyType: string
 ): Promise<number> {
-  // Single query fetches both exact type and 'all' fallback
+  // Only use high/medium confidence factors (≥3 samples)
+  // No municipality median fallback — with sparse data it biases results
   const { data } = await supabase
     .from('neighborhood_factors')
     .select('factor, property_type')
@@ -305,11 +310,11 @@ async function fetchNeighborhoodFactor(
   return 1.0
 }
 
-// Municipality codes
+// Municipality names (matching the 'municipality' column in the areas table)
 const cityToMunicipality: Record<string, string> = {
-  Helsinki: '091',
-  Tampere: '837',
-  Turku: '853',
+  Helsinki: 'Helsinki',
+  Tampere: 'Tampere',
+  Turku: 'Turku',
 }
 
 const REFERENCE_YEAR = 2026
@@ -385,10 +390,11 @@ async function main() {
     }
     const floorFactor = computeFloorFactor(floorCount, ptMap[listing.type])
 
-    // Look up neighborhood factor
+    // Look up neighborhood factor, apply dampening for old buildings
     let neighborhoodFactor = 1.0
     if (areaInfo) {
-      neighborhoodFactor = await fetchNeighborhoodFactor(areaInfo.id, propertyType)
+      const rawFactor = await fetchNeighborhoodFactor(areaInfo.id, propertyType)
+      neighborhoodFactor = dampenPremium(rawFactor, ageFactor)
     }
 
     const ourEstimate = basePrice !== null

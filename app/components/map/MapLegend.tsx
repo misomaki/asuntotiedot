@@ -4,17 +4,41 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { PRICE_COLORS, PRICE_LABELS, BUILDING_OUTLINE_COLORS } from '@/app/lib/colorScales'
 
+/** Dynamic scale from getDynamicScale() */
+interface DynamicScale {
+  breaks: number[]
+  colors: string[]
+  labels: string[]
+}
+
+interface MapLegendProps {
+  /** Dynamic scale for municipality-level view (null if not loaded) */
+  municipalityScale?: DynamicScale | null
+  /** Current map zoom level */
+  zoom?: number
+}
+
+/** Zoom threshold: below this we show municipality legend */
+const MUNICIPALITY_ZOOM_MAX = 9.5
+
 /**
  * Map legend showing the price color scale.
- * Fixed in the bottom-right corner of the map.
- * Can be collapsed/expanded.
+ * Switches between municipality-level and building-level scales based on zoom.
  */
-export default function MapLegend() {
+export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+
+  const showMunicipalityScale = zoom < MUNICIPALITY_ZOOM_MAX && municipalityScale
+
+  const colors = showMunicipalityScale ? municipalityScale.colors : PRICE_COLORS
+  const labels = showMunicipalityScale ? municipalityScale.labels : PRICE_LABELS
+  const outlineColors = showMunicipalityScale ? municipalityScale.colors : BUILDING_OUTLINE_COLORS
+
+  const title = showMunicipalityScale ? 'Kuntamedaani €/m²' : 'Hinta €/m²'
 
   return (
     <div className="absolute bottom-6 right-6 z-40">
-      <div className="neo-lift bg-white border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
+      <div className="neo-lift bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
         {/* Header / toggle button */}
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
@@ -22,7 +46,7 @@ export default function MapLegend() {
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Pienennä selite' : 'Laajenna selite'}
         >
-          <span>Hinta &euro;/m&sup2;</span>
+          <span>{title}</span>
           {isExpanded ? (
             <ChevronDown className="ml-2 h-4 w-4 text-[#999]" />
           ) : (
@@ -33,9 +57,9 @@ export default function MapLegend() {
         {/* Color scale entries */}
         {isExpanded && (
           <div className="px-3 pb-2.5 pt-0.5 space-y-1">
-            {PRICE_COLORS.map((color, index) => (
+            {colors.map((color, index) => (
               <div
-                key={index}
+                key={`${showMunicipalityScale ? 'm' : 'b'}-${index}`}
                 className="flex items-center gap-2 animate-pop-in"
                 style={{ animationDelay: `${index * 25}ms`, animationFillMode: 'both' }}
               >
@@ -43,11 +67,11 @@ export default function MapLegend() {
                   className="inline-block h-3 w-5 rounded-sm flex-shrink-0"
                   style={{
                     backgroundColor: color,
-                    border: `1.5px solid ${BUILDING_OUTLINE_COLORS[Math.min(index, BUILDING_OUTLINE_COLORS.length - 1)]}`,
+                    border: `1.5px solid ${outlineColors[Math.min(index, outlineColors.length - 1)]}`,
                   }}
                 />
                 <span className="text-xs text-[#666] font-mono whitespace-nowrap">
-                  {PRICE_LABELS[index]}
+                  {labels[index]}
                 </span>
               </div>
             ))}
