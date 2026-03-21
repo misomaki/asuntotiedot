@@ -17,19 +17,18 @@
 import { supabase } from './lib/supabaseAdmin'
 import { CITIES, type CityConfig } from './config'
 import { sleep } from './lib/pxwebClient'
+import {
+  NON_RESIDENTIAL_BUILDING_TYPES_SET,
+  IMPORT_ONLY_EXCLUDED_TYPES,
+} from '../../app/lib/buildingClassification'
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
 
-/** Non-residential building types to exclude */
+/** Non-residential building types to exclude at import time.
+ *  Combines the shared denylist with import-only niche types. */
 const EXCLUDED_BUILDING_TYPES = new Set([
-  'garage', 'garages', 'shed', 'barn', 'greenhouse', 'industrial',
-  'commercial', 'warehouse', 'retail', 'church', 'chapel', 'hospital',
-  'school', 'university', 'kindergarten', 'public', 'government',
-  'transportation', 'train_station', 'parking', 'service', 'roof',
-  'ruins', 'collapsed', 'construction', 'abandoned', 'bridge',
-  'bunker', 'cabin', 'cowshed', 'farm_auxiliary', 'hangar',
-  'hut', 'kiosk', 'storage_tank', 'silo', 'stable', 'tank',
-  'toilets', 'transformer_tower', 'water_tower',
+  ...NON_RESIDENTIAL_BUILDING_TYPES_SET,
+  ...IMPORT_ONLY_EXCLUDED_TYPES,
 ])
 
 interface OverpassElement {

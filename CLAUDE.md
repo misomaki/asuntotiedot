@@ -437,6 +437,29 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 
 **KRIITTINEN:** TypeScript-faktorit (`priceEstimation.ts`) ja SQL-faktorit (migraatiot) PITÄÄ päivittää yhdessä. Jos muutat esim. age factoria TypeScriptissä mutta unohdat SQL-migraation, tietokannassa lasketut arvot ja frontendin laskemat arvot eroavat.
 
+### Ei-asuinrakennusten denylist (pidä synkassa!)
+
+**Single source of truth:** `app/lib/buildingClassification.ts` → `NON_RESIDENTIAL_BUILDING_TYPES`
+
+| Sijainti | Käyttö | Synkronointi |
+|----------|--------|--------------|
+| `app/lib/buildingClassification.ts` | **TypeScript SSOT** — importataan kaikkialle TS-koodissa | Muokkaa TÄTÄ ensin |
+| `supabase/migrations/018_fix_nonresidential_denylist.sql` | SQL `compute_is_residential_batch()` denylist | **Manuaalinen synkronointi** — SQL ei voi importata TS:stä |
+| `app/lib/formatters.ts` → `BUILDING_TYPE_LABELS` | Suomenkieliset nimet tooltippeihin | Lisää label uudelle tyypille |
+| `scripts/data-import/03-import-buildings.ts` | Import-aikainen suodatus (importtaa SSOT:sta) | Automaattinen |
+
+**KRIITTINEN:** Kun lisäät uuden ei-asuinrakennustyypin:
+1. Lisää `buildingClassification.ts` → `NON_RESIDENTIAL_BUILDING_TYPES`
+2. Lisää `formatters.ts` → `BUILDING_TYPE_LABELS` (suomenkielinen nimi)
+3. Päivitä migraatio 018:n SQL-denylist manuaalisesti (copy-paste)
+4. Aja migraatio + reclassify-skripti
+
+**Luokitteluprioriteetit (migraatio 018, korjattu 2026-03):**
+1. **OSM building_type denylist** — korkein prioriteetti. Eksplisiittinen tagi on luotettava.
+2. **Ryhti main_purpose** — '01%' = asuinrakennus. Proximity-matchaus (50m) voi osua väärin tiheässä ympäristössä.
+3. **Pinta-alaheuristiikka** — < 30 m² = apurakennus (ei-asuinkäyttö).
+4. **Default: asuinrakennus** — konservatiivinen, ei jätä oikeita taloja pois.
+
 ### Neighborhood factor -järjestelmä
 
 - **`_etuovi_staging`**: Etuovi.fi-ilmoitusten raakadata (postal_code, property_type, asking_price_per_sqm, area_id)
