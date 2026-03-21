@@ -64,7 +64,6 @@ export function Sidebar() {
 
   // Determine panel width based on mode
   const panelWidth = isComparisonReady ? 'w-[720px]' : 'w-96'
-  const initialX = isComparisonReady ? -720 : -384
 
   // ---- Sidebar content ----
   function renderContent() {
