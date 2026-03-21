@@ -13,6 +13,13 @@
 -- ============================================================
 
 -- ============================================================
+-- 0. Ensure is_residential column exists (idempotent)
+-- ============================================================
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS is_residential BOOLEAN;
+CREATE INDEX IF NOT EXISTS idx_buildings_is_residential
+  ON buildings (is_residential) WHERE is_residential = true;
+
+-- ============================================================
 -- 1. Replace compute_is_residential_batch with expanded denylist
 -- ============================================================
 CREATE OR REPLACE FUNCTION compute_is_residential_batch(p_limit INT DEFAULT 5000)
