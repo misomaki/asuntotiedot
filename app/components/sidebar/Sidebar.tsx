@@ -111,7 +111,7 @@ export function Sidebar() {
   // ---- Floating building card (both mobile and desktop) ----
   const buildingCard = (
     <AnimatePresence>
-      {hasSelectedBuilding && (
+      {hasSelectedBuilding && (isDesktop || !isOpen) && (
         <motion.div
           key="building-card"
           initial={{ y: 20, opacity: 0 }}

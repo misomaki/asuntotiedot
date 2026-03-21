@@ -129,7 +129,7 @@ function Sheet({
               onClick={onClose}
               className={cn(
                 "absolute top-4 right-4 z-10",
-                "h-8 w-8 rounded-md flex items-center justify-center",
+                "h-11 w-11 rounded-md flex items-center justify-center",
                 "text-muted-foreground hover:text-foreground",
                 "hover:bg-muted/50 transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

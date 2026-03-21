@@ -30,6 +30,8 @@ const ibmPlexMono = IBM_Plex_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
+export { viewport } from './viewport'
+
 export const metadata: Metadata = {
   title: "Neliöt \u2013 Suomen asuntohinnat, nähtynä",
   description:

@@ -31,7 +31,7 @@ export default function MapControls() {
         onClick={handleResetView}
         aria-label="Palauta oletusnäkymä"
         title="Palauta oletusnäkymä"
-        className="neo-press bg-[#FFFBF5] border-2 border-[#1a1a1a] flex h-9 w-9 items-center justify-center rounded-lg text-[#666] hover:text-[#1a1a1a] shadow-hard-sm"
+        className="neo-press bg-[#FFFBF5] border-2 border-[#1a1a1a] flex h-11 w-11 items-center justify-center rounded-lg text-[#666] hover:text-[#1a1a1a] shadow-hard-sm"
       >
         <RotateCcw className="h-4 w-4" />
       </button>

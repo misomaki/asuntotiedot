@@ -711,7 +711,7 @@ export default function MapContainer() {
 
       {/* Compare mode indicator */}
       {isCompareMode && !selectedArea && comparedArea && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute top-[4.5rem] left-1/2 -translate-x-1/2 z-50">
           <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
             <div className="h-3 w-3 rounded-full bg-purple-500 animate-pulse" />
             Valitse toinen alue vertailuun
@@ -721,7 +721,7 @@ export default function MapContainer() {
 
       {/* Loading indicator */}
       {dataLoading && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute top-[4.5rem] left-1/2 -translate-x-1/2 z-50">
           <div className="relative overflow-hidden bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
             {/* Shimmer sweep across the pill */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />

@@ -209,9 +209,9 @@ export function Header() {
     [searchResults, handleSelectArea]
   )
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking/tapping outside
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClickOutside(e: PointerEvent) {
       if (
         searchContainerRef.current &&
         !searchContainerRef.current.contains(e.target as Node)
@@ -226,8 +226,8 @@ export function Header() {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('pointerdown', handleClickOutside)
+    return () => document.removeEventListener('pointerdown', handleClickOutside)
   }, [])
 
   // Close mobile menu when switching to desktop
@@ -376,7 +376,7 @@ export function Header() {
                 type="button"
                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 className={cn(
-                  'h-8 w-8 rounded-md flex items-center justify-center',
+                  'h-11 w-11 rounded-md flex items-center justify-center',
                   'text-[#666] hover:text-[#1a1a1a]',
                   'hover:bg-pink-baby transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink'
@@ -416,7 +416,7 @@ export function Header() {
                   onKeyDown={handleSearchKeyDown}
                   placeholder="Hae postinumeroa..."
                   className={cn(
-                    'w-full h-9 pr-2.5 text-sm bg-transparent text-[#1a1a1a]',
+                    'w-full h-11 pr-2.5 text-[16px] bg-transparent text-[#1a1a1a]',
                     'placeholder:text-[#999]',
                     'focus:outline-none font-body'
                   )}
