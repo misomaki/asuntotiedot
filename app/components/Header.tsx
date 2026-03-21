@@ -45,7 +45,7 @@ function SearchResultItem({
       className={cn(
         'w-full px-3 text-left',
         'flex items-center gap-2',
-        compact ? 'py-2 text-xs' : 'py-2.5 text-sm',
+        compact ? 'py-2 text-xs' : 'py-3 text-sm',
         'text-[#1a1a1a]',
         'hover:bg-pink-baby transition-colors',
         'focus-visible:outline-none focus-visible:bg-pink-baby',
@@ -53,11 +53,11 @@ function SearchResultItem({
       )}
       style={compact && index !== undefined ? { animationDelay: `${index * 30}ms`, animationFillMode: 'both' } : undefined}
     >
-      <span className="font-mono text-[#999] flex-shrink-0" data-number>
+      <span className={cn('font-mono text-[#999] flex-shrink-0', !compact && 'text-sm')} data-number>
         {area.areaCode}
       </span>
       <span className="truncate">{area.name}</span>
-      <span className={cn('text-[#999] ml-auto flex-shrink-0', !compact && 'text-xs')}>
+      <span className={cn('text-[#999] ml-auto flex-shrink-0', !compact && 'text-sm')}>
         {area.municipality}
       </span>
     </button>
@@ -68,11 +68,11 @@ function SearchResultItem({
 function SearchNoResults({ compact }: { compact: boolean }) {
   return (
     <div className={cn(
-      'px-3 py-3 text-muted-foreground text-center',
+      'px-3 py-4 text-muted-foreground text-center',
       compact ? 'text-xs animate-fade-in' : 'text-sm',
     )}>
       <p className="font-medium">Ei tuloksia</p>
-      <p className={cn('mt-0.5', compact ? 'text-[10px]' : 'text-xs')}>
+      <p className={cn('mt-0.5', compact ? 'text-[10px]' : 'text-sm')}>
         Kokeile postinumeroa tai alueen nimeä
       </p>
     </div>
@@ -236,27 +236,27 @@ export function Header() {
         {/* Main header bar */}
         <div
           className={cn(
-            'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl h-11 md:h-14 px-3 md:px-4',
+            'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl h-14 md:h-14 px-3 md:px-4',
             'flex items-center gap-3 md:gap-4',
             'shadow-hard-sm'
           )}
         >
           {/* Left: Logo + Brand name */}
           <h1 className="flex-shrink-0 flex items-center gap-2">
-            <LogoMark size={isDesktop ? 32 : 26} />
+            <LogoMark size={isDesktop ? 32 : 28} />
             <span className="font-brand text-xl tracking-tight text-[#1a1a1a] hidden md:inline">
               Neliöt
             </span>
           </h1>
 
           {/* Search + Year selector — inline on both mobile and desktop */}
-          <div className="flex items-center gap-1.5 md:gap-2 ml-auto flex-1 md:flex-none justify-end">
+          <div className="flex items-center gap-2 md:gap-2 ml-auto flex-1 md:flex-none justify-end">
             {/* Search input */}
             <div ref={searchContainerRef} className="relative flex-1 md:flex-none">
               <div
                 className={cn(
                   'neo-press',
-                  'flex items-center gap-1.5 md:gap-2 h-7 md:h-8 rounded-lg border-2 bg-bg-primary',
+                  'flex items-center gap-1.5 md:gap-2 h-10 md:h-9 rounded-lg border-2 bg-bg-primary',
                   'border-[#1a1a1a] shadow-hard-sm',
                   'transition-all duration-200',
                   isDesktop
@@ -265,8 +265,8 @@ export function Header() {
                 )}
               >
                 <Search
-                  size={isDesktop ? 14 : 13}
-                  className="ml-2 md:ml-2.5 text-[#999] md:text-[#1a1a1a] flex-shrink-0"
+                  size={isDesktop ? 14 : 16}
+                  className="ml-2.5 md:ml-2.5 text-[#999] md:text-[#1a1a1a] flex-shrink-0"
                 />
                 <input
                   ref={searchInputRef}
@@ -282,7 +282,7 @@ export function Header() {
                     'focus:outline-none',
                     isDesktop
                       ? 'text-xs font-mono font-bold'
-                      : 'text-[13px] font-body'
+                      : 'text-sm font-body'
                   )}
                 />
                 {/* Mobile: clear button when searching */}
@@ -290,10 +290,10 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => { setSearchQuery(''); searchInputRef.current?.focus() }}
-                    className="pr-2 text-[#999] hover:text-[#1a1a1a] flex-shrink-0"
+                    className="pr-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#999] hover:text-[#1a1a1a] flex-shrink-0"
                     aria-label="Tyhjennä haku"
                   >
-                    <X size={14} />
+                    <X size={18} />
                   </button>
                 )}
               </div>
@@ -334,16 +334,16 @@ export function Header() {
                 aria-expanded={isYearOpen}
                 className={cn(
                   'neo-press',
-                  'h-7 md:h-8 px-2 md:px-3 text-xs font-mono font-bold rounded-lg',
+                  'h-10 md:h-9 px-3 md:px-3 text-sm md:text-xs font-mono font-bold rounded-lg',
                   'border-2 border-[#1a1a1a] bg-pink-baby text-[#1a1a1a]',
                   'shadow-hard-sm',
-                  'flex items-center gap-1 md:gap-1.5',
+                  'flex items-center gap-1.5 md:gap-1.5',
                   'focus:outline-none focus:ring-2 focus:ring-pink-baby',
                   'cursor-pointer select-none'
                 )}
               >
                 {filters.year}
-                <ChevronDown size={11} className={cn('transition-transform', isYearOpen && 'rotate-180')} />
+                <ChevronDown size={isDesktop ? 11 : 14} className={cn('transition-transform', isYearOpen && 'rotate-180')} />
               </button>
 
               {isYearOpen && (
@@ -352,7 +352,7 @@ export function Header() {
                     'absolute top-full right-0 mt-1.5 z-50',
                     'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                     'shadow-hard overflow-hidden',
-                    'min-w-[80px]',
+                    'min-w-[90px] md:min-w-[80px]',
                   )}
                 >
                   {YEARS.map((year, i) => (
@@ -364,8 +364,8 @@ export function Header() {
                         setIsYearOpen(false)
                       }}
                       className={cn(
-                        'w-full px-3 py-1.5 text-left',
-                        'text-xs font-mono font-bold text-[#1a1a1a]',
+                        'w-full px-3 py-2.5 md:py-1.5 text-left',
+                        'text-sm md:text-xs font-mono font-bold text-[#1a1a1a]',
                         'hover:bg-pink-baby transition-colors',
                         'focus-visible:outline-none focus-visible:bg-pink-baby',
                         year === filters.year && 'bg-pink-baby text-[#1a1a1a]',
