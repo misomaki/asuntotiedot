@@ -761,7 +761,6 @@ export default function MapContainer() {
           <div className="relative overflow-hidden bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
             {/* Shimmer sweep across the pill */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
-            <span className="relative inline-block h-3 w-3 rounded-full border-2 border-pink border-t-transparent animate-spin" />
             <span className="relative">Ladataan aluedataa...</span>
           </div>
         </div>
