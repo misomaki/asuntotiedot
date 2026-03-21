@@ -15,7 +15,7 @@ import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
 import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression } from '@/app/lib/colorScales'
-import { formatPricePerSqm } from '@/app/lib/formatters'
+import { formatPricePerSqm, getBuildingTypeLabel } from '@/app/lib/formatters'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
 import MapTooltip from './MapTooltip'
@@ -285,7 +285,7 @@ export default function MapContainer() {
         setHoveredBuildingUuid(props.id ?? (String(feature.id ?? '') || null))
         setTooltipContent({ type: 'building', props })
         setTooltipPosition({ x: evt.point.x, y: evt.point.y })
-        setCursor('pointer')
+        setCursor(props.is_residential === false ? 'default' : 'pointer')
       } else if (feature && feature.properties && feature.layer?.id === 'municipality-fill') {
         setHoveredBuildingUuid(null)
         const props = feature.properties as HoveredMunicipalityProperties
@@ -619,7 +619,12 @@ export default function MapContainer() {
             minzoom={14}
             paint={{
               'fill-color': buildingColorExpression,
-              'fill-opacity': 0.68,
+              'fill-opacity': [
+                'case',
+                ['==', ['get', 'is_residential'], false],
+                0.35,
+                0.68,
+              ] as unknown as ExpressionSpecification,
             }}
           />
           {/* Subtle texture overlay — diagonal dot grain on buildings */}
@@ -643,6 +648,12 @@ export default function MapContainer() {
               'line-color': buildingOutlineColorExpression,
               'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1.2, 16, 2.0] as unknown as ExpressionSpecification,
               'line-blur': 0.4,
+              'line-opacity': [
+                'case',
+                ['==', ['get', 'is_residential'], false],
+                0.35,
+                1,
+              ] as unknown as ExpressionSpecification,
             }}
           />
           {/* Hover highlight — brighter fill on hovered building */}
@@ -755,6 +766,10 @@ function BuildingTooltip({
   const isResidential = props.is_residential !== false
 
   if (!isResidential) {
+    const buildingLabel = props.building_type
+      ? getBuildingTypeLabel(props.building_type)
+      : 'Ei asuinkäytössä'
+
     return (
       <div
         className="absolute z-40 pointer-events-none animate-scale-in"
@@ -767,7 +782,7 @@ function BuildingTooltip({
       >
         <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl px-3 py-2 shadow-hard-sm">
           <div className="text-sm text-muted-foreground">
-            Ei asuinkäytössä
+            {buildingLabel}
           </div>
         </div>
       </div>

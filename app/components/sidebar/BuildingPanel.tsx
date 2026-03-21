@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { cn } from '@/app/lib/utils'
-import { formatNumber } from '@/app/lib/formatters'
+import { formatNumber, getBuildingTypeLabel } from '@/app/lib/formatters'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { CompactAttribute } from '@/app/components/sidebar/CompactAttribute'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -420,25 +420,6 @@ function formatFactor(factor: number): string {
   const sign = factor > 1 ? '+' : ''
   const pct = ((factor - 1) * 100).toFixed(0)
   return `×${factor.toFixed(2)} (${sign}${pct}%)`
-}
-
-function getBuildingTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    apartments: 'Kerrostalo',
-    residential: 'Asuinrakennus',
-    house: 'Omakotitalo',
-    detached: 'Omakotitalo',
-    semidetached_house: 'Paritalo',
-    terrace: 'Rivitalo',
-    commercial: 'Liikerakennus',
-    industrial: 'Teollisuusrakennus',
-    retail: 'Liikerakennus',
-    office: 'Toimistorakennus',
-    garage: 'Autotalli',
-    shed: 'Varasto',
-    yes: 'Rakennus',
-  }
-  return labels[type] ?? type
 }
 
 /**

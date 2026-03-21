@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { Search, Menu, X, ChevronDown } from 'lucide-react'
+import { Search, X, ChevronDown } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
-import { FilterBar } from '@/app/components/sidebar/FilterBar'
 import { LogoMark } from '@/app/components/brand/LogoMark'
 import { cn } from '@/app/lib/utils'
 
@@ -88,8 +87,7 @@ function SearchNoResults({ compact }: { compact: boolean }) {
  * Header – Floating header bar at the top of the map.
  *
  * Contains the app logo, year selector, and a search input for finding
- * postal code areas. On mobile it collapses to just the logo and a
- * hamburger menu that opens the filter controls.
+ * postal code areas. Controls are inline on both mobile and desktop.
  */
 export function Header() {
   const {
@@ -97,14 +95,11 @@ export function Header() {
     updateFilter,
     setSelectedArea,
     setIsSidebarOpen,
-    viewport,
+    viewport: { zoom: currentZoom },
     flyTo,
   } = useMapContext()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
-
-  // Mobile menu state
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Year picker state
   const [isYearOpen, setIsYearOpen] = useState(false)
@@ -186,12 +181,12 @@ export function Header() {
           flyTo({
             longitude: centerLng,
             latitude: centerLat,
-            zoom: Math.max(viewport.zoom, 13),
+            zoom: Math.max(currentZoom, 13),
           })
         }
       }
     },
-    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, viewport]
+    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, currentZoom]
   )
 
   // Handle search on Enter key
@@ -230,13 +225,6 @@ export function Header() {
     return () => document.removeEventListener('pointerdown', handleClickOutside)
   }, [])
 
-  // Close mobile menu when switching to desktop
-  useEffect(() => {
-    if (isDesktop) {
-      setIsMobileMenuOpen(false)
-    }
-  }, [isDesktop])
-
   const showSearchDropdown =
     isSearchFocused && searchQuery.trim().length > 0
   const showNoResults =
@@ -261,151 +249,24 @@ export function Header() {
             </span>
           </h1>
 
-          {/* Right: Search + Year selector (desktop) / Hamburger (mobile) */}
-          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-            {isDesktop ? (
-              <div className="flex items-center gap-2">
-                {/* Search input */}
-                <div ref={searchContainerRef} className="relative">
-                  <div
-                    className={cn(
-                      'neo-press',
-                      'flex items-center gap-2 h-8 rounded-lg border-2 bg-bg-primary',
-                      'border-[#1a1a1a] shadow-hard-sm',
-                      'transition-all duration-200',
-                      isSearchFocused ? 'w-64' : 'w-48'
-                    )}
-                  >
-                    <Search
-                      size={14}
-                      className="ml-2.5 text-[#1a1a1a] flex-shrink-0"
-                    />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onFocus={() => setIsSearchFocused(true)}
-                      onKeyDown={handleSearchKeyDown}
-                      placeholder="Hae postinumeroa..."
-                      className={cn(
-                        'w-full pr-2.5 text-xs bg-transparent text-[#1a1a1a]',
-                        'placeholder:text-[#666]',
-                        'focus:outline-none font-mono font-bold'
-                      )}
-                    />
-                  </div>
-
-                  {/* Search results dropdown */}
-                  {showSearchDropdown && (
-                    <div
-                      className={cn(
-                        'absolute top-full left-0 right-0 mt-1.5',
-                        'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
-                        'shadow-hard overflow-hidden',
-                      )}
-                    >
-                      {showNoResults ? (
-                        <SearchNoResults compact />
-                      ) : (
-                        searchResults.map((area, i) => (
-                          <SearchResultItem key={area.areaCode} area={area} compact index={i} onSelect={handleSelectArea} />
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Year selector */}
-                <div ref={yearContainerRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsYearOpen((prev) => !prev)}
-                    aria-label="Valitse vuosi"
-                    aria-expanded={isYearOpen}
-                    className={cn(
-                      'neo-press',
-                      'h-8 px-3 text-xs font-mono font-bold rounded-lg',
-                      'border-2 border-[#1a1a1a] bg-pink-baby text-[#1a1a1a]',
-                      'shadow-hard-sm',
-                      'flex items-center gap-1.5',
-                      'focus:outline-none focus:ring-2 focus:ring-pink-baby',
-                      'cursor-pointer select-none'
-                    )}
-                  >
-                    {filters.year}
-                    <ChevronDown size={12} className={cn('transition-transform', isYearOpen && 'rotate-180')} />
-                  </button>
-
-                  {isYearOpen && (
-                    <div
-                      className={cn(
-                        'absolute top-full right-0 mt-1.5 z-50',
-                        'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
-                        'shadow-hard overflow-hidden',
-                        'min-w-[80px]',
-                      )}
-                    >
-                      {YEARS.map((year, i) => (
-                        <button
-                          key={year}
-                          type="button"
-                          onClick={() => {
-                            updateFilter('year', year)
-                            setIsYearOpen(false)
-                          }}
-                          className={cn(
-                            'w-full px-3 py-1.5 text-left',
-                            'text-xs font-mono font-bold text-[#1a1a1a]',
-                            'hover:bg-pink-baby transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-pink-baby',
-                            year === filters.year && 'bg-pink-baby text-[#1a1a1a]',
-                            'animate-slide-up',
-                          )}
-                          style={{ animationDelay: `${i * 20}ms`, animationFillMode: 'both' }}
-                        >
-                          {year}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          {/* Search + Year selector — inline on both mobile and desktop */}
+          <div className="flex items-center gap-1.5 md:gap-2 ml-auto flex-1 md:flex-none justify-end">
+            {/* Search input */}
+            <div ref={searchContainerRef} className="relative flex-1 md:flex-none">
+              <div
                 className={cn(
-                  'h-11 w-11 rounded-md flex items-center justify-center',
-                  'text-[#666] hover:text-[#1a1a1a]',
-                  'hover:bg-pink-baby transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink'
+                  'neo-press',
+                  'flex items-center gap-1.5 md:gap-2 h-7 md:h-8 rounded-lg border-2 bg-bg-primary',
+                  'border-[#1a1a1a] shadow-hard-sm',
+                  'transition-all duration-200',
+                  isDesktop
+                    ? isSearchFocused ? 'w-64' : 'w-48'
+                    : 'w-full'
                 )}
-                aria-label={isMobileMenuOpen ? 'Sulje valikko' : 'Avaa valikko'}
-                aria-expanded={isMobileMenuOpen}
               >
-                {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile expanded menu */}
-        {!isDesktop && isMobileMenuOpen && (
-          <div
-            className={cn(
-              'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl mt-2 p-4',
-              'shadow-hard-sm',
-              'space-y-3',
-              'animate-slide-down'
-            )}
-          >
-            {/* Mobile search */}
-            <div ref={searchContainerRef} className="relative">
-              <div className="flex items-center gap-2 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary">
                 <Search
-                  size={14}
-                  className="ml-2.5 text-[#999] flex-shrink-0"
+                  size={isDesktop ? 14 : 13}
+                  className="ml-2 md:ml-2.5 text-[#999] md:text-[#1a1a1a] flex-shrink-0"
                 />
                 <input
                   ref={searchInputRef}
@@ -414,34 +275,49 @@ export function Header() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   onKeyDown={handleSearchKeyDown}
-                  placeholder="Hae postinumeroa..."
+                  placeholder={isDesktop ? 'Hae postinumeroa...' : 'Hae...'}
                   className={cn(
-                    'w-full h-11 pr-2.5 text-[16px] bg-transparent text-[#1a1a1a]',
-                    'placeholder:text-[#999]',
-                    'focus:outline-none font-body'
+                    'w-full pr-2 md:pr-2.5 bg-transparent text-[#1a1a1a]',
+                    'placeholder:text-[#999] md:placeholder:text-[#666]',
+                    'focus:outline-none',
+                    isDesktop
+                      ? 'text-xs font-mono font-bold'
+                      : 'text-[13px] font-body'
                   )}
                 />
+                {/* Mobile: clear button when searching */}
+                {!isDesktop && searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(''); searchInputRef.current?.focus() }}
+                    className="pr-2 text-[#999] hover:text-[#1a1a1a] flex-shrink-0"
+                    aria-label="Tyhjennä haku"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
 
-              {/* Mobile search results dropdown */}
+              {/* Search results dropdown */}
               {showSearchDropdown && (
                 <div
                   className={cn(
                     'absolute top-full left-0 right-0 mt-1.5 z-50',
                     'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                     'shadow-hard overflow-hidden',
-                    'animate-fade-in'
+                    !isDesktop && 'animate-fade-in'
                   )}
                 >
                   {showNoResults ? (
-                    <SearchNoResults compact={false} />
+                    <SearchNoResults compact={isDesktop} />
                   ) : (
-                    searchResults.map((area) => (
+                    searchResults.map((area, i) => (
                       <SearchResultItem
                         key={area.areaCode}
                         area={area}
-                        compact={false}
-                        onSelect={(a) => { handleSelectArea(a); setIsMobileMenuOpen(false) }}
+                        compact={isDesktop}
+                        index={isDesktop ? i : undefined}
+                        onSelect={handleSelectArea}
                       />
                     ))
                   )}
@@ -449,10 +325,63 @@ export function Header() {
               )}
             </div>
 
-            {/* Mobile filters */}
-            <FilterBar compact={false} />
+            {/* Year selector */}
+            <div ref={yearContainerRef} className="relative flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsYearOpen((prev) => !prev)}
+                aria-label="Valitse vuosi"
+                aria-expanded={isYearOpen}
+                className={cn(
+                  'neo-press',
+                  'h-7 md:h-8 px-2 md:px-3 text-xs font-mono font-bold rounded-lg',
+                  'border-2 border-[#1a1a1a] bg-pink-baby text-[#1a1a1a]',
+                  'shadow-hard-sm',
+                  'flex items-center gap-1 md:gap-1.5',
+                  'focus:outline-none focus:ring-2 focus:ring-pink-baby',
+                  'cursor-pointer select-none'
+                )}
+              >
+                {filters.year}
+                <ChevronDown size={11} className={cn('transition-transform', isYearOpen && 'rotate-180')} />
+              </button>
+
+              {isYearOpen && (
+                <div
+                  className={cn(
+                    'absolute top-full right-0 mt-1.5 z-50',
+                    'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
+                    'shadow-hard overflow-hidden',
+                    'min-w-[80px]',
+                  )}
+                >
+                  {YEARS.map((year, i) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => {
+                        updateFilter('year', year)
+                        setIsYearOpen(false)
+                      }}
+                      className={cn(
+                        'w-full px-3 py-1.5 text-left',
+                        'text-xs font-mono font-bold text-[#1a1a1a]',
+                        'hover:bg-pink-baby transition-colors',
+                        'focus-visible:outline-none focus-visible:bg-pink-baby',
+                        year === filters.year && 'bg-pink-baby text-[#1a1a1a]',
+                        'animate-slide-up',
+                      )}
+                      style={{ animationDelay: `${i * 20}ms`, animationFillMode: 'both' }}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
+
       </div>
     </header>
   )
