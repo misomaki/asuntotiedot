@@ -175,6 +175,10 @@ export function MapProvider({ children }: MapProviderProps) {
   }, []);
   const setFlyTo = useCallback((fn: FlyToFn) => { flyToRef.current = fn; flyToRegistered.current = true; }, []);
 
+  // Keep a ref to filters for hash updates (declared before setViewport which reads it)
+  const filtersRef = useRef(filters);
+  useEffect(() => { filtersRef.current = filters; }, [filters]);
+
   // Wrap setViewport to also persist to localStorage + URL hash (both debounced)
   const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setViewport = useCallback((vp: MapViewport) => {
@@ -195,9 +199,12 @@ export function MapProvider({ children }: MapProviderProps) {
     }, 500);
   }, []);
 
-  // Keep a ref to filters for hash updates
-  const filtersRef = useRef(filters);
-  useEffect(() => { filtersRef.current = filters; }, [filters]);
+  // Clean up debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (persistTimer.current) clearTimeout(persistTimer.current);
+    };
+  }, []);
 
   // Geolocation fallback — only if no hash/localStorage provided initial position
   useEffect(() => {

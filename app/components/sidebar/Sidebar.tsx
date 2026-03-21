@@ -52,7 +52,6 @@ export function Sidebar() {
   const isOpen =
     isSidebarOpen &&
     (hasSelectedArea || isCompareMode)
-  const showBuildingCard = hasSelectedBuilding
 
   function handleClose() {
     setIsSidebarOpen(false)
@@ -112,7 +111,7 @@ export function Sidebar() {
   // ---- Floating building card (both mobile and desktop) ----
   const buildingCard = (
     <AnimatePresence>
-      {showBuildingCard && (
+      {hasSelectedBuilding && (
         <motion.div
           key="building-card"
           initial={{ y: 20, opacity: 0 }}

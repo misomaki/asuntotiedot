@@ -27,9 +27,10 @@ export function AnimatedNumber({
   const [display, setDisplay] = useState(fromZero ? 0 : value)
   const frameRef = useRef<number>(0)
   const prevRef = useRef(fromZero ? 0 : value)
+  const displayRef = useRef(fromZero ? 0 : value)
 
   useEffect(() => {
-    const from = prevRef.current
+    const from = displayRef.current
     const to = value
     if (from === to) return
 
@@ -40,7 +41,9 @@ export function AnimatedNumber({
       const progress = Math.min(elapsed / duration, 1)
       // Ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplay(from + (to - from) * eased)
+      const current = from + (to - from) * eased
+      displayRef.current = current
+      setDisplay(current)
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(tick)
       } else {

@@ -23,6 +23,7 @@ import {
   computeWaterFactor,
   computeFloorFactor,
   computeSizeFactor,
+  dampenPremium,
   inferPropertyType,
   OKT_FALLBACK,
 } from './priceEstimation'
@@ -380,6 +381,10 @@ export class SupabaseDataProvider implements DataProvider {
       propertyType
     )
 
+    // Apply premium dampening to match the SQL-stored estimated_price_per_sqm
+    const dampenedWaterFactor = dampenPremium(waterFactor, ageFactor)
+    const dampenedNeighborhoodFactor = dampenPremium(neighborhoodFactor, ageFactor)
+
     return {
       id: building.id,
       area_code: areaCode,
@@ -400,10 +405,10 @@ export class SupabaseDataProvider implements DataProvider {
       base_price: basePrice,
       age_factor: ageFactor,
       energy_factor: energyFactor,
-      water_factor: waterFactor,
+      water_factor: dampenedWaterFactor,
       floor_factor: floorFactor,
       size_factor: sizeFactor,
-      neighborhood_factor: neighborhoodFactor,
+      neighborhood_factor: dampenedNeighborhoodFactor,
       ryhti_main_purpose: null,
       is_residential: null,
     }
