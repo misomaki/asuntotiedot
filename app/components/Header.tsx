@@ -26,6 +26,60 @@ interface SearchableArea {
 
 const YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] as const
 
+/** Shared search result item */
+function SearchResultItem({
+  area,
+  compact,
+  index,
+  onSelect,
+}: {
+  area: SearchableArea
+  compact: boolean
+  index?: number
+  onSelect: (area: SearchableArea) => void
+}) {
+  return (
+    <button
+      key={area.areaCode}
+      type="button"
+      onClick={() => onSelect(area)}
+      className={cn(
+        'w-full px-3 text-left',
+        'flex items-center gap-2',
+        compact ? 'py-2 text-xs' : 'py-2.5 text-sm',
+        'text-[#1a1a1a]',
+        'hover:bg-pink-baby transition-colors',
+        'focus-visible:outline-none focus-visible:bg-pink-baby',
+        compact && 'animate-slide-up',
+      )}
+      style={compact && index !== undefined ? { animationDelay: `${index * 30}ms`, animationFillMode: 'both' } : undefined}
+    >
+      <span className="font-mono text-[#999] flex-shrink-0" data-number>
+        {area.areaCode}
+      </span>
+      <span className="truncate">{area.name}</span>
+      <span className={cn('text-[#999] ml-auto flex-shrink-0', !compact && 'text-xs')}>
+        {area.municipality}
+      </span>
+    </button>
+  )
+}
+
+/** Shared "no results" empty state */
+function SearchNoResults({ compact }: { compact: boolean }) {
+  return (
+    <div className={cn(
+      'px-3 py-3 text-muted-foreground text-center',
+      compact ? 'text-xs animate-fade-in' : 'text-sm',
+    )}>
+      <p className="font-medium">Ei tuloksia</p>
+      <p className={cn('mt-0.5', compact ? 'text-[10px]' : 'text-xs')}>
+        Kokeile postinumeroa tai alueen nimeä
+      </p>
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Header component
 // ---------------------------------------------------------------------------
@@ -44,7 +98,7 @@ export function Header() {
     setSelectedArea,
     setIsSidebarOpen,
     viewport,
-    setViewport,
+    flyTo,
   } = useMapContext()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -107,7 +161,7 @@ export function Header() {
       setIsSearchFocused(false)
       searchInputRef.current?.blur()
 
-      // Find the feature to get its center coordinates for fly-to
+      // Find the feature to get its center coordinates for animated fly-to
       const feature = geojson?.features.find(
         (f) => f.properties != null && f.properties['area_code'] === area.areaCode
       )
@@ -129,8 +183,7 @@ export function Header() {
           const centerLng = sumLng / pairs.length
           const centerLat = sumLat / pairs.length
 
-          setViewport({
-            ...viewport,
+          flyTo({
             longitude: centerLng,
             latitude: centerLat,
             zoom: Math.max(viewport.zoom, 13),
@@ -138,7 +191,7 @@ export function Header() {
         }
       }
     },
-    [geojson, setSelectedArea, setIsSidebarOpen, setViewport, viewport]
+    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, viewport]
   )
 
   // Handle search on Enter key
@@ -185,7 +238,9 @@ export function Header() {
   }, [isDesktop])
 
   const showSearchDropdown =
-    isSearchFocused && searchQuery.trim().length > 0 && searchResults.length > 0
+    isSearchFocused && searchQuery.trim().length > 0
+  const showNoResults =
+    showSearchDropdown && searchResults.length === 0
 
   return (
     <header className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
@@ -250,33 +305,13 @@ export function Header() {
                         'shadow-hard overflow-hidden',
                       )}
                     >
-                      {searchResults.map((area, i) => (
-                        <button
-                          key={area.areaCode}
-                          type="button"
-                          onClick={() => handleSelectArea(area)}
-                          className={cn(
-                            'w-full px-3 py-2 text-left',
-                            'flex items-center gap-2',
-                            'text-xs text-[#1a1a1a]',
-                            'hover:bg-pink-baby transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-pink-baby',
-                            'animate-slide-up'
-                          )}
-                          style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'both' }}
-                        >
-                          <span
-                            className="font-mono text-[#999] flex-shrink-0"
-                            data-number
-                          >
-                            {area.areaCode}
-                          </span>
-                          <span className="truncate">{area.name}</span>
-                          <span className="text-[#999] ml-auto flex-shrink-0">
-                            {area.municipality}
-                          </span>
-                        </button>
-                      ))}
+                      {showNoResults ? (
+                        <SearchNoResults compact />
+                      ) : (
+                        searchResults.map((area, i) => (
+                          <SearchResultItem key={area.areaCode} area={area} compact index={i} onSelect={handleSelectArea} />
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
@@ -398,34 +433,18 @@ export function Header() {
                     'animate-fade-in'
                   )}
                 >
-                  {searchResults.map((area) => (
-                    <button
-                      key={area.areaCode}
-                      type="button"
-                      onClick={() => {
-                        handleSelectArea(area)
-                        setIsMobileMenuOpen(false)
-                      }}
-                      className={cn(
-                        'w-full px-3 py-2.5 text-left',
-                        'flex items-center gap-2',
-                        'text-sm text-[#1a1a1a]',
-                        'hover:bg-pink-baby transition-colors',
-                        'focus-visible:outline-none focus-visible:bg-pink-baby'
-                      )}
-                    >
-                      <span
-                        className="font-mono text-[#999] flex-shrink-0"
-                        data-number
-                      >
-                        {area.areaCode}
-                      </span>
-                      <span className="truncate">{area.name}</span>
-                      <span className="text-[#999] ml-auto flex-shrink-0 text-xs">
-                        {area.municipality}
-                      </span>
-                    </button>
-                  ))}
+                  {showNoResults ? (
+                    <SearchNoResults compact={false} />
+                  ) : (
+                    searchResults.map((area) => (
+                      <SearchResultItem
+                        key={area.areaCode}
+                        area={area}
+                        compact={false}
+                        onSelect={(a) => { handleSelectArea(a); setIsMobileMenuOpen(false) }}
+                      />
+                    ))
+                  )}
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import type { AreaWithStats, PriceEstimate, PropertyType } from '@/app/types'
 import {
   formatPricePerSqm,
@@ -8,10 +8,18 @@ import {
   formatPercent,
   getPropertyTypeLabel,
 } from '@/app/lib/formatters'
-import { Badge } from '@/app/components/ui/badge'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { cn } from '@/app/lib/utils'
+import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { TrendChart } from '@/app/components/charts/TrendChart'
+import {
+  Building2,
+  Calendar,
+  Layers,
+  Users,
+  Footprints,
+  ChevronDown,
+} from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,83 +31,30 @@ interface StatsPanelProps {
 }
 
 // ---------------------------------------------------------------------------
-// Sub-components: Skeleton loading states
+// Compact attribute (shared pattern with BuildingPanel)
 // ---------------------------------------------------------------------------
 
-function StatsPanelSkeleton() {
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header skeleton */}
-      <div className="space-y-2">
-        <Skeleton className="h-7 w-48" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-5 w-16 rounded-full" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-      </div>
-
-      {/* Price skeleton */}
-      <div className="space-y-3">
-        <Skeleton className="h-10 w-40" />
-        <Skeleton className="h-4 w-24" />
-        <div className="grid grid-cols-3 gap-2">
-          <Skeleton className="h-20 rounded-lg" />
-          <Skeleton className="h-20 rounded-lg" />
-          <Skeleton className="h-20 rounded-lg" />
-        </div>
-      </div>
-
-      {/* Building stats skeleton */}
-      <div className="space-y-3">
-        <Skeleton className="h-5 w-32" />
-        <Skeleton className="h-8 w-20" />
-        <Skeleton className="h-6 w-full rounded-full" />
-        <div className="flex justify-between">
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-3 w-16" />
-        </div>
-      </div>
-
-      {/* Demographics skeleton */}
-      <div className="space-y-3">
-        <Skeleton className="h-5 w-20" />
-        <div className="grid grid-cols-3 gap-2">
-          <Skeleton className="h-16 rounded-lg" />
-          <Skeleton className="h-16 rounded-lg" />
-          <Skeleton className="h-16 rounded-lg" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Price type card
-// ---------------------------------------------------------------------------
-
-interface PriceTypeCardProps {
+function CompactAttribute({
+  icon,
+  label,
+  value,
+  delay = 0,
+}: {
+  icon: React.ReactNode
   label: string
-  priceEstimate: PriceEstimate | undefined
-}
-
-function PriceTypeCard({ label, priceEstimate }: PriceTypeCardProps) {
+  value: string
+  delay?: number
+}) {
   return (
-    <div className="rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] p-3 space-y-1 shadow-hard-sm">
-      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
-        {label}
-      </p>
-      <p className="text-sm font-mono tabular-nums text-foreground" data-number>
-        {(priceEstimate?.price_per_sqm_median ?? priceEstimate?.price_per_sqm_avg) != null
-          ? formatPricePerSqm(priceEstimate?.price_per_sqm_median ?? priceEstimate?.price_per_sqm_avg ?? null)
-          : 'Ei tietoa'}
-      </p>
-      {priceEstimate && priceEstimate.transaction_count > 0 && (
-        <p className="text-[10px] text-muted-foreground">
-          {formatNumber(priceEstimate.transaction_count)} kauppaa
-        </p>
-      )}
+    <div
+      className="rounded-lg border border-[#1a1a1a]/20 bg-[#FFFBF5] px-2.5 py-2 flex items-center gap-2 animate-pop-in"
+      style={{ animationDelay: `${delay * 40}ms`, animationFillMode: 'both' }}
+    >
+      <span className="text-muted-foreground flex-shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <div className="text-[11px] text-muted-foreground leading-none">{label}</div>
+        <div className="text-sm font-medium text-foreground tabular-nums leading-tight truncate">{value}</div>
+      </div>
     </div>
   )
 }
@@ -117,8 +72,7 @@ interface AgeSegment {
 function BuildingAgeBar({ segments }: { segments: AgeSegment[] }) {
   return (
     <div className="space-y-2">
-      {/* Stacked bar */}
-      <div className="flex h-5 w-full overflow-hidden rounded-full">
+      <div className="flex h-4 w-full overflow-hidden rounded-full">
         {segments.map((segment) =>
           segment.value > 0 ? (
             <div
@@ -133,13 +87,11 @@ function BuildingAgeBar({ segments }: { segments: AgeSegment[] }) {
           ) : null
         )}
       </div>
-
-      {/* Labels below the bar */}
       <div className="flex flex-wrap gap-x-3 gap-y-1">
         {segments.map((segment) => (
           <div key={segment.label} className="flex items-center gap-1.5">
             <div
-              className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
+              className="h-2 w-2 rounded-sm flex-shrink-0"
               style={{ backgroundColor: segment.color }}
             />
             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
@@ -156,70 +108,34 @@ function BuildingAgeBar({ segments }: { segments: AgeSegment[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// Stat card (small metric)
-// ---------------------------------------------------------------------------
-
-interface StatCardProps {
-  label: string
-  value: string
-  className?: string
-}
-
-function StatCard({ label, value, className }: StatCardProps) {
-  return (
-    <div
-      className={cn(
-        'rounded-lg border-2 border-[#1a1a1a] bg-[#FFFBF5] p-3 text-center space-y-1 shadow-hard-sm',
-        className
-      )}
-    >
-      <p className="text-lg font-mono tabular-nums text-foreground" data-number>
-        {value}
-      </p>
-      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-        {label}
-      </p>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Age distribution bars
 // ---------------------------------------------------------------------------
 
-interface AgeBarsProps {
+function AgeBars({ pctUnder18, pct18_64, pctOver65 }: {
   pctUnder18: number
   pct18_64: number
   pctOver65: number
-}
-
-function AgeBars({ pctUnder18, pct18_64, pctOver65 }: AgeBarsProps) {
-  const bars: { label: string; value: number; color: string }[] = [
+}) {
+  const bars = [
     { label: 'Alle 18', value: pctUnder18, color: '#60a5fa' },
-    { label: '18-64', value: pct18_64, color: '#3b82f6' },
+    { label: '18–64', value: pct18_64, color: '#3b82f6' },
     { label: 'Yli 65', value: pctOver65, color: '#93c5fd' },
   ]
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {bars.map((bar) => (
-        <div key={bar.label} className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
+        <div key={bar.label} className="flex items-center gap-2">
+          <span className="text-[11px] text-muted-foreground w-10 flex-shrink-0">
             {bar.label}
           </span>
-          <div className="flex-1 h-3 rounded-full bg-muted/30 overflow-hidden">
+          <div className="flex-1 h-2.5 rounded-full bg-muted/30 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${bar.value}%`,
-                backgroundColor: bar.color,
-              }}
+              style={{ width: `${bar.value}%`, backgroundColor: bar.color }}
             />
           </div>
-          <span
-            className="text-xs font-mono tabular-nums text-muted-foreground w-12 text-right flex-shrink-0"
-            data-number
-          >
+          <span className="text-[11px] font-mono tabular-nums text-muted-foreground w-10 text-right flex-shrink-0" data-number>
             {formatPercent(bar.value)}
           </span>
         </div>
@@ -229,256 +145,301 @@ function AgeBars({ pctUnder18, pct18_64, pctOver65 }: AgeBarsProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Walk Score circle
+// Walk Score
 // ---------------------------------------------------------------------------
 
 function WalkScoreCircle({ score }: { score: number }) {
-  const radius = 40
+  const radius = 36
   const circumference = 2 * Math.PI * radius
   const progress = (score / 100) * circumference
   const strokeDashoffset = circumference - progress
 
   const category = useMemo(() => {
     if (score >= 80) return { label: 'Erinomainen', color: '#22c55e' }
-    if (score >= 60) return { label: 'Hyva', color: '#3b82f6' }
+    if (score >= 60) return { label: 'Hyvä', color: '#3b82f6' }
     if (score >= 40) return { label: 'Kohtalainen', color: '#f59e0b' }
     return { label: 'Heikko', color: '#ef4444' }
   }, [score])
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="relative w-24 h-24 flex-shrink-0">
-        <svg
-          viewBox="0 0 100 100"
-          className="w-full h-full -rotate-90"
-          aria-label={`Kavelypisteet: ${score}/100`}
-        >
-          {/* Background track */}
+    <div className="flex items-center gap-3">
+      <div className="relative w-20 h-20 flex-shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90" aria-label={`Kävelypisteet: ${score}/100`}>
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="7" />
           <circle
-            cx="50"
-            cy="50"
-            r={radius}
-            fill="none"
-            stroke="hsl(var(--muted))"
-            strokeWidth="8"
-          />
-          {/* Progress arc */}
-          <circle
-            cx="50"
-            cy="50"
-            r={radius}
-            fill="none"
-            stroke={category.color}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
+            cx="50" cy="50" r={radius} fill="none"
+            stroke={category.color} strokeWidth="7" strokeLinecap="round"
+            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
             className="transition-all duration-700 ease-out"
           />
         </svg>
-        {/* Center number */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="text-2xl font-mono font-bold text-foreground"
-            data-number
-          >
-            {score}
-          </span>
+          <span className="text-xl font-mono font-bold text-foreground" data-number>{score}</span>
         </div>
       </div>
-      <div className="space-y-1">
-        <p className="text-sm font-medium" style={{ color: category.color }}>
-          {category.label}
-        </p>
-        <p className="text-xs text-muted-foreground">/ 100 pistetta</p>
+      <div>
+        <p className="text-sm font-medium" style={{ color: category.color }}>{category.label}</p>
+        <p className="text-[11px] text-muted-foreground">/ 100 pistettä</p>
       </div>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Section divider
+// Skeleton
 // ---------------------------------------------------------------------------
 
-function SectionDivider() {
-  return <hr className="border-[#e0e0e0]" />
+function StatsPanelSkeleton() {
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="min-w-0 space-y-2">
+        <Skeleton className="h-[22px] w-48" />
+        <Skeleton className="h-[14px] w-32" />
+      </div>
+
+      {/* Price card */}
+      <div className="rounded-xl bg-pink-pale/40 border-2 border-[#1a1a1a]/10 overflow-hidden">
+        <div className="px-4 pt-3 pb-2.5 space-y-2">
+          <Skeleton className="h-[14px] w-20" />
+          <Skeleton className="h-[30px] w-36" />
+        </div>
+        <div className="px-4 py-2.5 border-t border-[#1a1a1a]/10">
+          <Skeleton className="h-[14px] w-32" />
+        </div>
+      </div>
+
+      {/* Attribute grid */}
+      <div className="grid grid-cols-2 gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-2.5 py-2 flex items-center gap-2">
+            <Skeleton className="h-[14px] w-[14px] rounded-sm flex-shrink-0" />
+            <div className="space-y-1 flex-1">
+              <Skeleton className="h-[11px] w-12" />
+              <Skeleton className="h-[16px] w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Age bar */}
+      <Skeleton className="h-4 w-full rounded-full" />
+
+      {/* Demographics */}
+      <div className="grid grid-cols-2 gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-2.5 py-2 flex items-center gap-2">
+            <Skeleton className="h-[14px] w-[14px] rounded-sm flex-shrink-0" />
+            <div className="space-y-1 flex-1">
+              <Skeleton className="h-[11px] w-12" />
+              <Skeleton className="h-[16px] w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
-// Main StatsPanel component
+// Main StatsPanel
 // ---------------------------------------------------------------------------
 
 /**
- * StatsPanel – Displays detailed stats for the selected postal code area.
- * Shows price estimates, building age distribution, demographics,
- * and walk score in a vertically scrollable panel.
+ * StatsPanel – Area details panel with layout matching the building info card.
+ *
+ * Layout:
+ *   1. Header: area name + area code / municipality
+ *   2. Price card: primary price + collapsible per-type breakdown
+ *   3. Attribute grid: building stats (year, total, floors)
+ *   4. Building age bar
+ *   5. Demographic attributes + age distribution
+ *   6. Walk score
+ *   7. Trend chart
  */
 export function StatsPanel({ data, isLoading }: StatsPanelProps) {
-  // Loading state
-  if (isLoading) {
-    return <StatsPanelSkeleton />
-  }
+  const [showPriceBreakdown, setShowPriceBreakdown] = useState(false)
 
-  // No data state
+  if (isLoading) return <StatsPanelSkeleton />
+
   if (!data) {
     return (
       <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
-        Aluetietoja ei loytynyt.
+        Aluetietoja ei löytynyt.
       </div>
     )
   }
 
-  // Group prices by property type for easy lookup
+  // Price lookup
   const pricesByType: Partial<Record<PropertyType, PriceEstimate>> = {}
   for (const price of data.prices) {
     pricesByType[price.property_type] = price
   }
 
-  // Find the "primary" price to display large (prefer kerrostalo)
   const primaryPrice =
     pricesByType['kerrostalo'] ??
     pricesByType['rivitalo'] ??
     pricesByType['omakotitalo']
 
+  const primaryPriceValue = primaryPrice
+    ? Math.round(primaryPrice.price_per_sqm_median ?? primaryPrice.price_per_sqm_avg ?? 0)
+    : null
+
   // Building age segments
   const buildingAgeSegments: AgeSegment[] | null = data.buildings
     ? [
         { label: 'ennen 1960', value: data.buildings.pct_pre_1960, color: '#ef4444' },
-        { label: '1960-1980', value: data.buildings.pct_1960_1980, color: '#f59e0b' },
-        { label: '1980-2000', value: data.buildings.pct_1980_2000, color: '#3b82f6' },
-        { label: '2000 jalkeen', value: data.buildings.pct_post_2000, color: '#22c55e' },
+        { label: '1960–1980', value: data.buildings.pct_1960_1980, color: '#f59e0b' },
+        { label: '1980–2000', value: data.buildings.pct_1980_2000, color: '#3b82f6' },
+        { label: '2000 jälkeen', value: data.buildings.pct_post_2000, color: '#22c55e' },
       ]
     : null
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* ---- Header section ---- */}
-      <div className="space-y-1">
-        <h2 className="text-xl font-heading font-bold text-foreground leading-tight">
+    <div className="space-y-4 animate-fade-in">
+      {/* ── Header ── */}
+      <div className="min-w-0">
+        <h2 className="text-base font-display font-bold text-foreground truncate">
           {data.name}
         </h2>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="font-mono text-xs" data-number>
-            {data.area_code}
-          </Badge>
-          <span className="text-sm text-muted-foreground">
-            {data.municipality}
-          </span>
-        </div>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {data.area_code} · {data.municipality}
+        </p>
       </div>
 
-      <SectionDivider />
+      {/* ── Unified price card ── */}
+      <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] shadow-hard-sm overflow-hidden">
+        {primaryPriceValue ? (
+          <div className="px-4 pt-3 pb-2.5">
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">Keskihinta</div>
+            <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
+              <AnimatedNumber value={primaryPriceValue} />
+              <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
+            </div>
+          </div>
+        ) : (
+          <div className="px-4 py-3">
+            <div className="text-xs text-muted-foreground">Ei hintatietoa</div>
+          </div>
+        )}
 
-      {/* ---- Price section ---- */}
-      <div className="space-y-3">
-        <div>
-          <p
-            className="text-3xl font-mono font-bold text-foreground tracking-tight"
-            data-number
-          >
-            {formatPricePerSqm(primaryPrice?.price_per_sqm_median ?? primaryPrice?.price_per_sqm_avg ?? null)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Keskihinta
-          </p>
-        </div>
+        {/* Per-type breakdown toggle */}
+        {data.prices.length > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowPriceBreakdown(prev => !prev)}
+              className={cn(
+                'w-full flex items-center justify-between',
+                'px-4 py-2 text-xs cursor-pointer',
+                'border-t border-[#1a1a1a]/10',
+                'text-muted-foreground hover:text-foreground',
+                'hover:bg-pink-baby/30 transition-colors',
+              )}
+            >
+              <span className="font-medium">Hinnat talotyypeittäin</span>
+              <ChevronDown
+                size={14}
+                className={cn('transition-transform duration-200', showPriceBreakdown && 'rotate-180')}
+              />
+            </button>
 
-        {/* Price cards for all property types */}
-        <div className="grid grid-cols-3 gap-2">
-          {(['kerrostalo', 'rivitalo', 'omakotitalo'] as const).map((type) => (
-            <PriceTypeCard
-              key={type}
-              label={getPropertyTypeLabel(type)}
-              priceEstimate={pricesByType[type]}
-            />
-          ))}
-        </div>
+            {showPriceBreakdown && (
+              <div className="px-4 pb-3 space-y-1.5 text-[13px] animate-fade-in border-t border-[#1a1a1a]/10 pt-2.5">
+                {(['kerrostalo', 'rivitalo', 'omakotitalo'] as const).map((type) => {
+                  const est = pricesByType[type]
+                  const priceVal = est?.price_per_sqm_median ?? est?.price_per_sqm_avg ?? null
+                  return (
+                    <div key={type} className="flex items-center justify-between">
+                      <span className="text-muted-foreground">{getPropertyTypeLabel(type)}</span>
+                      <span className="tabular-nums font-medium text-foreground">
+                        {priceVal ? formatPricePerSqm(priceVal) : '–'}
+                        {est && est.transaction_count > 0 && (
+                          <span className="text-[11px] text-muted-foreground font-normal ml-1.5">
+                            ({formatNumber(est.transaction_count)} kpl)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      {/* ---- Building stats section ---- */}
+      {/* ── Building stats — attribute grid ── */}
       {data.buildings && (
         <>
-          <SectionDivider />
-          <div className="space-y-3">
-            <h3 className="text-sm font-heading font-semibold text-foreground">
-              Rakennuskanta
-            </h3>
-
-            <div className="flex items-baseline gap-3">
-              <span
-                className="text-2xl font-mono font-bold text-foreground"
-                data-number
-              >
-                {data.buildings.avg_building_year}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                keskimaarainen rakennusvuosi
-              </span>
-            </div>
-
-            {buildingAgeSegments && (
-              <BuildingAgeBar segments={buildingAgeSegments} />
+          <div className="grid grid-cols-2 gap-2">
+            <CompactAttribute
+              icon={<Calendar size={14} />}
+              label="Keskim. rak.vuosi"
+              value={data.buildings.avg_building_year.toString()}
+              delay={0}
+            />
+            <CompactAttribute
+              icon={<Building2 size={14} />}
+              label="Rakennuksia"
+              value={formatNumber(data.buildings.buildings_total)}
+              delay={1}
+            />
+            {data.buildings.avg_floor_count != null && (
+              <CompactAttribute
+                icon={<Layers size={14} />}
+                label="Keskim. kerroksia"
+                value={data.buildings.avg_floor_count.toFixed(1)}
+                delay={2}
+              />
             )}
-
-            <p className="text-xs text-muted-foreground">
-              Yhteensa{' '}
-              <span className="font-mono tabular-nums" data-number>
-                {formatNumber(data.buildings.buildings_total)}
-              </span>{' '}
-              rakennusta
-            </p>
+            {data.walkScore != null && (
+              <CompactAttribute
+                icon={<Footprints size={14} />}
+                label="Kävelypisteet"
+                value={`${data.walkScore} / 100`}
+                delay={3}
+              />
+            )}
           </div>
+
+          {/* Building age distribution */}
+          {buildingAgeSegments && <BuildingAgeBar segments={buildingAgeSegments} />}
         </>
       )}
 
-      {/* ---- Demographics section ---- */}
+      {/* ── Demographics ── */}
       {data.demographics && (
         <>
-          <SectionDivider />
-          <div className="space-y-3">
-            <h3 className="text-sm font-heading font-semibold text-foreground">
-              Vaesto
-            </h3>
-
-            <div className="grid grid-cols-3 gap-2">
-              <StatCard
-                label="Vaesto"
-                value={formatNumber(data.demographics.population)}
-              />
-              <StatCard
-                label="Keski-ika"
-                value={`${data.demographics.median_age.toFixed(0)} v`}
-              />
-              <StatCard
-                label="Talouden koko"
-                value={data.demographics.avg_household_size.toFixed(1)}
-              />
-            </div>
-
-            <AgeBars
-              pctUnder18={data.demographics.pct_under_18}
-              pct18_64={data.demographics.pct_18_64}
-              pctOver65={data.demographics.pct_over_65}
+          <div className="grid grid-cols-2 gap-2">
+            <CompactAttribute
+              icon={<Users size={14} />}
+              label="Väestö"
+              value={formatNumber(data.demographics.population)}
+              delay={0}
+            />
+            <CompactAttribute
+              icon={<Calendar size={14} />}
+              label="Keski-ikä"
+              value={`${data.demographics.median_age.toFixed(0)} v`}
+              delay={1}
             />
           </div>
+
+          <AgeBars
+            pctUnder18={data.demographics.pct_under_18}
+            pct18_64={data.demographics.pct_18_64}
+            pctOver65={data.demographics.pct_over_65}
+          />
         </>
       )}
 
-      {/* ---- Walk Score section ---- */}
-      {data.walkScore != null && (
-        <>
-          <SectionDivider />
-          <div className="space-y-3">
-            <h3 className="text-sm font-heading font-semibold text-foreground">
-              Kavelypisteet
-            </h3>
-            <WalkScoreCircle score={data.walkScore} />
-          </div>
-        </>
+      {/* ── Walk Score circle (only if no buildings section showed it inline) ── */}
+      {data.walkScore != null && !data.buildings && (
+        <WalkScoreCircle score={data.walkScore} />
       )}
 
-      {/* ---- Trend chart section ---- */}
-      <SectionDivider />
+      {/* ── Trend chart ── */}
       <TrendChart areaCode={data.area_code} />
     </div>
   )

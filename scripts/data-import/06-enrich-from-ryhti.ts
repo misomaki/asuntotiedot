@@ -53,6 +53,7 @@ interface RyhtiRecord {
   storeys: number | null // number_of_storeys
   purpose: string | null // main_purpose
   apartments: number | null
+  energyClass: string | null // energy_class (A-G)
   lng: number
   lat: number
   modifiedAt: string | null
@@ -64,6 +65,7 @@ interface RyhtiFeatureProperties {
   number_of_storeys: number | null
   main_purpose: string | null
   apartment_count: number | null
+  energy_class: string | null
   modified_timestamp_utc: string | null
 }
 
@@ -189,6 +191,7 @@ async function fetchRyhtiForBbox(
         storeys: props.number_of_storeys,
         purpose: props.main_purpose,
         apartments: props.apartment_count,
+        energyClass: props.energy_class,
         lng,
         lat,
         modifiedAt: props.modified_timestamp_utc,
@@ -233,6 +236,7 @@ async function insertIntoStaging(records: RyhtiRecord[]): Promise<number> {
       storeys: r.storeys,
       purpose: r.purpose,
       apartments: r.apartments,
+      energyClass: r.energyClass,
       lng: r.lng,
       lat: r.lat,
     }))
@@ -353,6 +357,51 @@ async function matchFloorCounts(): Promise<number> {
   return totalMatched
 }
 
+async function matchEnergyAndApartments(): Promise<number> {
+  console.log('\nMatching energy class + apartment count...')
+
+  const { count } = await supabase
+    .from('buildings')
+    .select('id', { count: 'exact', head: true })
+    .not('area_id', 'is', null)
+    .or('energy_class.is.null,apartment_count.is.null')
+
+  console.log(`Buildings missing energy_class or apartment_count: ${count}`)
+
+  if (!count || count === 0) return 0
+
+  let totalMatched = 0
+  let batchNum = 0
+
+  while (true) {
+    batchNum++
+
+    const { data, error } = await supabase.rpc('match_ryhti_energy_apartment_batch', {
+      p_limit: 500,
+    })
+
+    if (error) {
+      console.error('RPC match_ryhti_energy_apartment_batch failed:', error.message)
+      break
+    }
+
+    const batchCount = typeof data === 'number' ? data : 0
+    if (batchCount === 0) break
+
+    totalMatched += batchCount
+
+    if (batchNum % 20 === 0 || batchCount < 500) {
+      const pct = Math.round((totalMatched / count) * 100)
+      console.log(
+        `  Batch ${batchNum}: +${batchCount} (total: ${totalMatched}/${count}, ${pct}%)`
+      )
+    }
+  }
+
+  console.log(`Matched energy/apartment data for ${totalMatched} buildings`)
+  return totalMatched
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -396,15 +445,18 @@ async function main() {
   }
 
   // Stats
-  const withYear = Array.from(allRecords.values()).filter((r) => r.year !== null).length
-  const withStoreys = Array.from(allRecords.values()).filter(
-    (r) => r.storeys !== null
-  ).length
+  const records = Array.from(allRecords.values())
+  const withYear = records.filter((r) => r.year !== null).length
+  const withStoreys = records.filter((r) => r.storeys !== null).length
+  const withEnergy = records.filter((r) => r.energyClass !== null).length
+  const withApartments = records.filter((r) => r.apartments !== null).length
 
   console.log(`\n--- Ryhti data summary ---`)
   console.log(`Total unique buildings:   ${allRecords.size}`)
   console.log(`With completion year:     ${withYear} (${Math.round((withYear / allRecords.size) * 100)}%)`)
   console.log(`With floor count:         ${withStoreys} (${Math.round((withStoreys / allRecords.size) * 100)}%)`)
+  console.log(`With energy class:        ${withEnergy} (${Math.round((withEnergy / allRecords.size) * 100)}%)`)
+  console.log(`With apartment count:     ${withApartments} (${Math.round((withApartments / allRecords.size) * 100)}%)`)
 
   // Step 3: Insert into staging table
   console.log(`\nInserting ${allRecords.size} records into staging table...`)
@@ -415,6 +467,7 @@ async function main() {
   // Step 4: Match to buildings
   const yearMatches = await matchConstructionYears()
   const floorMatches = await matchFloorCounts()
+  const energyAptMatches = await matchEnergyAndApartments()
 
   // Step 5: Summary
   const { count: hasYear } = await supabase
@@ -433,11 +486,24 @@ async function main() {
     .not('area_id', 'is', null)
     .is('estimation_year', null)
 
+  const { count: hasEnergy } = await supabase
+    .from('buildings')
+    .select('id', { count: 'exact', head: true })
+    .not('energy_class', 'is', null)
+
+  const { count: hasApartments } = await supabase
+    .from('buildings')
+    .select('id', { count: 'exact', head: true })
+    .not('apartment_count', 'is', null)
+
   console.log(`\n=== Enrichment complete ===`)
   console.log(`Construction years matched:  ${yearMatches}`)
   console.log(`Floor counts matched:        ${floorMatches}`)
+  console.log(`Energy/apartment matched:    ${energyAptMatches}`)
   console.log(`Total buildings with year:   ${hasYear}`)
   console.log(`Total buildings with floors: ${hasFloors}`)
+  console.log(`Total buildings with energy: ${hasEnergy}`)
+  console.log(`Total buildings with apts:   ${hasApartments}`)
   console.log(`Buildings needing re-estimation: ${needsEstimation}`)
   console.log(`\nRe-run script 05 to recalculate prices with enriched data.`)
 }

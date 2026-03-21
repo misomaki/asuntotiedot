@@ -38,7 +38,7 @@ async function runMigration() {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${key}`,
-      'apikey': key,
+      'apikey': key ?? '',
     },
     body: JSON.stringify({ query: sql }),
   })

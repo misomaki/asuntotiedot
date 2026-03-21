@@ -7,7 +7,7 @@ function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-md bg-gradient-to-r from-muted/40 via-muted/70 via-50% to-muted/40 bg-[length:200%_100%] animate-shimmer",
+        "rounded-md bg-gradient-to-r from-[#f0ede8] via-[#e6e2dc] via-50% to-[#f0ede8] bg-[length:200%_100%] animate-shimmer",
         className
       )}
       {...props}

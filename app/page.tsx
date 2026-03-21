@@ -9,10 +9,16 @@ const MapContainer = dynamic(
 
 function MapSkeleton() {
   return (
-    <div className="w-full h-full bg-bg-primary flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-accent/30 border-t-accent rounded-full animate-spin" />
-        <p className="text-muted-foreground text-sm">Ladataan karttaa...</p>
+    <div className="w-full h-full bg-bg-primary relative overflow-hidden">
+      {/* Full-screen warm shimmer wash */}
+      <div className="absolute inset-0 bg-gradient-to-r from-bg-primary via-pink-pale to-bg-primary bg-[length:200%_100%] animate-shimmer" />
+
+      {/* Centered loading indicator */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-pink-baby border-t-pink rounded-full animate-spin" />
+          <p className="text-muted-foreground text-xs font-body">Ladataan karttaa...</p>
+        </div>
       </div>
     </div>
   )

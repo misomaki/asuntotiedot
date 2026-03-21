@@ -91,19 +91,19 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors – ivory (cheap) → amber → rose → pink (expensive)
+        // Price scale colors – ivory (cheap) → amber → rose (expensive)
         // Must match PRICE_COLORS in app/lib/colorScales.ts
         price: {
           1: "#f2efe8",
-          2: "#efe6d4",
-          3: "#ecdcc0",
-          4: "#e8d0ac",
-          5: "#e4c49c",
-          6: "#e0b498",
-          7: "#dca4a0",
-          8: "#dc98b8",
-          9: "#e488cc",
-          10: "#f080e0",
+          2: "#efead8",
+          3: "#ece2c4",
+          4: "#e8d8b0",
+          5: "#e4cca0",
+          6: "#e0c098",
+          7: "#dcb4a0",
+          8: "#dca8a8",
+          9: "#dca0b0",
+          10: "#dc98b8",
         },
       },
 
@@ -137,7 +137,7 @@ const config: Config = {
         "slide-left": "slideLeft 0.3s ease-out",
         "slide-right": "slideRight 0.3s ease-out",
         "scale-in": "scaleIn 0.2s ease-out",
-        shimmer: "shimmer 2s infinite linear",
+        shimmer: "shimmer 1.5s infinite ease-in-out",
         "pop-in": "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "count-up": "countUp 0.4s ease-out",
       },

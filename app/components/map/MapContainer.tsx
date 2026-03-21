@@ -18,6 +18,7 @@ import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PR
 import { formatPricePerSqm } from '@/app/lib/formatters'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
+import MapTooltip from './MapTooltip'
 
 /** CartoCDN Positron basemap — light, warm overrides (free, no token required) */
 const MAP_STYLE =
@@ -25,6 +26,12 @@ const MAP_STYLE =
 
 /** Minimum zoom level at which individual buildings appear */
 const BUILDING_ZOOM_THRESHOLD = 14
+
+/** Properties attached to municipality features */
+interface HoveredMunicipalityProperties {
+  nimi: string
+  price_per_sqm_avg: number | null
+}
 
 /** Properties attached to building features */
 interface HoveredBuildingProperties {
@@ -43,8 +50,10 @@ interface TooltipPosition {
   y: number
 }
 
-/** Tooltip content (buildings only) */
-type TooltipContent = { type: 'building'; props: HoveredBuildingProperties }
+/** Tooltip content */
+type TooltipContent =
+  | { type: 'building'; props: HoveredBuildingProperties }
+  | { type: 'municipality'; props: HoveredMunicipalityProperties }
 
 /**
  * Main map component for the Talotutka application.
@@ -67,6 +76,7 @@ export default function MapContainer() {
     setIsLoading,
     setIsSidebarOpen,
     setSelectedBuilding,
+    setFlyTo,
   } = useMapContext()
 
   // Fetch Voronoi GeoJSON based on current filters
@@ -103,6 +113,19 @@ export default function MapContainer() {
   // Whether buildings are visible at current zoom
   const showBuildings = viewport.zoom >= BUILDING_ZOOM_THRESHOLD
 
+  // "Zoom in to see buildings" hint — dismissed after first zoom-in or click
+  const [showZoomHint, setShowZoomHint] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !localStorage.getItem('neliot-zoom-hint-dismissed')
+  })
+
+  useEffect(() => {
+    if (showBuildings && showZoomHint) {
+      setShowZoomHint(false)
+      localStorage.setItem('neliot-zoom-hint-dismissed', '1')
+    }
+  }, [showBuildings, showZoomHint])
+
   // Absolute tile URL — MapLibre fetches tiles in a Web Worker where
   // relative URLs fail (worker base is a blob: URL, not the page origin).
   const buildingTileUrl = useMemo(() => {
@@ -118,12 +141,17 @@ export default function MapContainer() {
   // Interactive layer IDs (changes based on zoom level)
   // -------------------------------------------------------
 
+  const showMunicipalities = viewport.zoom < 9.5
+
   const interactiveLayerIds = useMemo(() => {
     if (showBuildings) {
       return ['building-price-fill']
     }
+    if (showMunicipalities) {
+      return ['municipality-fill']
+    }
     return []
-  }, [showBuildings])
+  }, [showBuildings, showMunicipalities])
 
   // -------------------------------------------------------
   // Map layer paint expressions (memoised to avoid re-creation)
@@ -254,10 +282,16 @@ export default function MapContainer() {
 
       if (feature && feature.properties && feature.layer?.id === 'building-price-fill') {
         const props = feature.properties as HoveredBuildingProperties
-        setHoveredBuildingUuid(props.id ?? null)
+        setHoveredBuildingUuid(props.id ?? (String(feature.id ?? '') || null))
         setTooltipContent({ type: 'building', props })
         setTooltipPosition({ x: evt.point.x, y: evt.point.y })
         setCursor('pointer')
+      } else if (feature && feature.properties && feature.layer?.id === 'municipality-fill') {
+        setHoveredBuildingUuid(null)
+        const props = feature.properties as HoveredMunicipalityProperties
+        setTooltipContent({ type: 'municipality', props })
+        setTooltipPosition({ x: evt.point.x, y: evt.point.y })
+        setCursor('default')
       } else {
         setHoveredBuildingUuid(null)
         setTooltipContent(null)
@@ -285,7 +319,11 @@ export default function MapContainer() {
       // Only open details panel for residential buildings
       if (props.is_residential === false) return
 
-      setSelectedBuilding(props.id)
+      // MVT features may store 'id' as protobuf feature ID instead of property
+      const buildingId = props.id ?? String(feature.id ?? '')
+      if (!buildingId) return
+
+      setSelectedBuilding(buildingId)
       setIsSidebarOpen(true)
     },
     [setSelectedBuilding, setIsSidebarOpen]
@@ -309,6 +347,16 @@ export default function MapContainer() {
     (evt: { target: MaplibreMap }) => {
       const map = evt.target
       mapRef.current = map
+
+      // Register flyTo for smooth animated camera transitions
+      setFlyTo(({ longitude, latitude, zoom: z }) => {
+        map.flyTo({
+          center: [longitude, latitude],
+          zoom: z,
+          duration: 1800,
+          essential: true,
+        })
+      })
 
       // ── Generate building texture pattern (synchronous) ──
       // Subtle diagonal dots — gives buildings a tactile paper grain
@@ -490,7 +538,7 @@ export default function MapContainer() {
         paint(id, 'text-color', '#706c66')
       }
     },
-    []
+    [setFlyTo]
   )
 
   // -------------------------------------------------------
@@ -635,11 +683,31 @@ export default function MapContainer() {
         />
       )}
 
+      {/* Municipality hover tooltip */}
+      {tooltipContent && tooltipPosition && tooltipContent.type === 'municipality' && (
+        <MapTooltip
+          areaName={tooltipContent.props.nimi}
+          price={tooltipContent.props.price_per_sqm_avg}
+          x={tooltipPosition.x}
+          y={tooltipPosition.y}
+        />
+      )}
+
       {/* Legend — switches between municipality and building scale based on zoom */}
       <MapLegend
         municipalityScale={municipalityScale}
         zoom={viewport.zoom}
       />
+
+      {/* Zoom hint — shown once until user zooms into building level */}
+      {showZoomHint && !showBuildings && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 animate-fade-in">
+          <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
+            <span className="inline-block h-2 w-2 rounded-full bg-pink animate-pulse" />
+            Lähennä nähdäksesi rakennukset
+          </div>
+        </div>
+      )}
 
       {/* Compare mode indicator */}
       {isCompareMode && !selectedArea && comparedArea && (
@@ -654,9 +722,11 @@ export default function MapContainer() {
       {/* Loading indicator */}
       {dataLoading && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
-            <span className="inline-block h-3 w-3 rounded-full border-2 border-[#1a1a1a] border-t-transparent animate-spin" />
-            Ladataan aluedataa...
+          <div className="relative overflow-hidden bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm animate-fade-in">
+            {/* Shimmer sweep across the pill */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
+            <span className="relative inline-block h-3 w-3 rounded-full border-2 border-pink border-t-transparent animate-spin" />
+            <span className="relative">Ladataan aluedataa...</span>
           </div>
         </div>
       )}

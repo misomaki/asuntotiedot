@@ -86,7 +86,7 @@ WHERE area_id IS NOT NULL
     totalProcessed += batchCount
 
     if (batchNum % 5 === 0 || batchCount < BATCH_SIZE) {
-      const pct = Math.round((totalProcessed / needsEstimate) * 100)
+      const pct = Math.round((totalProcessed / (needsEstimate ?? 1)) * 100)
       console.log(
         `  Batch ${batchNum}: +${batchCount} (total: ${totalProcessed}/${needsEstimate}, ${pct}%)`
       )

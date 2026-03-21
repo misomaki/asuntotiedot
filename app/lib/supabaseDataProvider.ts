@@ -19,9 +19,10 @@ import type {
 import { generateVoronoiGeoJSON, type VoronoiAnchor } from './voronoiGenerator'
 import {
   computeAgeFactor,
+  computeEnergyFactor,
   computeWaterFactor,
   computeFloorFactor,
-  dampenPremium,
+  computeSizeFactor,
   inferPropertyType,
   OKT_FALLBACK,
 } from './priceEstimation'
@@ -82,11 +83,11 @@ export class SupabaseDataProvider implements DataProvider {
       areaIds.push(a.id)
     }
 
-    // Fetch prices scoped to only the target areas
+    // Fetch all prices for this year+type — filtering by area_id client-side
+    // because .in() with 491 UUIDs exceeds HTTP header limits
     const { data: prices, error: priceError } = await this.supabase
       .from('price_estimates')
       .select('area_id, price_per_sqm_avg')
-      .in('area_id', areaIds)
       .eq('year', year)
       .eq('property_type', propertyType)
       .not('price_per_sqm_avg', 'is', null)
@@ -322,7 +323,8 @@ export class SupabaseDataProvider implements DataProvider {
       .select(
         `id, building_type, construction_year, floor_count,
          footprint_area_sqm, address, estimated_price_per_sqm,
-         min_distance_to_water_m, area_id`
+         min_distance_to_water_m, area_id,
+         energy_class, apartment_count`
       )
       .eq('id', buildingId)
       .single()
@@ -361,12 +363,22 @@ export class SupabaseDataProvider implements DataProvider {
 
     // Compute the factors for the breakdown
     const ageFactor = computeAgeFactor(building.construction_year, new Date().getFullYear())
+    const energyFactor = computeEnergyFactor(building.energy_class ?? null)
     const waterFactor = computeWaterFactor(
       building.min_distance_to_water_m
         ? Number(building.min_distance_to_water_m)
         : null
     )
     const floorFactor = computeFloorFactor(building.floor_count, propertyType)
+    const footprint = building.footprint_area_sqm
+      ? Number(building.footprint_area_sqm)
+      : null
+    const sizeFactor = computeSizeFactor(
+      building.apartment_count ?? null,
+      footprint,
+      building.floor_count,
+      propertyType
+    )
 
     return {
       id: building.id,
@@ -375,9 +387,7 @@ export class SupabaseDataProvider implements DataProvider {
       building_type: building.building_type,
       construction_year: building.construction_year,
       floor_count: building.floor_count,
-      footprint_area_sqm: building.footprint_area_sqm
-        ? Number(building.footprint_area_sqm)
-        : null,
+      footprint_area_sqm: footprint,
       address: building.address,
       estimated_price_per_sqm: building.estimated_price_per_sqm
         ? Number(building.estimated_price_per_sqm)
@@ -385,10 +395,14 @@ export class SupabaseDataProvider implements DataProvider {
       min_distance_to_water_m: building.min_distance_to_water_m
         ? Number(building.min_distance_to_water_m)
         : null,
+      energy_class: building.energy_class ?? null,
+      apartment_count: building.apartment_count ?? null,
       base_price: basePrice,
       age_factor: ageFactor,
+      energy_factor: energyFactor,
       water_factor: waterFactor,
       floor_factor: floorFactor,
+      size_factor: sizeFactor,
       neighborhood_factor: neighborhoodFactor,
       ryhti_main_purpose: null,
       is_residential: null,

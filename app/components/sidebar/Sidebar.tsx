@@ -7,7 +7,7 @@ import { StatsPanel } from '@/app/components/sidebar/StatsPanel'
 import { BuildingPanel } from '@/app/components/sidebar/BuildingPanel'
 import { ComparisonPanel } from '@/app/components/comparison/ComparisonPanel'
 import { Sheet } from '@/app/components/ui/sheet'
-import { X, GitCompareArrows } from 'lucide-react'
+import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/app/lib/utils'
 
@@ -51,15 +51,8 @@ export function Sidebar() {
   const isWaitingForSecondArea = isCompareMode && !hasSelectedArea && hasComparedArea
   const isOpen =
     isSidebarOpen &&
-    (hasSelectedArea || hasSelectedBuilding || isCompareMode)
-
-  // Enter compare mode: current area becomes compared, clear selected for next click
-  function handleStartCompare() {
-    if (!selectedArea) return
-    setComparedArea(selectedArea)
-    setSelectedArea(null)
-    setIsCompareMode(true)
-  }
+    (hasSelectedArea || isCompareMode)
+  const showBuildingCard = hasSelectedBuilding
 
   function handleClose() {
     setIsSidebarOpen(false)
@@ -75,11 +68,6 @@ export function Sidebar() {
 
   // ---- Sidebar content ----
   function renderContent() {
-    // Building detail panel
-    if (hasSelectedBuilding) {
-      return <BuildingPanel />
-    }
-
     // Compare mode: both areas selected -> show comparison panel
     if (isComparisonReady) {
       return <ComparisonPanel />
@@ -118,98 +106,108 @@ export function Sidebar() {
       )
     }
 
-    // Normal mode: show stats panel with compare button
-    return (
-      <div className="space-y-4">
-        <StatsPanel data={data} isLoading={isLoading} />
-
-        {/* Compare button - only show when area is selected and data loaded */}
-        {hasSelectedArea && !isLoading && data && (
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={handleStartCompare}
-              className={cn(
-                'neo-press',
-                'w-full flex items-center justify-center gap-2',
-                'px-4 py-2.5 rounded-lg',
-                'bg-pink-pale hover:bg-pink-light',
-                'text-pink-deep hover:text-[#1a1a1a]',
-                'border-2 border-[#1a1a1a]',
-                'shadow-hard-sm',
-                'text-sm font-medium',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-              )}
-            >
-              <GitCompareArrows size={16} />
-              Vertaa toiseen alueeseen
-            </button>
-          </div>
-        )}
-      </div>
-    )
+    // Normal mode: show stats panel
+    return <StatsPanel data={data} isLoading={isLoading} />
   }
 
-  // ---- Mobile: bottom sheet ----
-  if (!isDesktop) {
-    return (
-      <Sheet
-        open={isOpen}
-        onClose={handleClose}
-        side="bottom"
-        className={cn('max-h-[80vh]', isComparisonReady && 'max-h-[90vh]')}
-      >
-        <div className="pb-4">
-          {renderContent()}
-        </div>
-      </Sheet>
-    )
-  }
-
-  // ---- Desktop: left-side sliding panel ----
-  return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <motion.aside
-          key={isComparisonReady ? 'comparison' : 'stats'}
-          initial={{ x: initialX, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: initialX, opacity: 0 }}
-          transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+  // ---- Floating building card (both mobile and desktop) ----
+  const buildingCard = (
+    <AnimatePresence>
+      {showBuildingCard && (
+        <motion.div
+          key="building-card"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 20, opacity: 0 }}
+          transition={{ type: 'spring', damping: 26, stiffness: 340 }}
           className={cn(
-            'fixed top-0 left-0 z-30',
-            panelWidth,
-            'h-full',
-            'bg-[#FFFBF5]',
-            'border-r-2 border-[#1a1a1a]',
-            'shadow-hard',
-            'flex flex-col'
+            'fixed z-40',
+            isDesktop
+              ? 'bottom-6 left-4 w-[22rem]'
+              : 'bottom-3 left-3 right-3',
           )}
         >
-          {/* Close button (only visible in non-compare mode; compare mode has its own close) */}
-          {!isComparisonReady && (
-            <button
-              type="button"
-              onClick={handleClose}
-              className={cn(
-                'absolute top-4 right-4 z-10',
-                'h-8 w-8 rounded-md flex items-center justify-center',
-                'text-muted-foreground hover:text-foreground',
-                'hover:bg-muted/50 transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-              )}
-              aria-label="Sulje sivupaneeli"
-            >
-              <X size={18} />
-            </button>
-          )}
-
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-6 pt-14">
-            {renderContent()}
+          <div
+            className={cn(
+              'bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm',
+              'max-h-[calc(100vh-6rem)] overflow-y-auto',
+              'p-5',
+            )}
+          >
+            <BuildingPanel />
           </div>
-        </motion.aside>
+        </motion.div>
       )}
     </AnimatePresence>
+  )
+
+  // ---- Mobile: bottom sheet (for area stats only) ----
+  if (!isDesktop) {
+    return (
+      <>
+        <Sheet
+          open={isOpen}
+          onClose={handleClose}
+          side="bottom"
+          className={cn('max-h-[80vh]', isComparisonReady && 'max-h-[90vh]')}
+        >
+          <div className="pb-4">
+            {renderContent()}
+          </div>
+        </Sheet>
+        {buildingCard}
+      </>
+    )
+  }
+
+  // ---- Desktop: left-side sliding panel (for area stats) + floating building card ----
+  return (
+    <>
+      <AnimatePresence mode="wait">
+        {isOpen && (
+          <motion.aside
+            key={isComparisonReady ? 'comparison' : 'stats'}
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -20, opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className={cn(
+              'fixed top-20 left-4 z-30',
+              panelWidth,
+              'max-h-[calc(100vh-6rem)]',
+              'bg-[#FFFBF5]',
+              'border-2 border-[#1a1a1a]',
+              'rounded-xl',
+              'shadow-hard-sm',
+              'flex flex-col'
+            )}
+          >
+            {/* Close button (only visible in non-compare mode; compare mode has its own close) */}
+            {!isComparisonReady && (
+              <button
+                type="button"
+                onClick={handleClose}
+                className={cn(
+                  'absolute top-3 right-3 z-10',
+                  'h-7 w-7 rounded-md flex items-center justify-center',
+                  'text-muted-foreground hover:text-foreground',
+                  'hover:bg-muted/50 transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                )}
+                aria-label="Sulje sivupaneeli"
+              >
+                <X size={16} />
+              </button>
+            )}
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto p-5 pt-10">
+              {renderContent()}
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+      {buildingCard}
+    </>
   )
 }

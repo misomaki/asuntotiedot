@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { PRICE_COLORS, PRICE_LABELS, BUILDING_OUTLINE_COLORS } from '@/app/lib/colorScales'
 
@@ -24,17 +24,31 @@ const MUNICIPALITY_ZOOM_MAX = 9.5
 /**
  * Map legend showing the price color scale.
  * Switches between municipality-level and building-level scales based on zoom.
+ * Crossfades between the two scales for a smooth transition.
  */
 export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendProps) {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const showMunicipalityScale = zoom < MUNICIPALITY_ZOOM_MAX && municipalityScale
 
+  // Track previous scale to enable crossfade
+  const prevScaleRef = useRef(showMunicipalityScale)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
+  useEffect(() => {
+    if (prevScaleRef.current !== showMunicipalityScale) {
+      setIsTransitioning(true)
+      const timer = setTimeout(() => setIsTransitioning(false), 250)
+      prevScaleRef.current = showMunicipalityScale
+      return () => clearTimeout(timer)
+    }
+  }, [showMunicipalityScale])
+
   const colors = showMunicipalityScale ? municipalityScale.colors : PRICE_COLORS
   const labels = showMunicipalityScale ? municipalityScale.labels : PRICE_LABELS
   const outlineColors = showMunicipalityScale ? municipalityScale.colors : BUILDING_OUTLINE_COLORS
 
-  const title = showMunicipalityScale ? 'Kuntamedaani €/m²' : 'Hinta €/m²'
+  const title = showMunicipalityScale ? 'Kuntamediaani €/m²' : 'Hinta €/m²'
 
   return (
     <div className="absolute bottom-6 right-6 z-40">
@@ -46,7 +60,7 @@ export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendPro
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Pienennä selite' : 'Laajenna selite'}
         >
-          <span>{title}</span>
+          <span className="transition-opacity duration-200">{title}</span>
           {isExpanded ? (
             <ChevronDown className="ml-2 h-4 w-4 text-[#999]" />
           ) : (
@@ -54,9 +68,12 @@ export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendPro
           )}
         </button>
 
-        {/* Color scale entries */}
+        {/* Color scale entries with crossfade */}
         {isExpanded && (
-          <div className="px-3 pb-2.5 pt-0.5 space-y-1">
+          <div
+            className="px-3 pb-2.5 pt-0.5 space-y-1 transition-opacity duration-200"
+            style={{ opacity: isTransitioning ? 0.3 : 1 }}
+          >
             {colors.map((color, index) => (
               <div
                 key={`${showMunicipalityScale ? 'm' : 'b'}-${index}`}
@@ -64,7 +81,7 @@ export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendPro
                 style={{ animationDelay: `${index * 25}ms`, animationFillMode: 'both' }}
               >
                 <span
-                  className="inline-block h-3 w-5 rounded-sm flex-shrink-0"
+                  className="inline-block h-3 w-5 rounded-sm flex-shrink-0 transition-colors duration-300"
                   style={{
                     backgroundColor: color,
                     border: `1.5px solid ${outlineColors[Math.min(index, outlineColors.length - 1)]}`,

@@ -3,8 +3,13 @@
  *
  * Adjusts the area-level base price (from Statistics Finland) by:
  * 1. Building age (construction year)
- * 2. Proximity to water
- * 3. Floor count
+ * 2. Energy efficiency class (A–G)
+ * 3. Proximity to water
+ * 4. Floor count
+ * 5. Building size (apartment count / total area)
+ * 6. Neighborhood correction (market-calibrated)
+ *
+ * Location premium factors (water, neighborhood) are dampened for old buildings.
  */
 
 /** Omakotitalo fallback multipliers when no direct StatFin OKT data exists.
@@ -13,6 +18,8 @@ export const OKT_FALLBACK = {
   fromRivitalo: 1.10,
   fromKerrostalo: 0.90,
 } as const
+
+export type PropertyType = 'kerrostalo' | 'rivitalo' | 'omakotitalo'
 
 export interface PriceEstimationInput {
   /** Real StatFin €/m² for this postal code + year + property type */
@@ -26,17 +33,25 @@ export interface PriceEstimationInput {
   /** Reference year for age calculation */
   referenceYear: number
   /** Property type for type-specific floor factor (optional for backward compat) */
-  propertyType?: 'kerrostalo' | 'rivitalo' | 'omakotitalo'
+  propertyType?: PropertyType
   /** Neighborhood correction factor from market data (defaults to 1.0) */
   neighborhoodFactor?: number
+  /** Energy efficiency class A–G (null if unknown) */
+  energyClass?: string | null
+  /** Number of apartments in the building (null if unknown) */
+  apartmentCount?: number | null
+  /** Building footprint area in m² (null if unknown) */
+  footprintAreaSqm?: number | null
 }
 
 export interface PriceEstimationResult {
   estimatedPricePerSqm: number
   basePrice: number
   ageFactor: number
+  energyFactor: number
   waterFactor: number
   floorFactor: number
+  sizeFactor: number
   neighborhoodFactor: number
 }
 
@@ -50,17 +65,22 @@ export function computeAgeFactor(
 
   // U-shaped curve: 1960s-70s panel houses (age ~50-60) are cheapest,
   // pre-war buildings (age 80-100+) recover value.
-  // Validated 2026-03 against Etuovi asking prices — new construction
-  // premiums increased significantly, age valley softened.
-  if (age <= 0) return 1.35    // brand new / under construction
-  if (age <= 5) return 1.25    // very new
-  if (age <= 10) return 1.15   // recent
-  if (age <= 20) return 1.05   // modern
-  if (age <= 30) return 0.95   // keep
-  if (age <= 40) return 0.90   // aging
-  if (age <= 50) return 0.82   // late 70s panels
-  if (age <= 60) return 0.78   // 60s-70s panels (valley — cheapest)
-  if (age <= 70) return 0.80   // post-war, starting recovery
+  // Recalibrated 2026-03-21 against 87 Etuovi asking prices.
+  // New-build factors boosted to compensate for StatFin base price
+  // dilution (new + resale transactions pooled in area averages).
+  // Half-correction applied to avoid overfitting to small validation set.
+  // Pre-war brackets (≤100, >100) kept unchanged — validation sample
+  // biased toward cheap suburban wooden houses (n=2-3), while full
+  // Etuovi data shows central pre-war buildings command premiums.
+  if (age <= 0) return 1.45    // brand new / under construction
+  if (age <= 5) return 1.33    // very new
+  if (age <= 10) return 1.22   // recent
+  if (age <= 20) return 1.10   // modern
+  if (age <= 30) return 0.97   // maturing
+  if (age <= 40) return 0.90   // aging (anchor — accurate in validation)
+  if (age <= 50) return 0.84   // late 70s panels
+  if (age <= 60) return 0.80   // 60s-70s panels (valley — cheapest)
+  if (age <= 70) return 0.80   // post-war (anchor — accurate in validation)
   if (age <= 80) return 0.85   // 1940s-50s recovery
   if (age <= 100) return 0.90  // pre-war, good value retention
   return 0.92                   // historical, often renovated, character premium
@@ -92,6 +112,57 @@ export function computeFloorFactor(
   // Kerrostalo: taller buildings command slight premium
   if (floorCount >= 8) return 1.03
   if (floorCount >= 5) return 1.01
+  return 1.0
+}
+
+/**
+ * Energy efficiency class factor.
+ * Based on Aalto University research: 4.1% premium for A-B vs D-E in Helsinki metro.
+ * Sp-Koti and Energiaduo report 5-10% price differences between classes.
+ */
+export function computeEnergyFactor(energyClass: string | null): number {
+  if (energyClass === null) return 1.0
+  switch (energyClass.toUpperCase()) {
+    case 'A': return 1.08
+    case 'B': return 1.05
+    case 'C': return 1.02
+    case 'D': return 1.00
+    case 'E': return 0.97
+    case 'F': return 0.94
+    case 'G': return 0.90
+    default: return 1.00
+  }
+}
+
+/**
+ * Building size factor — smaller buildings command higher €/m².
+ *
+ * Kerrostalo: by apartment count (fewer apartments = more exclusive).
+ * Omakotitalo: by total area (smaller homes = higher €/m², diminishing returns on large).
+ * Rivitalo: neutral (size variation is small).
+ */
+export function computeSizeFactor(
+  apartmentCount: number | null,
+  footprintAreaSqm: number | null,
+  floorCount: number | null,
+  propertyType?: PropertyType
+): number {
+  if (propertyType === 'kerrostalo' && apartmentCount !== null) {
+    if (apartmentCount >= 60) return 0.97
+    if (apartmentCount >= 30) return 1.00
+    if (apartmentCount >= 10) return 1.02
+    return 1.04
+  }
+
+  if (propertyType === 'omakotitalo' && footprintAreaSqm !== null) {
+    const floors = floorCount ?? 1
+    const totalArea = footprintAreaSqm * floors
+    if (totalArea > 300) return 0.92
+    if (totalArea > 200) return 0.96
+    if (totalArea > 100) return 1.00
+    return 1.03
+  }
+
   return 1.0
 }
 
@@ -145,24 +216,33 @@ export function estimateBuildingPrice(
   input: PriceEstimationInput
 ): PriceEstimationResult {
   const ageFactor = computeAgeFactor(input.constructionYear, input.referenceYear)
+  const energyFactor = computeEnergyFactor(input.energyClass ?? null)
   const rawWaterFactor = computeWaterFactor(input.distanceToWaterM)
   const floorFactor = computeFloorFactor(input.floorCount, input.propertyType)
+  const sizeFactor = computeSizeFactor(
+    input.apartmentCount ?? null,
+    input.footprintAreaSqm ?? null,
+    input.floorCount,
+    input.propertyType
+  )
   const rawNeighborhoodFactor = input.neighborhoodFactor ?? 1.0
 
-  // Dampen premium factors for old buildings
+  // Dampen location premium factors for old buildings
   const waterFactor = dampenPremium(rawWaterFactor, ageFactor)
   const neighborhoodFactor = dampenPremium(rawNeighborhoodFactor, ageFactor)
 
   const estimatedPricePerSqm = Math.round(
-    input.basePrice * ageFactor * waterFactor * floorFactor * neighborhoodFactor
+    input.basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor
   )
 
   return {
     estimatedPricePerSqm,
     basePrice: input.basePrice,
     ageFactor,
+    energyFactor,
     waterFactor,
     floorFactor,
+    sizeFactor,
     neighborhoodFactor,
   }
 }

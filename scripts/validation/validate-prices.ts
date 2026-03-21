@@ -7,7 +7,7 @@
  */
 
 import { supabase } from '../data-import/lib/supabaseAdmin'
-import { computeAgeFactor, computeWaterFactor, computeFloorFactor, dampenPremium, OKT_FALLBACK } from '../../app/lib/priceEstimation'
+import { computeAgeFactor, computeEnergyFactor, computeWaterFactor, computeFloorFactor, computeSizeFactor, dampenPremium, OKT_FALLBACK } from '../../app/lib/priceEstimation'
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 
@@ -186,8 +186,10 @@ interface ValidationResult {
   basePrice: number | null
   basePriceSource: string
   ageFactor: number
+  energyFactor: number
   waterFactor: number
   floorFactor: number
+  sizeFactor: number
   neighborhoodFactor: number
   ourEstimate: number | null
   deltaPct: number | null
@@ -381,9 +383,10 @@ async function main() {
     }
 
     const ageFactor = computeAgeFactor(listing.year, REFERENCE_YEAR)
-    // We don't have water distance or floor count for most listings
-    // Use neutral factors (1.0) — this matches what most buildings would get
+    // Energy class and size data not available in Etuovi listings — neutral (1.0)
+    const energyFactor = 1.0
     const waterFactor = 1.0
+    const sizeFactor = 1.0
     const floorCount = parseFloorCount(listing.floors)
     const ptMap: Record<string, 'kerrostalo' | 'rivitalo' | 'omakotitalo'> = {
       KT: 'kerrostalo', RT: 'rivitalo', OKT: 'omakotitalo', PT: 'rivitalo',
@@ -398,7 +401,7 @@ async function main() {
     }
 
     const ourEstimate = basePrice !== null
-      ? Math.round(basePrice * ageFactor * waterFactor * floorFactor * neighborhoodFactor)
+      ? Math.round(basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor)
       : null
 
     const deltaPct = ourEstimate !== null
@@ -417,8 +420,10 @@ async function main() {
       basePrice: basePrice ? Math.round(basePrice) : null,
       basePriceSource,
       ageFactor,
+      energyFactor,
       waterFactor,
       floorFactor,
+      sizeFactor,
       neighborhoodFactor,
       ourEstimate,
       deltaPct,

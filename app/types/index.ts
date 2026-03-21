@@ -82,10 +82,14 @@ export interface BuildingWithPrice {
   address: string | null
   estimated_price_per_sqm: number | null
   min_distance_to_water_m: number | null
+  energy_class: string | null
+  apartment_count: number | null
   base_price: number | null
   age_factor: number
+  energy_factor: number
   water_factor: number
   floor_factor: number
+  size_factor: number
   neighborhood_factor: number
   ryhti_main_purpose: string | null
   is_residential: boolean | null

@@ -4,23 +4,30 @@ import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { cn } from '@/app/lib/utils'
 import { formatNumber } from '@/app/lib/formatters'
+import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import { Badge } from '@/app/components/ui/badge'
 import {
   Building2,
   Calendar,
   Layers,
   Droplets,
-  MapPin,
-  ArrowLeft,
+  X,
+  ChevronDown,
+  Zap,
+  Users,
+  Home,
+  Info,
 } from 'lucide-react'
 import type { BuildingWithPrice } from '@/app/types'
 
 /**
- * BuildingPanel – Sidebar content for a selected building.
+ * BuildingPanel – Floating card content for a selected building.
  *
- * Shows the building's estimated price per m² with a breakdown
- * of factors (age, water proximity, floor count).
+ * Layout:
+ *   1. Header: address + area info + close button
+ *   2. Price card: estimation + collapsible factor breakdown (unified)
+ *   3. Attribute grid: type, year, floors, water, footprint, energy, apartments
+ *   4. Disclaimer
  */
 export function BuildingPanel() {
   const {
@@ -31,6 +38,7 @@ export function BuildingPanel() {
   const [building, setBuilding] = useState<BuildingWithPrice | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [fetchFailed, setFetchFailed] = useState(false)
+  const [showFactors, setShowFactors] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -46,6 +54,7 @@ export function BuildingPanel() {
 
     setIsLoading(true)
     setFetchFailed(false)
+    setShowFactors(false)
     fetch(`/api/buildings/${selectedBuilding}`, { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -62,12 +71,12 @@ export function BuildingPanel() {
     return () => controller.abort()
   }, [selectedBuilding])
 
-  function handleBack() {
+  function handleClose() {
     setSelectedBuilding(null)
   }
 
   if (isLoading || (!building && !fetchFailed)) {
-    return <BuildingPanelSkeleton onBack={handleBack} />
+    return <BuildingPanelSkeleton onClose={handleClose} />
   }
 
   if (!building) {
@@ -78,10 +87,10 @@ export function BuildingPanel() {
         </p>
         <button
           type="button"
-          onClick={handleBack}
+          onClick={handleClose}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          Takaisin
+          Sulje
         </button>
       </div>
     )
@@ -89,151 +98,205 @@ export function BuildingPanel() {
 
   const price = building.estimated_price_per_sqm
   const hasPrice = price !== null && price > 0
+  const hasFactors = hasPrice && building.base_price !== null
+
+  // Resolve building type label
+  const typeLabel = building.ryhti_main_purpose
+    ? getRyhtiPurposeLabel(building.ryhti_main_purpose)
+    : building.building_type
+      ? getBuildingTypeLabel(building.building_type)
+      : null
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={handleBack}
-        className={cn(
-          'flex items-center gap-1.5 text-sm',
-          'text-muted-foreground hover:text-foreground transition-colors'
-        )}
-      >
-        <ArrowLeft size={14} />
-        Takaisin aluenäkymään
-      </button>
-
-      {/* Header */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <Building2 size={18} className="text-pink" />
-          <h2 className="text-lg font-semibold text-foreground">
-            Rakennus
+    <div className="space-y-4 animate-fade-in">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="text-base font-display font-bold text-foreground truncate">
+            {building.address ?? 'Rakennus'}
           </h2>
-        </div>
-        {building.address && (
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin size={13} />
-            {building.address}
-          </div>
-        )}
-        <div className="flex items-center gap-2 flex-wrap">
-          {(building.ryhti_main_purpose || building.building_type) && (
-            <Badge variant="secondary" className="text-xs capitalize">
-              {building.ryhti_main_purpose
-                ? getRyhtiPurposeLabel(building.ryhti_main_purpose)
-                : getBuildingTypeLabel(building.building_type!)}
-            </Badge>
-          )}
-          {building.is_residential === false && (
-            <Badge variant="outline" className="text-xs text-[#e870d0] border-pink">
-              Ei asuinkäytössä
-            </Badge>
-          )}
           {building.area_name && (
-            <Badge variant="outline" className="text-xs">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {building.area_code} {building.area_name}
-            </Badge>
+            </p>
           )}
         </div>
+        <button
+          type="button"
+          onClick={handleClose}
+          className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          aria-label="Sulje"
+        >
+          <X size={16} />
+        </button>
       </div>
 
-      {/* Price estimate */}
-      {hasPrice && (
-        <div className="neo-lift rounded-xl bg-pink-pale border-2 border-[#1a1a1a] p-4 space-y-3 shadow-hard-sm">
-          <div className="text-sm text-muted-foreground">Hinta-arvio</div>
-          <div className="text-3xl font-bold text-foreground tabular-nums animate-count-up">
-            <AnimatedPrice value={price} /> €/m²
+      {/* ── Unified price card ── */}
+      <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] shadow-hard-sm overflow-hidden">
+        {/* Price headline */}
+        {hasPrice ? (
+          <div className="px-4 pt-3 pb-2.5">
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">Hinta-arvio</div>
+            <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
+              <AnimatedNumber value={price!} fromZero duration={500} />
+              <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="px-4 py-3">
+            <div className="text-xs text-muted-foreground">Hinta-arviota ei saatavilla</div>
+          </div>
+        )}
 
-      {/* Building attributes */}
-      <div className="grid grid-cols-2 gap-3">
-        <AttributeCard
-          icon={<Calendar size={15} />}
-          label="Rakennusvuosi"
-          value={building.construction_year?.toString() ?? 'Ei tiedossa'}
+        {/* Factor toggle — inline under price */}
+        {hasFactors && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowFactors(prev => !prev)}
+              className={cn(
+                'w-full flex items-center justify-between',
+                'px-4 py-2 text-xs cursor-pointer',
+                'border-t border-[#1a1a1a]/10',
+                'text-muted-foreground hover:text-foreground',
+                'hover:bg-pink-baby/30 transition-colors',
+              )}
+            >
+              <span className="font-medium">Näytä erittely</span>
+              <ChevronDown
+                size={14}
+                className={cn(
+                  'transition-transform duration-200',
+                  showFactors && 'rotate-180',
+                )}
+              />
+            </button>
+
+            {/* Factor breakdown — slides in */}
+            {showFactors && (
+              <div className="px-4 pb-3 space-y-1.5 text-[13px] animate-fade-in border-t border-[#1a1a1a]/10">
+                <div className="pt-2.5">
+                  <FactorRow
+                    label="Alueen perushinta"
+                    value={`${formatBuildingPrice(building.base_price)} €/m²`}
+                  />
+                </div>
+
+                <FactorRow
+                  label="Ikäkerroin"
+                  value={formatFactor(building.age_factor)}
+                  neutral={building.age_factor === 1}
+                  positive={building.age_factor > 1}
+                />
+                {building.energy_factor !== 1 && (
+                  <FactorRow
+                    label="Energiakerroin"
+                    value={formatFactor(building.energy_factor)}
+                    neutral={false}
+                    positive={building.energy_factor > 1}
+                  />
+                )}
+                {building.floor_factor !== 1 && (
+                  <FactorRow
+                    label="Kerroskerroin"
+                    value={formatFactor(building.floor_factor)}
+                    neutral={false}
+                    positive={building.floor_factor > 1}
+                  />
+                )}
+                {building.size_factor !== 1 && (
+                  <FactorRow
+                    label="Kokokerroin"
+                    value={formatFactor(building.size_factor)}
+                    neutral={false}
+                    positive={building.size_factor > 1}
+                  />
+                )}
+
+                {building.water_factor !== 1 && (
+                  <FactorRow
+                    label="Vesikerroin"
+                    value={formatFactor(building.water_factor)}
+                    neutral={false}
+                    positive={building.water_factor > 1}
+                  />
+                )}
+                <FactorRow
+                  label="Naapurustokerroin"
+                  value={formatFactor(building.neighborhood_factor)}
+                  neutral={building.neighborhood_factor === 1}
+                  positive={building.neighborhood_factor > 1}
+                />
+
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── Building attributes — 2-col grid ── */}
+      <div className="grid grid-cols-2 gap-2">
+        {typeLabel && (
+          <CompactAttribute
+            icon={<Home size={14} />}
+            label="Tyyppi"
+            value={typeLabel}
+            delay={0}
+          />
+        )}
+        <CompactAttribute
+          icon={<Calendar size={14} />}
+          label="Rakennettu"
+          value={building.construction_year?.toString() ?? '–'}
+          delay={1}
         />
-        <AttributeCard
-          icon={<Layers size={15} />}
+        <CompactAttribute
+          icon={<Layers size={14} />}
           label="Kerroksia"
-          value={building.floor_count?.toString() ?? 'Ei tiedossa'}
+          value={building.floor_count?.toString() ?? '–'}
+          delay={2}
         />
-        <AttributeCard
-          icon={<Droplets size={15} />}
-          label="Etäisyys veteen"
+        <CompactAttribute
+          icon={<Droplets size={14} />}
+          label="Vesi"
           value={
             building.min_distance_to_water_m !== null
               ? `${Math.round(building.min_distance_to_water_m)} m`
-              : 'Ei tiedossa'
+              : '–'
           }
+          delay={3}
         />
-        <AttributeCard
-          icon={<Building2 size={15} />}
-          label="Pohjan ala"
+        <CompactAttribute
+          icon={<Building2 size={14} />}
+          label="Pohja"
           value={
             building.footprint_area_sqm !== null
               ? `${Math.round(building.footprint_area_sqm)} m²`
-              : 'Ei tiedossa'
+              : '–'
           }
+          delay={4}
         />
+        {building.energy_class && (
+          <CompactAttribute
+            icon={<Zap size={14} />}
+            label="Energia"
+            value={building.energy_class.toUpperCase()}
+            delay={5}
+          />
+        )}
+        {building.apartment_count !== null && (
+          <CompactAttribute
+            icon={<Users size={14} />}
+            label="Asuntoja"
+            value={building.apartment_count.toString()}
+            delay={6}
+          />
+        )}
       </div>
 
-      {/* Price estimation breakdown */}
-      {hasPrice && building.base_price !== null && (
-        <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] p-4 space-y-3 shadow-hard-sm">
-          <div className="text-sm font-medium text-foreground">
-            Hinta-arvion erittely
-          </div>
-
-          <div className="space-y-2 text-sm">
-            <FactorRow
-              label="Alueen perushinta"
-              value={`${formatBuildingPrice(building.base_price)} €/m²`}
-            />
-            <FactorRow
-              label="Ikäkerroin"
-              value={formatFactor(building.age_factor)}
-              neutral={building.age_factor === 1}
-              positive={building.age_factor > 1}
-            />
-            <FactorRow
-              label="Vesikerroin"
-              value={formatFactor(building.water_factor)}
-              neutral={building.water_factor === 1}
-              positive={building.water_factor > 1}
-            />
-            <FactorRow
-              label="Kerroskerroin"
-              value={formatFactor(building.floor_factor)}
-              neutral={building.floor_factor === 1}
-              positive={building.floor_factor > 1}
-            />
-            <FactorRow
-              label="Aluekerroin"
-              value={formatFactor(building.neighborhood_factor)}
-              neutral={building.neighborhood_factor === 1}
-              positive={building.neighborhood_factor > 1}
-            />
-
-            <div className="border-t border-border pt-2 mt-2 flex items-center justify-between font-medium">
-              <span className="text-foreground">Lopullinen arvio</span>
-              <span className="text-foreground tabular-nums">
-                {formatBuildingPrice(price)} €/m²
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Disclaimer */}
-      <p className="text-[11px] text-muted-foreground leading-relaxed">
-        Hinta-arvio perustuu alueen tilastohintoihin (Tilastokeskus) sekä
-        rakennuksen ominaisuuksiin. Arvio on suuntaa-antava eikä vastaa
-        virallista arviota.
+      {/* ── Disclaimer ── */}
+      <p className="text-xs text-muted-foreground/70 leading-snug">
+        Arvio perustuu Tilastokeskuksen tilastohintoihin ja rakennuksen ominaisuuksiin. Suuntaa-antava.
       </p>
     </div>
   )
@@ -243,26 +306,40 @@ export function BuildingPanel() {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function AttributeCard({
+function CompactAttribute({
   icon,
   label,
   value,
+  delay = 0,
 }: {
   icon: React.ReactNode
   label: string
   value: string
+  delay?: number
 }) {
   return (
-    <div className="neo-lift rounded-lg bg-[#FFFBF5] border-2 border-[#1a1a1a] p-3 space-y-1 shadow-hard-sm">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <span className="text-[11px]">{label}</span>
-      </div>
-      <div className="text-sm font-medium text-foreground tabular-nums">
-        {value}
+    <div
+      className="rounded-lg border border-[#1a1a1a]/20 bg-[#FFFBF5] px-2.5 py-2 flex items-center gap-2 animate-pop-in"
+      style={{ animationDelay: `${delay * 40}ms`, animationFillMode: 'both' }}
+    >
+      <span className="text-muted-foreground flex-shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <div className="text-[11px] text-muted-foreground leading-none">{label}</div>
+        <div className="text-sm font-medium text-foreground tabular-nums leading-tight truncate">{value}</div>
       </div>
     </div>
   )
+}
+
+/** Finnish explanations for price estimation factors */
+const FACTOR_TOOLTIPS: Record<string, string> = {
+  'Alueen perushinta': 'Tilastokeskuksen keskihinta alueella valitulle talotyypille ja vuodelle.',
+  'Ikäkerroin': 'Rakennuksen iän vaikutus hintaan. Uudet ja historialliset rakennukset ovat arvokkaampia, 1960–80-luvun elementtirakennukset halvimpia.',
+  'Energiakerroin': 'Rakennuksen energialuokan vaikutus hintaan. Hyvä energialuokka nostaa arvoa.',
+  'Kerroskerroin': 'Kerrosmäärän vaikutus. Korkeat kerrostalot ja yksikerroksiset rivitalot saavat pienen lisän.',
+  'Kokokerroin': 'Rakennuksen pohja-alan vaikutus hintaan.',
+  'Vesikerroin': 'Vesistön läheisyyden vaikutus. Alle 200 m järvestä tai merestä nostaa hintaa.',
+  'Naapurustokerroin': 'Alueen hintatason poikkeama perushinnasta, laskettu Etuovi.fi-ilmoituksista.',
 }
 
 function FactorRow({
@@ -276,9 +353,21 @@ function FactorRow({
   neutral?: boolean
   positive?: boolean
 }) {
+  const tooltip = FACTOR_TOOLTIPS[label]
+
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between group">
+      <span className="text-muted-foreground flex items-center gap-1">
+        {label}
+        {tooltip && (
+          <span className="relative">
+            <Info size={12} className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors cursor-help" />
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 text-xs leading-snug text-foreground bg-bg-primary border-2 border-[#1a1a1a] rounded-lg shadow-hard-sm w-52 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
+              {tooltip}
+            </span>
+          </span>
+        )}
+      </span>
       <span
         className={cn(
           'tabular-nums font-medium',
@@ -293,63 +382,56 @@ function FactorRow({
   )
 }
 
-function BuildingPanelSkeleton({ onBack }: { onBack: () => void }) {
+function BuildingPanelSkeleton({ onClose }: { onClose: () => void }) {
   return (
-    <div className="space-y-5 animate-fade-in">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft size={14} />
-        Takaisin
-      </button>
-      <div className="space-y-2">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-4 w-48" />
+    <div className="space-y-4">
+      {/* Header — matches: text-base title + text-xs subtitle */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 space-y-2">
+          <Skeleton className="h-[22px] w-44" />
+          <Skeleton className="h-[14px] w-32" />
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Sulje"
+        >
+          <X size={16} />
+        </button>
       </div>
-      <Skeleton className="h-24 rounded-xl" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="h-16 rounded-lg" />
-        <Skeleton className="h-16 rounded-lg" />
-        <Skeleton className="h-16 rounded-lg" />
-        <Skeleton className="h-16 rounded-lg" />
+
+      {/* Price card — matches: rounded-xl border-2 with px-4 pt-3 pb-2.5 + toggle row */}
+      <div className="rounded-xl bg-pink-pale/40 border-2 border-[#1a1a1a]/10 overflow-hidden">
+        <div className="px-4 pt-3 pb-2.5 space-y-2">
+          <Skeleton className="h-[14px] w-20" />
+          <Skeleton className="h-[30px] w-36" />
+        </div>
+        <div className="px-4 py-2.5 border-t border-[#1a1a1a]/10">
+          <Skeleton className="h-[14px] w-24" />
+        </div>
       </div>
-      <Skeleton className="h-40 rounded-xl" />
+
+      {/* Attribute grid — matches: 6 CompactAttributes with px-2.5 py-2 */}
+      <div className="grid grid-cols-2 gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-2.5 py-2 flex items-center gap-2"
+          >
+            <Skeleton className="h-[14px] w-[14px] rounded-sm flex-shrink-0" />
+            <div className="space-y-1 flex-1">
+              <Skeleton className="h-[11px] w-12" />
+              <Skeleton className="h-[16px] w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Disclaimer */}
+      <Skeleton className="h-[14px] w-4/5" />
     </div>
   )
-}
-
-// ---------------------------------------------------------------------------
-// Animated price counter
-// ---------------------------------------------------------------------------
-
-function AnimatedPrice({ value }: { value: number }) {
-  const [display, setDisplay] = useState(0)
-  const frameRef = useRef<number>(0)
-
-  useEffect(() => {
-    const duration = 500
-    const start = performance.now()
-    const from = 0
-    const to = Math.round(value)
-
-    function tick(now: number) {
-      const elapsed = now - start
-      const progress = Math.min(elapsed / duration, 1)
-      // Ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplay(Math.round(from + (to - from) * eased))
-      if (progress < 1) {
-        frameRef.current = requestAnimationFrame(tick)
-      }
-    }
-
-    frameRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frameRef.current)
-  }, [value])
-
-  return <>{formatNumber(display)}</>
 }
 
 // ---------------------------------------------------------------------------
@@ -390,7 +472,6 @@ function getBuildingTypeLabel(type: string): string {
 /**
  * Map Ryhti main_purpose codes to Finnish labels.
  * Codes follow the Finnish national building classification.
- * See: https://koodistot.suomi.fi/codelist;registryCode=rak;schemeCode=kayttotarkoitus
  */
 const RYHTI_PURPOSE_EXACT: Record<string, string> = {
   '0110': 'Omakotitalo',

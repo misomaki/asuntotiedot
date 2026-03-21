@@ -221,7 +221,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
         }
         const point = yearMap.get(entry.year)
         if (point) {
-          point[type] = entry.price_per_sqm_median
+          point[type] = entry.price_per_sqm_median ?? entry.price_per_sqm_avg ?? null
         }
       }
     }
@@ -241,6 +241,9 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
     )
   }
 
+  // Hide entirely when no data is available
+  if (hasError || isEmpty) return null
+
   return (
     <div
       className={cn(
@@ -256,63 +259,56 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
         </h3>
       </div>
 
-      {/* Chart or empty state */}
-      {hasError || isEmpty ? (
-        <div className="flex h-[250px] items-center justify-center rounded-lg border-2 border-dashed border-[#e0e0e0]">
-          <p className="text-sm text-[#999]">Ei dataa</p>
-        </div>
-      ) : (
-        <div className="h-[250px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
-            >
-              <CartesianGrid
-                stroke="#e0e0e0"
-                strokeDasharray="3 3"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="year"
-                tick={{ fill: '#999', fontSize: 11 }}
-                axisLine={{ stroke: '#e0e0e0' }}
-                tickLine={false}
-              />
-              <YAxis
-                tickFormatter={formatYAxis}
-                tick={{ fill: '#999', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-                width={56}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend content={<CustomLegendContent />} />
+      <div className="h-[250px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={chartData}
+            margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
+          >
+            <CartesianGrid
+              stroke="#e0e0e0"
+              strokeDasharray="3 3"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="year"
+              tick={{ fill: '#999', fontSize: 11 }}
+              axisLine={{ stroke: '#e0e0e0' }}
+              tickLine={false}
+            />
+            <YAxis
+              tickFormatter={formatYAxis}
+              tick={{ fill: '#999', fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              width={56}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend content={<CustomLegendContent />} />
 
-              {PROPERTY_TYPES.map((type) => (
-                <Line
-                  key={type}
-                  type="monotone"
-                  dataKey={type}
-                  name={LINE_CONFIG[type].label}
-                  stroke={LINE_CONFIG[type].color}
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: LINE_CONFIG[type].color, strokeWidth: 0 }}
-                  activeDot={{
-                    r: 5,
-                    fill: LINE_CONFIG[type].color,
-                    strokeWidth: 2,
-                    stroke: '#ffffff',
-                  }}
-                  connectNulls
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+            {PROPERTY_TYPES.map((type) => (
+              <Line
+                key={type}
+                type="monotone"
+                dataKey={type}
+                name={LINE_CONFIG[type].label}
+                stroke={LINE_CONFIG[type].color}
+                strokeWidth={2}
+                dot={{ r: 3, fill: LINE_CONFIG[type].color, strokeWidth: 0 }}
+                activeDot={{
+                  r: 5,
+                  fill: LINE_CONFIG[type].color,
+                  strokeWidth: 2,
+                  stroke: '#ffffff',
+                }}
+                connectNulls
+                animationDuration={800}
+                animationEasing="ease-out"
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }
