@@ -6,18 +6,33 @@
 -- building_type denylist, causing them to fall through as
 -- is_residential=true and receive price estimations.
 --
--- This migration:
--- 1. Updates compute_is_residential_batch() with expanded denylist
--- 2. Reclassifies affected buildings
--- 3. Resets their price estimations
+-- This migration is self-contained: it ensures all required columns
+-- exist (from migrations 007 + 015) before proceeding, so it works
+-- even if those migrations were not previously applied.
+--
+-- Steps:
+-- 0. Ensure all required columns exist (idempotent)
+-- 1. Update compute_is_residential_batch() with expanded denylist
+-- 2. Reclassify affected buildings
+-- 3. Reset their price estimations
 -- ============================================================
 
 -- ============================================================
--- 0. Ensure is_residential column exists (idempotent)
+-- 0. Ensure all required columns exist (idempotent)
 -- ============================================================
+-- From migration 007:
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS ryhti_main_purpose TEXT;
 ALTER TABLE buildings ADD COLUMN IF NOT EXISTS is_residential BOOLEAN;
+
+-- From migration 015:
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS energy_class TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS apartment_count INT;
+
+-- Indexes (idempotent)
 CREATE INDEX IF NOT EXISTS idx_buildings_is_residential
   ON buildings (is_residential) WHERE is_residential = true;
+CREATE INDEX IF NOT EXISTS idx_buildings_ryhti_main_purpose
+  ON buildings (ryhti_main_purpose) WHERE ryhti_main_purpose IS NOT NULL;
 
 -- ============================================================
 -- 1. Replace compute_is_residential_batch with expanded denylist
@@ -87,7 +102,8 @@ $$ LANGUAGE plpgsql;
 -- 2. Reclassify buildings with newly-denied types
 -- ============================================================
 -- Reset is_residential for buildings with the newly-added types
--- so compute_is_residential_batch can reclassify them
+-- so compute_is_residential_batch can reclassify them.
+-- Also reset ANY building that has is_residential IS NULL (never classified).
 UPDATE buildings
 SET is_residential = NULL
 WHERE is_residential = true
