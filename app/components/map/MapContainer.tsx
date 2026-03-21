@@ -726,7 +726,7 @@ export default function MapContainer() {
 
       {/* Zoom hint — shown when approaching building zoom level (z12–14) */}
       {showZoomHint && (
-        <div className="absolute bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 z-40 animate-fade-in">
+        <div className="absolute bottom-6 left-3 md:bottom-6 md:left-6 z-40 animate-fade-in">
           <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
             <span className="inline-block h-2 w-2 rounded-full bg-pink animate-pulse" />
             Lähennä nähdäksesi rakennukset
