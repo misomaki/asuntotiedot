@@ -99,6 +99,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/015_energy_size_factors.sql         # Energy+size faktorit, päivitetty compute_building_price() + match_ryhti_energy_apartment_batch
   /migrations/016_recalibrated_age_factors.sql    # Uudelleenkalibroidut ikäkertoimet (uudisrakentaminen boosted)
   /migrations/017_recalibrated_water_factors.sql  # Uudelleenkalibroidut vesistökertoimet (7-tasoinen, max 1.35)
+  /migrations/018_fix_nonresidential_denylist.sql  # Laajennettu ei-asuinrakennusten denylist (supermarket, library, stadium, jne.)
 
 /scripts
   /validation/
