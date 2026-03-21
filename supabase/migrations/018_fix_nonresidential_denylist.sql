@@ -3,39 +3,37 @@
 -- ============================================================
 -- Problem: Several commercial building types (supermarket, shop,
 -- library, stadium, parking, etc.) were missing from the OSM
--- building_type denylist, causing them to fall through as
--- is_residential=true and receive price estimations.
+-- building_type denylist. Additionally, Ryhti proximity matching
+-- can misclassify commercial buildings as residential when a
+-- nearby residential Ryhti point is within 50m.
 --
--- This migration is self-contained: it ensures all required columns
--- exist (from migrations 007 + 015) before proceeding, so it works
--- even if those migrations were not previously applied.
+-- Fix: OSM denylist now takes PRIORITY over Ryhti for explicit
+-- commercial/public types. This prevents Ryhti mismatch from
+-- overriding a clear OSM supermarket/school/church tag.
 --
 -- Steps:
 -- 0. Ensure all required columns exist (idempotent)
--- 1. Update compute_is_residential_batch() with expanded denylist
--- 2. Reclassify affected buildings
+-- 1. Update compute_is_residential_batch() — denylist BEFORE Ryhti
+-- 2. Reclassify ALL buildings with denied types (including Ryhti-matched)
 -- 3. Reset their price estimations
 -- ============================================================
 
 -- ============================================================
 -- 0. Ensure all required columns exist (idempotent)
 -- ============================================================
--- From migration 007:
 ALTER TABLE buildings ADD COLUMN IF NOT EXISTS ryhti_main_purpose TEXT;
 ALTER TABLE buildings ADD COLUMN IF NOT EXISTS is_residential BOOLEAN;
-
--- From migration 015:
 ALTER TABLE buildings ADD COLUMN IF NOT EXISTS energy_class TEXT;
 ALTER TABLE buildings ADD COLUMN IF NOT EXISTS apartment_count INT;
 
--- Indexes (idempotent)
 CREATE INDEX IF NOT EXISTS idx_buildings_is_residential
   ON buildings (is_residential) WHERE is_residential = true;
 CREATE INDEX IF NOT EXISTS idx_buildings_ryhti_main_purpose
   ON buildings (ryhti_main_purpose) WHERE ryhti_main_purpose IS NOT NULL;
 
 -- ============================================================
--- 1. Replace compute_is_residential_batch with expanded denylist
+-- 1. Replace compute_is_residential_batch
+--    NEW ORDER: OSM denylist FIRST, then Ryhti, then heuristic
 -- ============================================================
 CREATE OR REPLACE FUNCTION compute_is_residential_batch(p_limit INT DEFAULT 5000)
 RETURNS INT AS $$
@@ -44,12 +42,9 @@ DECLARE
 BEGIN
   UPDATE buildings
   SET is_residential = CASE
-    -- Tier 1: Ryhti main_purpose (highest authority)
-    -- 01xx = asuinrakennukset (residential buildings)
-    WHEN ryhti_main_purpose IS NOT NULL AND ryhti_main_purpose LIKE '01%' THEN true
-    WHEN ryhti_main_purpose IS NOT NULL AND ryhti_main_purpose NOT LIKE '01%' THEN false
-
-    -- Tier 2: OSM building_type denylist (expanded 2026-03)
+    -- Tier 1 (NEW): OSM building_type denylist — highest priority
+    -- These tags are explicit and reliable. Ryhti proximity matching
+    -- can mismatch in dense areas, but OSM "supermarket" is always a supermarket.
     WHEN building_type IN (
       -- Commercial / retail
       'office', 'hotel', 'civic', 'commercial', 'retail',
@@ -78,8 +73,12 @@ BEGIN
       'roof', 'container', 'construction'
     ) THEN false
 
+    -- Tier 2: Ryhti main_purpose (for buildings without explicit OSM type)
+    -- 01xx = asuinrakennukset (residential buildings)
+    WHEN ryhti_main_purpose IS NOT NULL AND ryhti_main_purpose LIKE '01%' THEN true
+    WHEN ryhti_main_purpose IS NOT NULL AND ryhti_main_purpose NOT LIKE '01%' THEN false
+
     -- Tier 3: Footprint area heuristic
-    -- Very small buildings (< 30 m²) are typically auxiliary
     WHEN footprint_area_sqm IS NOT NULL AND footprint_area_sqm < 30 THEN false
 
     -- Default: assume residential (conservative)
@@ -99,28 +98,36 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================
--- 2. Reclassify buildings with newly-denied types
+-- 2. Reclassify ALL buildings with denied types
+--    (regardless of ryhti_main_purpose — that was the bug)
 -- ============================================================
--- Reset is_residential for buildings with the newly-added types
--- so compute_is_residential_batch can reclassify them.
--- Also reset ANY building that has is_residential IS NULL (never classified).
 UPDATE buildings
 SET is_residential = NULL
 WHERE is_residential = true
-  AND ryhti_main_purpose IS NULL
   AND building_type IN (
-    'supermarket', 'shop', 'market', 'bakery', 'pharmacy',
-    'bank', 'post_office', 'restaurant', 'cafe',
-    'mosque', 'synagogue', 'temple',
-    'college', 'police', 'library', 'museum',
-    'stadium', 'swimming_pool', 'parking'
+    'office', 'hotel', 'civic', 'commercial', 'retail',
+    'supermarket', 'shop', 'kiosk', 'market', 'bakery',
+    'pharmacy', 'bank', 'post_office', 'restaurant', 'cafe',
+    'industrial', 'warehouse', 'manufacture', 'service',
+    'storage_tank', 'silo', 'hangar',
+    'church', 'chapel', 'mosque', 'synagogue', 'temple',
+    'hospital', 'school', 'university', 'kindergarten', 'college',
+    'public', 'government', 'transportation', 'train_station',
+    'fire_station', 'police', 'library', 'museum',
+    'sports_hall', 'sports_centre', 'grandstand', 'pavilion',
+    'stadium', 'swimming_pool',
+    'garage', 'garages', 'carport', 'parking',
+    'shed', 'barn', 'farm_auxiliary', 'greenhouse',
+    'transformer_tower', 'water_tower', 'bunker',
+    'bridge', 'toilets', 'ruins',
+    'roof', 'container', 'construction'
   );
 
--- Now reclassify them (they'll hit Tier 2 and get false)
-SELECT compute_is_residential_batch(100000);
+-- Reclassify — they'll all hit the new Tier 1 denylist and get false
+SELECT compute_is_residential_batch(500000);
 
 -- ============================================================
--- 3. Reset price estimations on newly non-residential buildings
+-- 3. Reset price estimations on all non-residential buildings
 -- ============================================================
 UPDATE buildings
 SET estimation_year = NULL,
