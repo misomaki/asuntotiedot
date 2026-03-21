@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { Search, X, ChevronDown } from 'lucide-react'
+import { Search, X, ChevronDown, MapPin } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
 import { LogoMark } from '@/app/components/brand/LogoMark'
+import { CITIES, CityConfig } from '@/app/lib/cities'
 import { cn } from '@/app/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -129,10 +130,18 @@ export function Header() {
       })
   }, [geojson])
 
-  // Filter areas based on search query
+  // Filter cities based on search query
+  const cityResults: CityConfig[] = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const query = searchQuery.toLowerCase().trim()
+    return CITIES.filter((city) => city.name.toLowerCase().includes(query))
+  }, [searchQuery])
+
+  // Filter areas based on search query (limit fewer when city results present)
   const searchResults: SearchableArea[] = useMemo(() => {
     if (!searchQuery.trim()) return []
     const query = searchQuery.toLowerCase().trim()
+    const maxResults = cityResults.length > 0 ? 6 : 8
     return searchableAreas
       .filter(
         (area) =>
@@ -140,8 +149,25 @@ export function Header() {
           area.name.toLowerCase().includes(query) ||
           area.municipality.toLowerCase().includes(query)
       )
-      .slice(0, 8)
-  }, [searchQuery, searchableAreas])
+      .slice(0, maxResults)
+  }, [searchQuery, searchableAreas, cityResults.length])
+
+  // Select a city from search results — fly to its bounding box
+  const handleSelectCity = useCallback(
+    (city: CityConfig) => {
+      setSearchQuery('')
+      setIsSearchFocused(false)
+      searchInputRef.current?.blur()
+
+      const [west, south, east, north] = city.bbox
+      flyTo({
+        longitude: (west + east) / 2,
+        latitude: (south + north) / 2,
+        zoom: 12,
+      })
+    },
+    [flyTo]
+  )
 
   // Select an area from search results
   const handleSelectArea = useCallback(
@@ -192,8 +218,12 @@ export function Header() {
   // Handle search on Enter key
   const handleSearchKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter' && searchResults.length > 0) {
-        handleSelectArea(searchResults[0])
+      if (e.key === 'Enter') {
+        if (cityResults.length > 0) {
+          handleSelectCity(cityResults[0])
+        } else if (searchResults.length > 0) {
+          handleSelectArea(searchResults[0])
+        }
       }
       if (e.key === 'Escape') {
         setSearchQuery('')
@@ -201,7 +231,7 @@ export function Header() {
         searchInputRef.current?.blur()
       }
     },
-    [searchResults, handleSelectArea]
+    [cityResults, searchResults, handleSelectCity, handleSelectArea]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -228,7 +258,7 @@ export function Header() {
   const showSearchDropdown =
     isSearchFocused && searchQuery.trim().length > 0
   const showNoResults =
-    showSearchDropdown && searchResults.length === 0
+    showSearchDropdown && searchResults.length === 0 && cityResults.length === 0
 
   return (
     <header className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
@@ -311,15 +341,43 @@ export function Header() {
                   {showNoResults ? (
                     <SearchNoResults compact={isDesktop} />
                   ) : (
-                    searchResults.map((area, i) => (
-                      <SearchResultItem
-                        key={area.areaCode}
-                        area={area}
-                        compact={isDesktop}
-                        index={isDesktop ? i : undefined}
-                        onSelect={handleSelectArea}
-                      />
-                    ))
+                    <>
+                      {cityResults.map((city, i) => (
+                        <button
+                          key={city.name}
+                          type="button"
+                          onClick={() => handleSelectCity(city)}
+                          className={cn(
+                            'w-full px-3 text-left',
+                            'flex items-center gap-2',
+                            isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                            'text-[#1a1a1a]',
+                            'hover:bg-pink-baby transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-pink-baby',
+                            isDesktop && 'animate-slide-up',
+                          )}
+                          style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
+                        >
+                          <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                          <span className="font-medium">{city.name}</span>
+                          <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                            Kaupunki
+                          </span>
+                        </button>
+                      ))}
+                      {cityResults.length > 0 && searchResults.length > 0 && (
+                        <div className="border-t border-[#e5e5e5]" />
+                      )}
+                      {searchResults.map((area, i) => (
+                        <SearchResultItem
+                          key={area.areaCode}
+                          area={area}
+                          compact={isDesktop}
+                          index={isDesktop ? i + cityResults.length : undefined}
+                          onSelect={handleSelectArea}
+                        />
+                      ))}
+                    </>
                   )}
                 </div>
               )}
