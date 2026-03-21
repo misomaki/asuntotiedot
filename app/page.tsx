@@ -31,8 +31,8 @@ export default function Home() {
       <Header />
       <Sidebar />
 
-      {/* Data attribution */}
-      <div className="absolute bottom-1 right-1 z-10 text-[10px] text-muted-foreground/60 pointer-events-none select-none">
+      {/* Data attribution — above MapLibre's built-in attribution */}
+      <div className="absolute bottom-7 right-1 md:bottom-1 md:right-1 z-10 text-[10px] text-muted-foreground/60 pointer-events-none select-none">
         Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: OpenStreetMap
       </div>
     </main>

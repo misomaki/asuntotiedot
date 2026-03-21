@@ -51,7 +51,7 @@ export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendPro
   const title = showMunicipalityScale ? 'Kuntamediaani €/m²' : 'Hinta €/m²'
 
   return (
-    <div className="absolute bottom-6 right-6 z-40">
+    <div className="absolute bottom-16 right-3 md:bottom-6 md:right-6 z-40">
       <div className="neo-lift bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
         {/* Header / toggle button */}
         <button

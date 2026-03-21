@@ -89,10 +89,15 @@ export function computeAgeFactor(
 export function computeWaterFactor(distanceM: number | null): number {
   if (distanceM === null) return 1.0
 
-  if (distanceM <= 50) return 1.15
-  if (distanceM <= 100) return 1.10
-  if (distanceM <= 200) return 1.06
-  if (distanceM <= 500) return 1.03
+  // Recalibrated 2026-03-21: Finnish waterfront properties command
+  // 25-40% premiums. Original 1.15 max was too conservative.
+  // Only lakes >1ha and sea count (ponds/rivers filtered in migration 013).
+  if (distanceM <= 10) return 1.35   // on the shore — own waterfront
+  if (distanceM <= 20) return 1.28   // direct waterfront — dock access
+  if (distanceM <= 50) return 1.20   // waterfront row — clear views
+  if (distanceM <= 100) return 1.13  // near waterfront — likely views
+  if (distanceM <= 200) return 1.07  // short walk to water
+  if (distanceM <= 500) return 1.03  // neighborhood amenity
   return 1.0
 }
 

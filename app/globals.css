@@ -352,6 +352,19 @@
   border-top: 1px solid var(--color-border) !important;
 }
 
+/* Move MapLibre attribution above mobile browser chrome */
+.maplibregl-ctrl-bottom-left,
+.maplibregl-ctrl-bottom-right {
+  bottom: 4px !important;
+}
+
+@media (max-width: 767px) {
+  .maplibregl-ctrl-bottom-left,
+  .maplibregl-ctrl-bottom-right {
+    bottom: 24px !important;
+  }
+}
+
 /* ============================================
    Selection Colors
    ============================================ */

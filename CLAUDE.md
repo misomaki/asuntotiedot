@@ -98,6 +98,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/009_neighborhood_factors.sql        # Aluekertoimet (neighborhood_factors) + _etuovi_staging
   /migrations/015_energy_size_factors.sql         # Energy+size faktorit, päivitetty compute_building_price() + match_ryhti_energy_apartment_batch
   /migrations/016_recalibrated_age_factors.sql    # Uudelleenkalibroidut ikäkertoimet (uudisrakentaminen boosted)
+  /migrations/017_recalibrated_water_factors.sql  # Uudelleenkalibroidut vesistökertoimet (7-tasoinen, max 1.35)
 
 /scripts
   /validation/
@@ -420,6 +421,7 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 |----------|--------|-------------|
 | `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
 | `supabase/migrations/016_recalibrated_age_factors.sql` | Tietokanta (`compute_building_price()` RPC) — uudelleenkalibroidut ikäkertoimet, korvaa 015:n age factorit | Age factor muuttuu |
+| `supabase/migrations/017_recalibrated_water_factors.sql` | Tietokanta (`compute_building_price()` RPC) — 7-tasoinen vesistökerroin (max 1.35), korvaa 016:n water factorit | Water factor muuttuu |
 | `supabase/migrations/015_energy_size_factors.sql` | Tietokanta — energy/size faktorit + sarakkeet + match_ryhti_energy_apartment_batch RPC (korvattu 016:lla age factorien osalta) | Energy/size muuttuu |
 | `supabase/migrations/008_validated_price_factors.sql` | Tietokanta (vanha `compute_building_price()`) — age/water/floor faktorit | Korvattu 015:llä |
 | `supabase/migrations/009_neighborhood_factors.sql` | Tietokanta — neighborhood factor lookup + `_etuovi_staging` + `neighborhood_factors` taulut | Neighborhood factor -logiikka muuttuu |
@@ -520,10 +522,13 @@ uudet+vanhat kaupat → uudispreemio laimenee. Puolittainen korjaus (half-correc
 - Data: Ryhti (SYKE) `energy_class` -kenttä. Kattavuus 0% — Ryhti open data ei sisällä energiatodistuksia (erillinen ARA-rekisteri). Faktori on mukana algoritmissa valmiina, aktivoituu kun data saadaan.
 - EI vaimenneta vanhoille rakennuksille (rakennuksen sisäinen ominaisuus)
 
-**Water factor** (vain järvet >1ha ja meri, ei lampia/jokia/altaita):
-≤50m: 1.15, ≤100m: 1.10, ≤200m: 1.06, ≤500m: 1.03, >500m: 1.00
+**Water factor** (vain järvet >1ha ja meri, ei lampia/jokia/altaita, recalibrated 2026-03-21):
+≤10m: 1.35 (oma ranta), ≤20m: 1.28 (suora rantapaikka), ≤50m: 1.20 (rantarivi, näkymät),
+≤100m: 1.13 (lähellä rantaa), ≤200m: 1.07 (kävelymatka), ≤500m: 1.03 (alueen etu), >500m: 1.00
+- Alkuperäinen max 1.15 oli liian konservatiivinen — suomalaiset rantakiinteistöt 25-40% preemio
 - Etäisyys lasketaan EPSG:3067 (ETRS-TM35FIN) -projektiossa, Euklidinen metrimatka
 - Vesistögeometriat yksinkertaistettu ST_Simplify(0.0005°) ja pre-transformoitu 3067:ään
+- Kaikille rakennuksille lasketaan vesistöetäisyys (centroid + PostGIS), ei puuttuvia arvoja
 
 **Floor factor** (talotyyppikohtainen):
 - Rivitalo: 1-krs = 1.05 (yksitasoinen premium), 2-krs = 1.00
