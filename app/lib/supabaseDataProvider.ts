@@ -366,7 +366,7 @@ export class SupabaseDataProvider implements DataProvider {
     const ageFactor = computeAgeFactor(building.construction_year, new Date().getFullYear())
     const energyFactor = computeEnergyFactor(building.energy_class ?? null)
     const waterFactor = computeWaterFactor(
-      building.min_distance_to_water_m
+      building.min_distance_to_water_m != null
         ? Number(building.min_distance_to_water_m)
         : null
     )
@@ -397,7 +397,7 @@ export class SupabaseDataProvider implements DataProvider {
       estimated_price_per_sqm: building.estimated_price_per_sqm
         ? Number(building.estimated_price_per_sqm)
         : null,
-      min_distance_to_water_m: building.min_distance_to_water_m
+      min_distance_to_water_m: building.min_distance_to_water_m != null
         ? Number(building.min_distance_to_water_m)
         : null,
       energy_class: building.energy_class ?? null,
