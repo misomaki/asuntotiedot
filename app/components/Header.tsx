@@ -244,18 +244,18 @@ export function Header() {
 
   return (
     <header className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
-      <div className="pointer-events-auto mx-3 mt-3 md:mx-4 md:mt-4">
+      <div className="pointer-events-auto mx-2 mt-2 md:mx-4 md:mt-4">
         {/* Main header bar */}
         <div
           className={cn(
-            'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl h-14 px-4',
-            'flex items-center gap-4',
+            'bg-bg-primary border-2 border-[#1a1a1a] rounded-xl h-11 md:h-14 px-3 md:px-4',
+            'flex items-center gap-3 md:gap-4',
             'shadow-hard-sm'
           )}
         >
           {/* Left: Logo + Brand name */}
           <h1 className="flex-shrink-0 flex items-center gap-2">
-            <LogoMark size={32} />
+            <LogoMark size={isDesktop ? 32 : 26} />
             <span className="font-brand text-xl tracking-tight text-[#1a1a1a] hidden md:inline">
               Neliöt
             </span>

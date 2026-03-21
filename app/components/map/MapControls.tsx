@@ -25,7 +25,7 @@ export default function MapControls() {
   }, [setViewport])
 
   return (
-    <div className="absolute top-[4.5rem] right-4 z-40 flex flex-col gap-2">
+    <div className="absolute top-14 md:top-[4.5rem] right-3 md:right-4 z-40 flex flex-col gap-2">
       {/* Reset view */}
       <button
         onClick={handleResetView}

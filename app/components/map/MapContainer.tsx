@@ -325,6 +325,11 @@ export default function MapContainer() {
 
       setSelectedBuilding(buildingId)
       setIsSidebarOpen(true)
+
+      // Clear tooltip immediately so it doesn't linger over the building card
+      setTooltipContent(null)
+      setTooltipPosition(null)
+      setHoveredBuildingUuid(null)
     },
     [setSelectedBuilding, setIsSidebarOpen]
   )
