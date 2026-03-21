@@ -34,6 +34,8 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
 - **Komponentit:** 2px mustat reunat, hard shadow (4px 4px 0px #1a1a1a), border-radius 12px
 - **Mikro-liikkeet:** neo-press (nappi painuu), neo-lift (kortti nousee), stagger pop-in, price counter roll-up
 - **Kartta edellä:** Kartta vie 70–80% näkymästä, UI-elementit kelluvat päälle
+- **Kelluvien elementtien sijoittelu:** Kartan päällä kelluvat UI-elementit (legend, zoom hint, loading indicator, header) eivät saa mennä päällekkäin — tarkista aina ettei uusi/siirretty elementti osu toisen päälle, erityisesti mobiilissa
+- **Mobiili-saavutettavuus:** Kaikki interaktiiviset elementit ≥44px kosketusalue mobiilissa, teksti vähintään `text-sm` (14px). Mobiilissa `h-10` (40px) painikkeille ja syötteille, desktop voi olla kompaktimpi (`h-9`)
 - **Mobiili huomioitu:** Responsive, mutta desktop-first koska data-rikkaat näkymät
 
 ## Kansiorakenne
@@ -374,7 +376,7 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 - **Asuntomäärä (apartment_count):** ~636 000 / ~700 000 (91%) — Ryhti-rekisteristä
 - **Energialuokka (energy_class):** 0% — Ryhti open data ei sisällä energiatodistuksia. Data on erillisessä energiatodistusrekisterissä (ARA), ei avoimesti saatavilla.
 - **Hinta-arvio:** 677 000 / 677 058 (100%) — kuntatasoinen fallback + neighborhood factors + energy/size factors (migraatiot 006, 009, 015)
-- **Rakennusluokittelu:** `is_residential` (3-tasoinen: Ryhti main_purpose → OSM building_type → pinta-alaheuristiikka)
+- **Rakennusluokittelu:** `is_residential` (3-tasoinen: OSM building_type denylist → Ryhti main_purpose → pinta-alaheuristiikka). Denylist-prioriteetti korjattu 2026-03 (migraatio 018).
 
 ### Overpass API -huomiot
 - Endpoint: `https://overpass-api.de/api/interpreter`, POST, URL-encoded `data`-parametri
@@ -399,6 +401,7 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 ### Supabase-huomiot (lisää)
 - `.rpc()` JSONB-parametrille anna JavaScript-objekti/array, EI `JSON.stringify()` → muuten "cannot extract elements from a scalar"
 - Migraatiot täytyy ajaa uudelleen SQL Editorissa jos funktioita muutetaan lokaalisti — tietokannassa on edelleen vanha versio kunnes CREATE OR REPLACE ajetaan
+- **KRIITTINEN: Numeeristen kenttien null-tarkistus** — ÄLÄ käytä `value ? Number(value) : null` numeerisille kentille jotka voivat olla 0 (esim. `min_distance_to_water_m`). JS:n falsy-tarkistus tulkitsee `0`:n nulliksi. Käytä aina `value != null ? Number(value) : null`.
 
 ## Hinta-arvioiden tarkkuuden ylläpito
 
