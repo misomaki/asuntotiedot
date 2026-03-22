@@ -41,7 +41,7 @@ interface HoveredBuildingProperties {
   floor_count: number | null
   address: string | null
   price: number | null
-  is_residential: boolean
+  is_residential: boolean | number  // MVT encodes booleans as 0/1
 }
 
 /** Cursor position for tooltip placement */
@@ -137,7 +137,7 @@ export default function MapContainer() {
   // Absolute tile URL — MapLibre fetches tiles in a Web Worker where
   // relative URLs fail (worker base is a blob: URL, not the page origin).
   // Cache-bust version — increment after recomputing building prices
-  const TILE_VERSION = 'v3'
+  const TILE_VERSION = 'v4'
   const buildingTileUrl = useMemo(() => {
     const base = `/api/tiles/buildings/{z}/{x}/{y}?v=${TILE_VERSION}`
     if (typeof window === 'undefined') return base
@@ -240,7 +240,7 @@ export default function MapContainer() {
 
       return [
         'case',
-        ['==', ['get', 'is_residential'], false],
+        ['==', ['get', 'is_residential'], 0],
         '#c8c4c0',   // non-residential — quiet warm gray
         interpolate,
       ] as unknown as ExpressionSpecification
@@ -262,7 +262,7 @@ export default function MapContainer() {
 
       return [
         'case',
-        ['==', ['get', 'is_residential'], false],
+        ['==', ['get', 'is_residential'], 0],
         '#a8a4a0',   // non-residential — darker gray
         interpolate,
       ] as unknown as ExpressionSpecification
@@ -296,7 +296,7 @@ export default function MapContainer() {
         setHoveredBuildingUuid(props.id ?? (String(feature.id ?? '') || null))
         setTooltipContent({ type: 'building', props })
         setTooltipPosition({ x: evt.point.x, y: evt.point.y })
-        setCursor(props.is_residential === false ? 'default' : 'pointer')
+        setCursor(!props.is_residential ? 'default' : 'pointer')
       } else if (feature && feature.properties && feature.layer?.id === 'municipality-fill') {
         setHoveredBuildingUuid(null)
         const props = feature.properties as HoveredMunicipalityProperties
@@ -328,7 +328,7 @@ export default function MapContainer() {
 
       const props = feature.properties as HoveredBuildingProperties
       // Only open details panel for residential buildings
-      if (props.is_residential === false) return
+      if (!props.is_residential) return
 
       // MVT features may store 'id' as protobuf feature ID instead of property
       const buildingId = props.id ?? String(feature.id ?? '')
@@ -633,7 +633,7 @@ export default function MapContainer() {
               'fill-color': buildingColorExpression,
               'fill-opacity': [
                 'case',
-                ['==', ['get', 'is_residential'], false],
+                ['==', ['get', 'is_residential'], 0],
                 0.35,
                 0.68,
               ] as unknown as ExpressionSpecification,
@@ -662,7 +662,7 @@ export default function MapContainer() {
               'line-blur': 0.4,
               'line-opacity': [
                 'case',
-                ['==', ['get', 'is_residential'], false],
+                ['==', ['get', 'is_residential'], 0],
                 0.35,
                 1,
               ] as unknown as ExpressionSpecification,
@@ -785,7 +785,7 @@ function BuildingTooltip({
   x: number
   y: number
 }) {
-  const isResidential = props.is_residential !== false
+  const isResidential = !!props.is_residential
 
   if (!isResidential) {
     const buildingLabel = props.building_type

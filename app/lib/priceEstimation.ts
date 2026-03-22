@@ -191,26 +191,36 @@ export function dampenPremium(factor: number, ageFactor: number): number {
 }
 
 /**
- * Map OSM building type + floor count to Finnish property type.
+ * Map building metadata to Finnish property type.
+ *
+ * Priority:
+ * 1. Ryhti main_purpose (authoritative, ~85% coverage)
+ * 2. Explicit OSM building types
+ * 3. Floor count heuristic
+ * 4. Default: omakotitalo
  */
 export function inferPropertyType(
   buildingType: string | null,
-  floorCount: number | null
+  floorCount: number | null,
+  ryhtiMainPurpose?: string | null
 ): 'kerrostalo' | 'rivitalo' | 'omakotitalo' {
-  if (
-    floorCount !== null && floorCount >= 3 ||
-    buildingType === 'apartments' ||
-    buildingType === 'residential'
-  ) {
-    return 'kerrostalo'
+  // 1. Ryhti main_purpose — authoritative building registry
+  if (ryhtiMainPurpose) {
+    if (ryhtiMainPurpose === '0110') return 'omakotitalo'
+    if (['0111', '0112', '0120'].includes(ryhtiMainPurpose)) return 'rivitalo'
+    if (ryhtiMainPurpose.startsWith('01')) return 'kerrostalo'
   }
-  if (
-    floorCount === 2 ||
-    buildingType === 'terrace' ||
-    buildingType === 'semidetached_house'
-  ) {
-    return 'rivitalo'
-  }
+
+  // 2. Explicit OSM building types
+  if (buildingType === 'apartments') return 'kerrostalo'
+  if (buildingType === 'terrace' || buildingType === 'semidetached_house') return 'rivitalo'
+  if (buildingType === 'detached' || buildingType === 'house') return 'omakotitalo'
+
+  // 3. Floor count heuristic
+  if (floorCount !== null && floorCount >= 3) return 'kerrostalo'
+  if (floorCount === 2) return 'rivitalo'
+
+  // 4. Default — most Finnish buildings without metadata are small houses
   return 'omakotitalo'
 }
 

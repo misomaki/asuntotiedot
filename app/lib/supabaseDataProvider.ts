@@ -315,7 +315,8 @@ export class SupabaseDataProvider implements DataProvider {
         `id, building_type, construction_year, floor_count,
          footprint_area_sqm, address, estimated_price_per_sqm,
          min_distance_to_water_m, area_id,
-         energy_class, apartment_count`
+         energy_class, apartment_count,
+         ryhti_main_purpose, is_residential`
       )
       .eq('id', buildingId)
       .single()
@@ -324,7 +325,8 @@ export class SupabaseDataProvider implements DataProvider {
 
     const propertyType = inferPropertyType(
       building.building_type,
-      building.floor_count
+      building.floor_count,
+      building.ryhti_main_purpose
     )
 
     // Fetch area info, base price, and neighborhood factor in parallel
@@ -399,8 +401,8 @@ export class SupabaseDataProvider implements DataProvider {
       floor_factor: floorFactor,
       size_factor: sizeFactor,
       neighborhood_factor: dampenedNeighborhoodFactor,
-      ryhti_main_purpose: null,
-      is_residential: null,
+      ryhti_main_purpose: building.ryhti_main_purpose ?? null,
+      is_residential: building.is_residential ?? null,
     }
   }
   /**
