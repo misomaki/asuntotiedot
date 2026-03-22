@@ -233,7 +233,7 @@ export default function MapContainer() {
       for (let i = 0; i < PRICE_BREAKS.length; i++) {
         interpolate.push(PRICE_BREAKS[i], BUILDING_PRICE_COLORS[i])
       }
-      interpolate.push(10000, BUILDING_PRICE_COLORS[BUILDING_PRICE_COLORS.length - 1])
+      interpolate.push(12000, BUILDING_PRICE_COLORS[BUILDING_PRICE_COLORS.length - 1])
 
       return [
         'case',
@@ -255,7 +255,7 @@ export default function MapContainer() {
       for (let i = 0; i < PRICE_BREAKS.length; i++) {
         interpolate.push(PRICE_BREAKS[i], BUILDING_OUTLINE_COLORS[i])
       }
-      interpolate.push(10000, BUILDING_OUTLINE_COLORS[BUILDING_OUTLINE_COLORS.length - 1])
+      interpolate.push(12000, BUILDING_OUTLINE_COLORS[BUILDING_OUTLINE_COLORS.length - 1])
 
       return [
         'case',

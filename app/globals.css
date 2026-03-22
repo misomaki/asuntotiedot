@@ -66,18 +66,21 @@
   --shadow-hard-lg: var(--shadow-stacked-lg);
   --shadow-pink: var(--shadow-stacked-accent);
 
-  /* Price scale – ivory (cheap) → amber → rose → pink (expensive) */
-  /* Must match PRICE_COLORS in app/lib/colorScales.ts */
+  /* Price scale – ivory → gold → amber → terracotta → rose → plum */
+  /* Must match PRICE_COLORS in app/lib/colorScales.ts (13 steps) */
   --price-1: #f2efe8;
-  --price-2: #efe6d4;
-  --price-3: #ecdcc0;
-  --price-4: #e8d0ac;
-  --price-5: #e4c49c;
-  --price-6: #e0b498;
-  --price-7: #dca4a0;
-  --price-8: #dc98b8;
-  --price-9: #e488cc;
-  --price-10: #f080e0;
+  --price-2: #ede8d0;
+  --price-3: #e5ddb0;
+  --price-4: #dcd098;
+  --price-5: #d2c080;
+  --price-6: #ccb070;
+  --price-7: #c8a068;
+  --price-8: #c49070;
+  --price-9: #c08078;
+  --price-10: #b87088;
+  --price-11: #ac5890;
+  --price-12: #a04898;
+  --price-13: #9040a0;
 
   /* shadcn/ui CSS variables (HSL format for light theme) */
   --background: 40 100% 99%;

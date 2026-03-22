@@ -1,21 +1,26 @@
 import { formatNumber } from './formatters'
 
-export const PRICE_BREAKS = [1000, 1500, 2000, 2500, 3000, 4000, 5000, 7000]
+// 12 breakpoints → 13 color bands. Denser steps in the 2000–5000 critical range
+// where most residential buildings cluster.
+export const PRICE_BREAKS = [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 6000, 7500, 10000]
 
-// Warm spectrum: ivory → sand → amber → dusty rose → rose
-// Max capped at rose (#dc98b8) — no bright pink. Matches municipality overview.
-// Entirely warm tones — never overlaps with cool basemap (grey roads, blue water, green parks)
+// Voronoi palette — warm spectrum, slightly muted for terrain wash (opacity 0.7).
+// Hue shifts: ivory → gold → amber → terracotta → rose → plum.
+// NO greens or blues — basemap owns cool tones.
 export const PRICE_COLORS = [
-  '#f2efe8', // < 1000  — warm ivory
-  '#efead8', // 1000–1500 — light cream
-  '#ece2c4', // 1500–2000 — pale sand
-  '#e8d8b0', // 2000–2500 — warm sand
-  '#e4cca0', // 2500–3000 — soft amber
-  '#e0c098', // 3000–4000 — amber
-  '#dcb4a0', // 4000–5000 — amber-peach
-  '#dca8a8', // 5000–7000 — dusty rose
-  '#dca0b0', // 7000–10000 — rose-pink
-  '#dc98b8', // > 10000  — rose (max)
+  '#f2efe8', // < 1000   — warm ivory
+  '#ede8d0', // 1000–1500 — cream
+  '#e5ddb0', // 1500–2000 — pale gold
+  '#dcd098', // 2000–2500 — warm gold
+  '#d2c080', // 2500–3000 — amber-gold
+  '#ccb070', // 3000–3500 — clear amber
+  '#c8a068', // 3500–4000 — deep amber
+  '#c49070', // 4000–4500 — amber-terracotta
+  '#c08078', // 4500–5000 — terracotta
+  '#b87088', // 5000–6000 — dusty rose
+  '#ac5890', // 6000–7500 — rose-plum
+  '#a04898', // 7500–10000 — plum
+  '#9040a0', // > 10000  — deep plum
 ]
 
 export const PRICE_LABELS = [
@@ -24,10 +29,13 @@ export const PRICE_LABELS = [
   '1 500\u20132 000',
   '2 000\u20132 500',
   '2 500\u20133 000',
-  '3 000\u20134 000',
-  '4 000\u20135 000',
-  '5 000\u20137 000',
-  '7 000\u201310 000',
+  '3 000\u20133 500',
+  '3 500\u20134 000',
+  '4 000\u20134 500',
+  '4 500\u20135 000',
+  '5 000\u20136 000',
+  '6 000\u20137 500',
+  '7 500\u201310 000',
   '> 10 000',
 ]
 
@@ -40,35 +48,41 @@ export function getColorForPrice(price: number | null): string {
 }
 
 /**
- * Building palette — slightly deeper than Voronoi for definition.
- * Same ivory→amber→rose gradient, one step more saturated.
+ * Building palette — deeper and crisper than Voronoi for definition at zoom ≥14.
+ * Same hue progression (ivory→gold→amber→terracotta→rose→plum), one step more saturated.
  * Index 0 = below PRICE_BREAKS[0], last = above max break.
  */
 export const BUILDING_PRICE_COLORS = [
-  '#eceae4', // < 1000  — warm off-white
-  '#e8e0c8', // 1000–1500 — cream
-  '#e4d6b4', // 1500–2000 — pale sand
-  '#e0cca0', // 2000–2500 — warm sand
-  '#dcc090', // 2500–3000 — soft amber
-  '#d8b48c', // 3000–4000 — amber
-  '#d4a894', // 4000–5000 — amber-peach
-  '#d49c9c', // 5000–7000 — dusty rose
-  '#d494a8', // 7000–10000 — rose-pink
-  '#d490b0', // > 10000  — rose (max)
+  '#eceae4', // < 1000   — warm off-white
+  '#e6e0c4', // 1000–1500 — cream
+  '#ddd4a0', // 1500–2000 — clear sand-gold
+  '#d4c484', // 2000–2500 — warm gold
+  '#c8b46c', // 2500–3000 — amber-gold
+  '#c0a460', // 3000–3500 — clear amber
+  '#b89458', // 3500–4000 — deep amber
+  '#b48464', // 4000–4500 — amber-terracotta
+  '#b0746c', // 4500–5000 — terracotta
+  '#a8607c', // 5000–6000 — dusty rose
+  '#9c4888', // 6000–7500 — rose-plum
+  '#903c90', // 7500–10000 — plum
+  '#843498', // > 10000  — deep plum
 ]
 
-/** Darker warm tones for building outlines — matches rose-capped palette. */
+/** Building outlines — darker version of fill, same hue per price band. Never black. */
 export const BUILDING_OUTLINE_COLORS = [
   '#a8a69e', // < 1000
-  '#a09878', // 1000–1500
-  '#988c68', // 1500–2000
-  '#908060', // 2000–2500
-  '#887858', // 2500–3000
-  '#887050', // 3000–4000
-  '#886858', // 4000–5000
-  '#886060', // 5000–7000
-  '#885868', // 7000–10000
-  '#885070', // > 10000
+  '#9c9878', // 1000–1500
+  '#948860', // 1500–2000
+  '#8c7c50', // 2000–2500
+  '#847044', // 2500–3000
+  '#7c643c', // 3000–3500
+  '#745838', // 3500–4000
+  '#705040', // 4000–4500
+  '#6c4848', // 4500–5000
+  '#683c54', // 5000–6000
+  '#603060', // 6000–7500
+  '#582868', // 7500–10000
+  '#502470', // > 10000
 ]
 
 export function getMapLibreColorExpression(): unknown[] {
@@ -81,7 +95,7 @@ export function getMapLibreColorExpression(): unknown[] {
   for (let i = 0; i < PRICE_BREAKS.length; i++) {
     expr.push(PRICE_BREAKS[i], PRICE_COLORS[i])
   }
-  expr.push(10000, PRICE_COLORS[PRICE_COLORS.length - 1])
+  expr.push(12000, PRICE_COLORS[PRICE_COLORS.length - 1])
   return expr
 }
 
@@ -104,16 +118,16 @@ export function getDynamicScale(minPrice: number, maxPrice: number): {
   const max = roundTo(maxPrice, step)
   const span = max - min || step
 
-  // 6 breaks = 7 color bands, sampled from the 10-color PRICE_COLORS palette
+  // 6 breaks = 7 color bands, sampled from the 13-color PRICE_COLORS palette
   const numBreaks = 6
   const breaks: number[] = []
   for (let i = 1; i <= numBreaks; i++) {
     breaks.push(roundTo(min + (span * i) / (numBreaks + 1), step))
   }
 
-  // Sample 7 colors from the subdued end of the palette (indices 0–7).
-  // Skip the bright pink end (8–9) — municipality overview should feel calm.
-  const maxPaletteIdx = 7  // up to '#dc98b8' (rose), not bright pink
+  // Sample 7 colors from the subdued end of the palette (indices 0–9).
+  // Skip the deep plum end (10–12) — municipality overview should feel calm.
+  const maxPaletteIdx = 9
   const numColors = numBreaks + 1
   const colors: string[] = []
   for (let i = 0; i < numColors; i++) {

@@ -91,19 +91,22 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        // Price scale colors – ivory (cheap) → amber → rose (expensive)
-        // Must match PRICE_COLORS in app/lib/colorScales.ts
+        // Price scale colors – ivory → gold → amber → terracotta → rose → plum
+        // Must match PRICE_COLORS in app/lib/colorScales.ts (13 steps)
         price: {
           1: "#f2efe8",
-          2: "#efead8",
-          3: "#ece2c4",
-          4: "#e8d8b0",
-          5: "#e4cca0",
-          6: "#e0c098",
-          7: "#dcb4a0",
-          8: "#dca8a8",
-          9: "#dca0b0",
-          10: "#dc98b8",
+          2: "#ede8d0",
+          3: "#e5ddb0",
+          4: "#dcd098",
+          5: "#d2c080",
+          6: "#ccb070",
+          7: "#c8a068",
+          8: "#c49070",
+          9: "#c08078",
+          10: "#b87088",
+          11: "#ac5890",
+          12: "#a04898",
+          13: "#9040a0",
         },
       },
 
