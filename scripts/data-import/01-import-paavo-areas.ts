@@ -280,6 +280,142 @@ async function importAreas(features: PaavoFeature[]) {
   }
 
   console.log(`Demographics imported: ${demoImported}`)
+
+  // Import socioeconomic data (income, education, employment status)
+  console.log('\nImporting socioeconomic data...')
+  let socioImported = 0
+
+  for (const f of features) {
+    const props = f.properties
+    const { data: area } = await supabase
+      .from('areas')
+      .select('id')
+      .eq('area_code', props.postinumeroalue)
+      .single()
+    if (!area) continue
+
+    const year = props.vuosi || 2024
+
+    // Check if we have any socioeconomic data for this area
+    const hasIncome = (props.tr_kuty as number | undefined) != null
+    const hasEducation = (props.ko_ika18y as number | undefined) != null
+    const hasEmployment = (props.pt_tyoll as number | undefined) != null
+
+    if (!hasIncome && !hasEducation && !hasEmployment) continue
+
+    await supabase.from('area_socioeconomics').upsert(
+      {
+        area_id: area.id,
+        year,
+        // Income
+        income_units_total: (props.tr_kuty as number) ?? null,
+        income_high: (props.tr_pi_tul as number) ?? null,
+        income_medium: (props.tr_ke_tul as number) ?? null,
+        income_low: (props.tr_hy_tul as number) ?? null,
+        // Education
+        education_pop_18plus: (props.ko_ika18y as number) ?? null,
+        education_basic: (props.ko_perus as number) ?? null,
+        education_secondary: (props.ko_koul as number) ?? null,
+        education_vocational: (props.ko_ammat as number) ?? null,
+        education_lower_tertiary: (props.ko_al_kork as number) ?? null,
+        education_upper_tertiary: (props.ko_yl_kork as number) ?? null,
+        education_university: (props.ko_yliop as number) ?? null,
+        // Employment status
+        employed: (props.pt_tyoll as number) ?? null,
+        unemployed: (props.pt_tyott as number) ?? null,
+        students: (props.pt_opisk as number) ?? null,
+        retirees: (props.pt_elakel as number) ?? null,
+      },
+      { onConflict: 'area_id,year' }
+    )
+    socioImported++
+  }
+  console.log(`Socioeconomic data imported: ${socioImported}`)
+
+  // Import housing composition
+  console.log('\nImporting housing composition...')
+  let housingImported = 0
+
+  for (const f of features) {
+    const props = f.properties
+    const { data: area } = await supabase
+      .from('areas')
+      .select('id')
+      .eq('area_code', props.postinumeroalue)
+      .single()
+    if (!area) continue
+
+    const year = props.vuosi || 2024
+    const hasTenure = (props.te_taly as number | undefined) != null
+    const hasFamily = (props.te_laps as number | undefined) != null
+
+    if (!hasTenure && !hasFamily) continue
+
+    await supabase.from('area_housing').upsert(
+      {
+        area_id: area.id,
+        year,
+        // Tenure
+        dwellings_total: (props.te_taly as number) ?? null,
+        owner_occupied: (props.te_omis_as as number) ?? null,
+        rented: (props.te_vuok_as as number) ?? null,
+        other_tenure: (props.te_muu_as as number) ?? null,
+        // Family types
+        families_with_children: (props.te_laps as number) ?? null,
+        young_households: (props.te_nuor as number) ?? null,
+        pensioner_households: (props.te_elak as number) ?? null,
+        single_parent: (props.te_aik as number) ?? null,
+        single_person: (props.te_yks as number) ?? null,
+        // Building stock
+        avg_apartment_size_sqm: (props.ra_as_kpa as number) ?? null,
+        row_houses: (props.ra_pt_as as number) ?? null,
+        apartment_buildings: (props.ra_kt_as as number) ?? null,
+        total_dwellings: (props.ra_asunn as number) ?? null,
+      },
+      { onConflict: 'area_id,year' }
+    )
+    housingImported++
+  }
+  console.log(`Housing composition imported: ${housingImported}`)
+
+  // Import employment by sector
+  console.log('\nImporting employment sectors...')
+  let employmentImported = 0
+
+  for (const f of features) {
+    const props = f.properties
+    const { data: area } = await supabase
+      .from('areas')
+      .select('id')
+      .eq('area_code', props.postinumeroalue)
+      .single()
+    if (!area) continue
+
+    const year = props.vuosi || 2024
+    if ((props.tp_tyopy as number | undefined) == null) continue
+
+    await supabase.from('area_employment').upsert(
+      {
+        area_id: area.id,
+        year,
+        employed_total: (props.tp_tyopy as number) ?? null,
+        sector_info_comm: (props.tp_j_info as number) ?? null,
+        sector_manufacturing: (props.tp_c_teol as number) ?? null,
+        sector_construction: (props.tp_f_rake as number) ?? null,
+        sector_health_social: (props.tp_q_terv as number) ?? null,
+        sector_education: (props.tp_p_koul as number) ?? null,
+        sector_wholesale_retail: (props.tp_g_kaup as number) ?? null,
+        sector_public_admin: (props.tp_o_julk as number) ?? null,
+        sector_finance: (props.tp_k_raho as number) ?? null,
+        sector_professional: (props.tp_m_erik as number) ?? null,
+        sector_transport: (props.tp_h_kulj as number) ?? null,
+        sector_accommodation: (props.tp_i_majo as number) ?? null,
+      },
+      { onConflict: 'area_id,year' }
+    )
+    employmentImported++
+  }
+  console.log(`Employment sectors imported: ${employmentImported}`)
 }
 
 async function main() {

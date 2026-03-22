@@ -157,6 +157,33 @@ export class SupabaseDataProvider implements DataProvider {
       .limit(1)
       .maybeSingle()
 
+    // Fetch socioeconomic data (latest available)
+    const { data: socioeconomics } = await this.supabase
+      .from('area_socioeconomics')
+      .select('*')
+      .eq('area_id', area.id)
+      .order('year', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    // Fetch housing composition (latest available)
+    const { data: housing } = await this.supabase
+      .from('area_housing')
+      .select('*')
+      .eq('area_id', area.id)
+      .order('year', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    // Fetch employment sectors (latest available)
+    const { data: employment } = await this.supabase
+      .from('area_employment')
+      .select('*')
+      .eq('area_id', area.id)
+      .order('year', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
     return {
       id: area.id,
       area_code: area.area_code,
@@ -186,6 +213,64 @@ export class SupabaseDataProvider implements DataProvider {
             pct_18_64: Number(demographics.pct_18_64 ?? 0),
             pct_over_65: Number(demographics.pct_over_65 ?? 0),
             avg_household_size: Number(demographics.avg_household_size ?? 0),
+          }
+        : null,
+      socioeconomics: socioeconomics
+        ? {
+            area_id: area.area_code,
+            year: socioeconomics.year,
+            income_units_total: socioeconomics.income_units_total,
+            income_high: socioeconomics.income_high,
+            income_medium: socioeconomics.income_medium,
+            income_low: socioeconomics.income_low,
+            education_pop_18plus: socioeconomics.education_pop_18plus,
+            education_basic: socioeconomics.education_basic,
+            education_secondary: socioeconomics.education_secondary,
+            education_vocational: socioeconomics.education_vocational,
+            education_lower_tertiary: socioeconomics.education_lower_tertiary,
+            education_upper_tertiary: socioeconomics.education_upper_tertiary,
+            education_university: socioeconomics.education_university,
+            employed: socioeconomics.employed,
+            unemployed: socioeconomics.unemployed,
+            students: socioeconomics.students,
+            retirees: socioeconomics.retirees,
+          }
+        : null,
+      housing: housing
+        ? {
+            area_id: area.area_code,
+            year: housing.year,
+            dwellings_total: housing.dwellings_total,
+            owner_occupied: housing.owner_occupied,
+            rented: housing.rented,
+            other_tenure: housing.other_tenure,
+            families_with_children: housing.families_with_children,
+            young_households: housing.young_households,
+            pensioner_households: housing.pensioner_households,
+            single_parent: housing.single_parent,
+            single_person: housing.single_person,
+            avg_apartment_size_sqm: housing.avg_apartment_size_sqm != null ? Number(housing.avg_apartment_size_sqm) : null,
+            row_houses: housing.row_houses,
+            apartment_buildings: housing.apartment_buildings,
+            total_dwellings: housing.total_dwellings,
+          }
+        : null,
+      employment: employment
+        ? {
+            area_id: area.area_code,
+            year: employment.year,
+            employed_total: employment.employed_total,
+            sector_info_comm: employment.sector_info_comm,
+            sector_manufacturing: employment.sector_manufacturing,
+            sector_construction: employment.sector_construction,
+            sector_health_social: employment.sector_health_social,
+            sector_education: employment.sector_education,
+            sector_wholesale_retail: employment.sector_wholesale_retail,
+            sector_public_admin: employment.sector_public_admin,
+            sector_finance: employment.sector_finance,
+            sector_professional: employment.sector_professional,
+            sector_transport: employment.sector_transport,
+            sector_accommodation: employment.sector_accommodation,
           }
         : null,
       walkScore: null,

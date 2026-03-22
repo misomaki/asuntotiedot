@@ -129,6 +129,9 @@ class MockDataProvider implements DataProvider {
       prices,
       buildings,
       demographics,
+      socioeconomics: null,
+      housing: null,
+      employment: null,
       walkScore,
     }
   }

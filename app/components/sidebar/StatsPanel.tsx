@@ -20,6 +20,12 @@ import {
   Users,
   Footprints,
   ChevronDown,
+  GraduationCap,
+  Briefcase,
+  Home,
+  TrendingUp,
+  Baby,
+  UserCheck,
 } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
@@ -154,6 +160,210 @@ function WalkScoreCircle({ score }: { score: number }) {
         <p className="text-[11px] text-muted-foreground">/ 100 pistettä</p>
       </div>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Horizontal percentage bar (reusable)
+// ---------------------------------------------------------------------------
+
+function PercentBar({ segments }: { segments: Array<{ label: string; value: number; color: string }> }) {
+  const total = segments.reduce((sum, s) => sum + s.value, 0) || 1
+  return (
+    <div className="space-y-2">
+      <div className="flex h-3.5 w-full overflow-hidden rounded-full">
+        {segments.map((s) =>
+          s.value > 0 ? (
+            <div
+              key={s.label}
+              className="h-full transition-all duration-500"
+              style={{ width: `${(s.value / total) * 100}%`, backgroundColor: s.color }}
+              title={`${s.label}: ${formatPercent((s.value / total) * 100)}`}
+            />
+          ) : null
+        )}
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {segments.filter(s => s.value > 0).map((s) => (
+          <div key={s.label} className="flex items-center gap-1.5">
+            <div className="h-2 w-2 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {s.label}{' '}
+              <span className="font-mono tabular-nums" data-number>
+                {formatPercent((s.value / total) * 100)}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Section header
+// ---------------------------------------------------------------------------
+
+function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <span className="text-muted-foreground">{icon}</span>
+      <h3 className="text-xs font-display font-bold text-foreground uppercase tracking-wider">{title}</h3>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Socioeconomics section (income + education)
+// ---------------------------------------------------------------------------
+
+function SocioeconomicsSection({ data }: { data: NonNullable<AreaWithStats['socioeconomics']> }) {
+  const hasIncome = data.income_units_total != null && data.income_units_total > 0
+  const hasEducation = data.education_pop_18plus != null && data.education_pop_18plus > 0
+
+  if (!hasIncome && !hasEducation) return null
+
+  // Education: compute university % (upper tertiary + university)
+  const universityPct = hasEducation && data.education_pop_18plus
+    ? Math.round(((data.education_upper_tertiary ?? 0) + (data.education_university ?? 0)) / data.education_pop_18plus * 100)
+    : null
+
+  return (
+    <>
+      {hasIncome && (
+        <>
+          <SectionHeader icon={<TrendingUp size={14} />} title="Tulotaso" />
+          <PercentBar segments={[
+            { label: 'Korkea', value: data.income_high ?? 0, color: '#22c55e' },
+            { label: 'Keski', value: data.income_medium ?? 0, color: '#3b82f6' },
+            { label: 'Matala', value: data.income_low ?? 0, color: '#f59e0b' },
+          ]} />
+        </>
+      )}
+
+      {hasEducation && (
+        <>
+          <SectionHeader icon={<GraduationCap size={14} />} title="Koulutustaso" />
+          <PercentBar segments={[
+            { label: 'Korkeakoulu', value: (data.education_upper_tertiary ?? 0) + (data.education_university ?? 0) + (data.education_lower_tertiary ?? 0), color: '#8b5cf6' },
+            { label: 'Ammatillinen', value: data.education_vocational ?? 0, color: '#3b82f6' },
+            { label: 'Toinen aste', value: data.education_secondary ?? 0, color: '#60a5fa' },
+            { label: 'Perusaste', value: data.education_basic ?? 0, color: '#93c5fd' },
+          ]} />
+          {universityPct != null && (
+            <p className="text-[11px] text-muted-foreground">
+              Korkeakoulutettuja: <span className="font-mono tabular-nums font-medium text-foreground" data-number>{universityPct}%</span>
+            </p>
+          )}
+        </>
+      )}
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Housing composition section
+// ---------------------------------------------------------------------------
+
+function HousingSection({ data }: { data: NonNullable<AreaWithStats['housing']> }) {
+  const hasTenure = data.dwellings_total != null && data.dwellings_total > 0
+  const hasFamily = data.families_with_children != null
+
+  if (!hasTenure && !hasFamily) return null
+
+  return (
+    <>
+      <SectionHeader icon={<Home size={14} />} title="Asuminen" />
+
+      {hasTenure && (
+        <PercentBar segments={[
+          { label: 'Omistus', value: data.owner_occupied ?? 0, color: '#22c55e' },
+          { label: 'Vuokra', value: data.rented ?? 0, color: '#f59e0b' },
+          { label: 'Muu', value: data.other_tenure ?? 0, color: '#94a3b8' },
+        ]} />
+      )}
+
+      <div className="grid grid-cols-2 gap-2">
+        {data.avg_apartment_size_sqm != null && data.avg_apartment_size_sqm > 0 && (
+          <CompactAttribute
+            icon={<Home size={14} />}
+            label="Keskim. asunto"
+            value={`${Math.round(data.avg_apartment_size_sqm)} m²`}
+            delay={0}
+          />
+        )}
+        {hasFamily && (
+          <CompactAttribute
+            icon={<Baby size={14} />}
+            label="Lapsiperheitä"
+            value={formatNumber(data.families_with_children ?? 0)}
+            delay={1}
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Employment section
+// ---------------------------------------------------------------------------
+
+function EmploymentSection({
+  data,
+  employment,
+}: {
+  data: NonNullable<AreaWithStats['socioeconomics']>
+  employment: AreaWithStats['employment']
+}) {
+  const hasEmployment = data.employed != null && data.unemployed != null
+  if (!hasEmployment) return null
+
+  const total = (data.employed ?? 0) + (data.unemployed ?? 0) + (data.students ?? 0) + (data.retirees ?? 0)
+  const unemploymentRate = total > 0 ? ((data.unemployed ?? 0) / ((data.employed ?? 0) + (data.unemployed ?? 0)) * 100) : null
+
+  // Top sectors
+  const sectors = employment ? [
+    { label: 'ICT', value: employment.sector_info_comm ?? 0 },
+    { label: 'Terveys', value: employment.sector_health_social ?? 0 },
+    { label: 'Kauppa', value: employment.sector_wholesale_retail ?? 0 },
+    { label: 'Koulutus', value: employment.sector_education ?? 0 },
+    { label: 'Julkinen', value: employment.sector_public_admin ?? 0 },
+    { label: 'Teollisuus', value: employment.sector_manufacturing ?? 0 },
+    { label: 'Rakentaminen', value: employment.sector_construction ?? 0 },
+    { label: 'Asiantuntija', value: employment.sector_professional ?? 0 },
+    { label: 'Rahoitus', value: employment.sector_finance ?? 0 },
+    { label: 'Kuljetus', value: employment.sector_transport ?? 0 },
+  ].filter(s => s.value > 0).sort((a, b) => b.value - a.value).slice(0, 3) : []
+
+  return (
+    <>
+      <SectionHeader icon={<Briefcase size={14} />} title="Työllistyminen" />
+      <div className="grid grid-cols-2 gap-2">
+        <CompactAttribute
+          icon={<UserCheck size={14} />}
+          label="Työllisiä"
+          value={formatNumber(data.employed ?? 0)}
+          delay={0}
+        />
+        {unemploymentRate != null && (
+          <CompactAttribute
+            icon={<Briefcase size={14} />}
+            label="Työttömyys"
+            value={`${unemploymentRate.toFixed(1)}%`}
+            delay={1}
+          />
+        )}
+      </div>
+      {sectors.length > 0 && (
+        <div className="text-[11px] text-muted-foreground">
+          Suurimmat alat:{' '}
+          <span className="text-foreground font-medium">
+            {sectors.map(s => s.label).join(', ')}
+          </span>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -404,6 +614,21 @@ export function StatsPanel({ data, isLoading }: StatsPanelProps) {
             pctOver65={data.demographics.pct_over_65}
           />
         </>
+      )}
+
+      {/* ── Income & Education ── */}
+      {data.socioeconomics && (
+        <SocioeconomicsSection data={data.socioeconomics} />
+      )}
+
+      {/* ── Housing composition ── */}
+      {data.housing && (
+        <HousingSection data={data.housing} />
+      )}
+
+      {/* ── Employment ── */}
+      {data.socioeconomics && (
+        <EmploymentSection data={data.socioeconomics} employment={data.employment} />
       )}
 
       {/* ── Walk Score circle (only if no buildings section showed it inline) ── */}
