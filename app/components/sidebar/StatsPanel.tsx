@@ -292,11 +292,11 @@ function HousingSection({ data }: { data: NonNullable<AreaWithStats['housing']> 
             delay={0}
           />
         )}
-        {hasFamily && (
+        {hasFamily && data.dwellings_total != null && data.dwellings_total > 0 && (
           <CompactAttribute
             icon={<Baby size={14} />}
             label="Lapsiperheitä"
-            value={formatNumber(data.families_with_children ?? 0)}
+            value={`${Math.round(((data.families_with_children ?? 0) / data.dwellings_total) * 100)}%`}
             delay={1}
           />
         )}
