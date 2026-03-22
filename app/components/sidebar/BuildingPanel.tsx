@@ -8,7 +8,6 @@ import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { CompactAttribute } from '@/app/components/sidebar/CompactAttribute'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import {
-  Building2,
   Calendar,
   Layers,
   Droplets,
