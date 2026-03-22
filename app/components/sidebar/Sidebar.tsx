@@ -128,7 +128,7 @@ export function Sidebar() {
           <div
             className={cn(
               'bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm',
-              'max-h-[calc(100vh-6rem)] overflow-y-auto',
+              'max-h-[calc(100vh-8rem)] overflow-y-auto',
               'p-5',
             )}
           >
