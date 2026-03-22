@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { getDataProvider } from '@/app/lib/dataProvider'
 import { CITIES } from '@/app/lib/cities'
-import { formatNumber, formatPricePerSqm } from '@/app/lib/formatters'
+import { formatNumber } from '@/app/lib/formatters'
 import { MapPin } from 'lucide-react'
 
 export const revalidate = 86400 // 24h ISR

@@ -8,8 +8,8 @@ import {
   formatPercent,
   getPropertyTypeLabel,
 } from '@/app/lib/formatters'
-import type { AreaWithStats, PropertyType } from '@/app/types'
-import { MapPin, ArrowRight, Building2, Users, GraduationCap, Briefcase, Home, TrendingUp } from 'lucide-react'
+import type { AreaWithStats } from '@/app/types'
+import { MapPin, ArrowRight, Users, GraduationCap, Briefcase, Home, TrendingUp } from 'lucide-react'
 
 // ISR: revalidate every 24 hours
 export const revalidate = 86400
