@@ -27,6 +27,9 @@ const MAP_STYLE =
 /** Minimum zoom level at which individual buildings appear */
 const BUILDING_ZOOM_THRESHOLD = 13
 
+/** Cache-bust version — increment after recomputing building prices */
+const TILE_VERSION = 'v4'
+
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {
   nimi: string
@@ -136,8 +139,6 @@ export default function MapContainer() {
 
   // Absolute tile URL — MapLibre fetches tiles in a Web Worker where
   // relative URLs fail (worker base is a blob: URL, not the page origin).
-  // Cache-bust version — increment after recomputing building prices
-  const TILE_VERSION = 'v4'
   const buildingTileUrl = useMemo(() => {
     const base = `/api/tiles/buildings/{z}/{x}/{y}?v=${TILE_VERSION}`
     if (typeof window === 'undefined') return base

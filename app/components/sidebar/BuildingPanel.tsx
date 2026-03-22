@@ -273,16 +273,6 @@ export function BuildingPanel() {
           }
           delay={3}
         />
-        <CompactAttribute
-          icon={<Building2 size={14} />}
-          label="Pohja"
-          value={
-            building.footprint_area_sqm !== null
-              ? `${Math.round(building.footprint_area_sqm)} m²`
-              : '–'
-          }
-          delay={4}
-        />
         {building.energy_class && (
           <CompactAttribute
             icon={<Zap size={14} />}

@@ -1,5 +1,15 @@
 import { formatNumber } from './formatters'
 
+/** Dusty pastel palette for demographic/socioeconomic charts.
+ *  Harmonizes with warm paper background #FFFBF5. */
+export const CHART_COLORS = {
+  sage:   '#8cc8b8',  // dusty sage — positive/high (income, education, new buildings)
+  sand:   '#e8d098',  // warm sand — neutral/medium
+  rose:   '#d4a0b8',  // dusty rose — low/negative
+  violet: '#b898c0',  // muted lavender — oldest/weakest
+  stone:  '#c8c0b4',  // warm grey — neutral/other
+} as const
+
 // 12 breakpoints → 13 color bands. Denser steps in the 2000–5000 critical range
 // where most residential buildings cluster.
 export const PRICE_BREAKS = [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 6000, 7500, 10000]

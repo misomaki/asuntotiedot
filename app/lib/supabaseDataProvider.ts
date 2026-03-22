@@ -132,57 +132,22 @@ export class SupabaseDataProvider implements DataProvider {
 
     if (error || !area) return null
 
-    // Fetch prices for this area + year (all property types)
-    const { data: prices } = await this.supabase
-      .from('price_estimates')
-      .select('*')
-      .eq('area_id', area.id)
-      .eq('year', year)
-
-    // Fetch building stats (latest available)
-    const { data: buildingStats } = await this.supabase
-      .from('building_stats')
-      .select('*')
-      .eq('area_id', area.id)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    // Fetch demographics (latest available)
-    const { data: demographics } = await this.supabase
-      .from('demographic_stats')
-      .select('*')
-      .eq('area_id', area.id)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    // Fetch socioeconomic data (latest available)
-    const { data: socioeconomics } = await this.supabase
-      .from('area_socioeconomics')
-      .select('*')
-      .eq('area_id', area.id)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    // Fetch housing composition (latest available)
-    const { data: housing } = await this.supabase
-      .from('area_housing')
-      .select('*')
-      .eq('area_id', area.id)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    // Fetch employment sectors (latest available)
-    const { data: employment } = await this.supabase
-      .from('area_employment')
-      .select('*')
-      .eq('area_id', area.id)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    // Fetch all area stats in parallel (6 independent queries)
+    const [
+      { data: prices },
+      { data: buildingStats },
+      { data: demographics },
+      { data: socioeconomics },
+      { data: housing },
+      { data: employment },
+    ] = await Promise.all([
+      this.supabase.from('price_estimates').select('*').eq('area_id', area.id).eq('year', year),
+      this.supabase.from('building_stats').select('*').eq('area_id', area.id).order('year', { ascending: false }).limit(1).maybeSingle(),
+      this.supabase.from('demographic_stats').select('*').eq('area_id', area.id).order('year', { ascending: false }).limit(1).maybeSingle(),
+      this.supabase.from('area_socioeconomics').select('*').eq('area_id', area.id).order('year', { ascending: false }).limit(1).maybeSingle(),
+      this.supabase.from('area_housing').select('*').eq('area_id', area.id).order('year', { ascending: false }).limit(1).maybeSingle(),
+      this.supabase.from('area_employment').select('*').eq('area_id', area.id).order('year', { ascending: false }).limit(1).maybeSingle(),
+    ])
 
     return {
       id: area.id,
