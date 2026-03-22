@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Libre_Franklin, Public_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/Providers";
+import { Analytics } from "@vercel/analytics/next";
 
 const libreFranklin = Libre_Franklin({
   subsets: ["latin"],
@@ -68,6 +69,7 @@ export default function RootLayout({
     >
       <body className="antialiased">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
