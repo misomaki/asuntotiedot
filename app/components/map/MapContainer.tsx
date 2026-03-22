@@ -136,9 +136,12 @@ export default function MapContainer() {
 
   // Absolute tile URL — MapLibre fetches tiles in a Web Worker where
   // relative URLs fail (worker base is a blob: URL, not the page origin).
+  // Cache-bust version — increment after recomputing building prices
+  const TILE_VERSION = 'v3'
   const buildingTileUrl = useMemo(() => {
-    if (typeof window === 'undefined') return '/api/tiles/buildings/{z}/{x}/{y}'
-    return `${window.location.origin}/api/tiles/buildings/{z}/{x}/{y}`
+    const base = `/api/tiles/buildings/{z}/{x}/{y}?v=${TILE_VERSION}`
+    if (typeof window === 'undefined') return base
+    return `${window.location.origin}${base}`
   }, [])
 
   // Area codes for highlighting
