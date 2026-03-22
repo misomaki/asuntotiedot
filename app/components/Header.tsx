@@ -9,6 +9,7 @@ import { LogoMark } from '@/app/components/brand/LogoMark'
 import { CITIES, CityConfig } from '@/app/lib/cities'
 import { cn } from '@/app/lib/utils'
 import { searchAddresses, type GeocodingResult } from '@/app/lib/geocoding'
+import { UserMenu } from '@/app/components/UserMenu'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -540,6 +541,9 @@ export function Header() {
                 </div>
               )}
             </div>
+
+            {/* User menu */}
+            <UserMenu />
           </div>
         </div>
 

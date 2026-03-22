@@ -402,6 +402,38 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 - `.rpc()` JSONB-parametrille anna JavaScript-objekti/array, EI `JSON.stringify()` → muuten "cannot extract elements from a scalar"
 - Migraatiot täytyy ajaa uudelleen SQL Editorissa jos funktioita muutetaan lokaalisti — tietokannassa on edelleen vanha versio kunnes CREATE OR REPLACE ajetaan
 - **KRIITTINEN: Numeeristen kenttien null-tarkistus** — ÄLÄ käytä `value ? Number(value) : null` numeerisille kentille jotka voivat olla 0 (esim. `min_distance_to_water_m`). JS:n falsy-tarkistus tulkitsee `0`:n nulliksi. Käytä aina `value != null ? Number(value) : null`.
+- **Supabase CLI:** `npx supabase db query --linked -f <file.sql>` — ajaa SQL:n suoraan remote-tietokantaan. Linkitys: `npx supabase link --project-ref <ref>`. Vaihtoehto: `npx tsx scripts/run-sql.ts <file.sql>` (pg-yhteys, 600s timeout)
+- **MVT-tiilikätkö:** Vercel CDN cachettaa rakennustiilet 24h. Hintojen uudelleenlaskennan jälkeen kasvata `TILE_VERSION`-vakiota `MapContainer.tsx`:ssä (moduulitason vakio)
+- **getAreaDetails parallelization:** 6 riippumatonta kyselyä (prices, building_stats, demographics, socioeconomics, housing, employment) ajetaan `Promise.all`:lla — EI peräkkäin
+
+### MML (Maanmittauslaitos) INSPIRE Addresses
+- URL: `https://beta-paikkatieto.maanmittauslaitos.fi/inspire-addresses/features/v1/collections/addresses/items`
+- Avoin data, ei API-avainta
+- **Paginaatio:** `next`-linkki (cursor-based), EI `startIndex`. MML double-encodaa bbox `next`-linkissä → `decodeURIComponent()` ennen käyttöä
+- **Kentät:** `component_ThoroughfareName` (katu), `locator_designator_addressNumber` (numero), `component_PostalDescriptor` (postinumero)
+- Kattavuus: 476K osoitetta → 637K/700K rakennusta matchattu (91%), 50m proximity threshold
+
+### OSM-palveluetäisyydet (amenity distances)
+- Overpass API → staging-taulu (`_amenity_staging`) → PostGIS `CROSS JOIN LATERAL` + `ST_DWithin` pre-filter
+- 6 tyyppiä: school, kindergarten, grocery, transit, park, health
+- `compute_amenity_distance_batch(p_amenity_type, p_column_name, p_limit)` — dynaaminen SQL (`format()` + `EXECUTE`)
+- Kattavuus: 554K–699K rakennusta per tyyppi (71–99.7%)
+
+### Paavo-laajennus (sosioekonominen data)
+- 3 uutta taulua: `area_socioeconomics` (tulot, koulutus, työllisyys), `area_housing` (hallintamuoto, perhetyyppi), `area_employment` (toimialat NACE)
+- Kenttäprefixet Paavo WFS:ssä: `tr_` = tulot, `ko_` = koulutus, `te_` = asuminen, `tp_` = toimialat, `pt_` = perusjako, `ra_` = rakennukset
+- 491 aluetta × 3 taulua importoitu
+
+### SEO-sivut
+- `/alue/[code]` — ISR 24h, server-rendered area page with dynamic metadata + JSON-LD
+- `/alue` — area index grouped by city
+- `/sitemap.xml` — dynamic sitemap with all area URLs
+- `generateMetadata()` + page component both call `getAreaDetails()` — TODO: deduplicate with React `cache()`
+
+### Kaaviovärit (chart colors)
+- `CHART_COLORS` in `colorScales.ts`: dusty pastels for data bars (sage #8cc8b8, sand #e8d098, rose #d4a0b8, violet #b898c0, stone #c8c0b4)
+- Brand accent colors (#ff90e8, #ffc900, #23c8a0) reserved for buttons/CTAs — NOT for chart bars (too bright against warm paper bg)
+- TrendChart.tsx uses brand accents (kerrostalo=pink, rivitalo=mint, omakotitalo=yellow) — exception, works for line chart
 
 ## Hinta-arvioiden tarkkuuden ylläpito
 
