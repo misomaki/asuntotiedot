@@ -727,26 +727,28 @@ export default function MapContainer() {
         zoom={viewport.zoom}
       />
 
-      {/* Zoom hint — shown when approaching building zoom level (z12–14) */}
-      {showZoomHint && (
-        <div className="absolute top-[4.5rem] left-1/2 -translate-x-1/2 z-40 animate-fade-in">
-          <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full bg-pink animate-pulse" />
-            Lähennä nähdäksesi rakennukset
-          </div>
+      {/* Zoom hint — bottom-center, fades in/out smoothly */}
+      <div
+        className="absolute bottom-24 md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
+        style={{ opacity: showZoomHint ? 1 : 0, transform: `translateX(-50%) translateY(${showZoomHint ? '0' : '8px'})` }}
+      >
+        <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
+          <span className="inline-block h-2 w-2 rounded-full bg-pink animate-pulse" />
+          Lähennä nähdäksesi rakennukset
         </div>
-      )}
+      </div>
 
-      {/* Building tile loading indicator — only when Voronoi isn't also loading */}
-      {showBuildings && buildingsLoading && !dataLoading && (
-        <div className="absolute top-[4.5rem] left-1/2 -translate-x-1/2 z-50 animate-fade-in">
-          <div className="relative overflow-hidden bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
-            <span className="relative inline-block h-2.5 w-2.5 rounded-full border-2 border-pink border-t-transparent animate-spin" />
-            <span className="relative">Ladataan rakennuksia...</span>
-          </div>
+      {/* Building tile loading indicator — bottom-center, fades in/out */}
+      <div
+        className="absolute bottom-24 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        style={{ opacity: showBuildings && buildingsLoading && !dataLoading ? 1 : 0 }}
+      >
+        <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
+          <span className="relative inline-block h-2.5 w-2.5 rounded-full border-2 border-pink border-t-transparent animate-spin" />
+          <span className="relative">Ladataan rakennuksia...</span>
         </div>
-      )}
+      </div>
 
       {/* Compare mode indicator */}
       {isCompareMode && !selectedArea && comparedArea && (
