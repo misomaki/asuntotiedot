@@ -95,9 +95,9 @@ function AgeBars({ pctUnder18, pct18_64, pctOver65 }: {
   pctOver65: number
 }) {
   const bars = [
-    { label: 'Alle 18', value: pctUnder18, color: '#ffc900' },
-    { label: '18–64', value: pct18_64, color: '#ff90e8' },
-    { label: 'Yli 65', value: pctOver65, color: '#23c8a0' },
+    { label: 'Alle 18', value: pctUnder18, color: '#e8d098' },
+    { label: '18–64', value: pct18_64, color: '#d4a0b8' },
+    { label: 'Yli 65', value: pctOver65, color: '#8cc8b8' },
   ]
 
   return (
@@ -133,10 +133,10 @@ function WalkScoreCircle({ score }: { score: number }) {
   const strokeDashoffset = circumference - progress
 
   const category = useMemo(() => {
-    if (score >= 80) return { label: 'Erinomainen', color: '#23c8a0' }
-    if (score >= 60) return { label: 'Hyvä', color: '#ffc900' }
-    if (score >= 40) return { label: 'Kohtalainen', color: '#ff90e8' }
-    return { label: 'Heikko', color: '#d060b0' }
+    if (score >= 80) return { label: 'Erinomainen', color: '#8cc8b8' }
+    if (score >= 60) return { label: 'Hyvä', color: '#e8d098' }
+    if (score >= 40) return { label: 'Kohtalainen', color: '#d4a0b8' }
+    return { label: 'Heikko', color: '#b898c0' }
   }, [score])
 
   return (
@@ -234,9 +234,9 @@ function SocioeconomicsSection({ data }: { data: NonNullable<AreaWithStats['soci
         <>
           <SectionHeader icon={<TrendingUp size={14} />} title="Tulotaso" />
           <PercentBar segments={[
-            { label: 'Korkea', value: data.income_high ?? 0, color: '#23c8a0' },
-            { label: 'Keski', value: data.income_medium ?? 0, color: '#ffc900' },
-            { label: 'Matala', value: data.income_low ?? 0, color: '#ff90e8' },
+            { label: 'Korkea', value: data.income_high ?? 0, color: '#8cc8b8' },
+            { label: 'Keski', value: data.income_medium ?? 0, color: '#e8d098' },
+            { label: 'Matala', value: data.income_low ?? 0, color: '#d4a0b8' },
           ]} />
         </>
       )}
@@ -245,10 +245,10 @@ function SocioeconomicsSection({ data }: { data: NonNullable<AreaWithStats['soci
         <>
           <SectionHeader icon={<GraduationCap size={14} />} title="Koulutustaso" />
           <PercentBar segments={[
-            { label: 'Korkeakoulu', value: (data.education_upper_tertiary ?? 0) + (data.education_university ?? 0) + (data.education_lower_tertiary ?? 0), color: '#23c8a0' },
-            { label: 'Ammatillinen', value: data.education_vocational ?? 0, color: '#ffc900' },
-            { label: 'Toinen aste', value: data.education_secondary ?? 0, color: '#ff90e8' },
-            { label: 'Perusaste', value: data.education_basic ?? 0, color: '#c8b8a8' },
+            { label: 'Korkeakoulu', value: (data.education_upper_tertiary ?? 0) + (data.education_university ?? 0) + (data.education_lower_tertiary ?? 0), color: '#8cc8b8' },
+            { label: 'Ammatillinen', value: data.education_vocational ?? 0, color: '#e8d098' },
+            { label: 'Toinen aste', value: data.education_secondary ?? 0, color: '#d4a0b8' },
+            { label: 'Perusaste', value: data.education_basic ?? 0, color: '#c8c0b4' },
           ]} />
           {universityPct != null && (
             <p className="text-[11px] text-muted-foreground">
@@ -277,9 +277,9 @@ function HousingSection({ data }: { data: NonNullable<AreaWithStats['housing']> 
 
       {hasTenure && (
         <PercentBar segments={[
-          { label: 'Omistus', value: data.owner_occupied ?? 0, color: '#23c8a0' },
-          { label: 'Vuokra', value: data.rented ?? 0, color: '#ff90e8' },
-          { label: 'Muu', value: data.other_tenure ?? 0, color: '#c8b8a8' },
+          { label: 'Omistus', value: data.owner_occupied ?? 0, color: '#8cc8b8' },
+          { label: 'Vuokra', value: data.rented ?? 0, color: '#d4a0b8' },
+          { label: 'Muu', value: data.other_tenure ?? 0, color: '#c8c0b4' },
         ]} />
       )}
 
@@ -470,10 +470,10 @@ export function StatsPanel({ data, isLoading }: StatsPanelProps) {
   // Building age segments
   const buildingAgeSegments: AgeSegment[] | null = data.buildings
     ? [
-        { label: 'ennen 1960', value: data.buildings.pct_pre_1960, color: '#d060b0' },
-        { label: '1960–1980', value: data.buildings.pct_1960_1980, color: '#ff90e8' },
-        { label: '1980–2000', value: data.buildings.pct_1980_2000, color: '#ffc900' },
-        { label: '2000 jälkeen', value: data.buildings.pct_post_2000, color: '#23c8a0' },
+        { label: 'ennen 1960', value: data.buildings.pct_pre_1960, color: '#b898c0' },
+        { label: '1960–1980', value: data.buildings.pct_1960_1980, color: '#d4a0b8' },
+        { label: '1980–2000', value: data.buildings.pct_1980_2000, color: '#e8d098' },
+        { label: '2000 jälkeen', value: data.buildings.pct_post_2000, color: '#8cc8b8' },
       ]
     : null
 
