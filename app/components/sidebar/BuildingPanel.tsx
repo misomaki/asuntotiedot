@@ -330,7 +330,6 @@ function NearbyServices({ building }: { building: BuildingWithPrice }) {
     { icon: <Bus size={14} />, label: 'Pysäkki', distance: building.min_distance_to_transit_m },
     { icon: <TreePine size={14} />, label: 'Puisto', distance: building.min_distance_to_park_m },
     { icon: <Heart size={14} />, label: 'Terveys', distance: building.min_distance_to_health_m },
-    { icon: <Droplets size={14} />, label: 'Ranta', distance: building.min_distance_to_water_m },
   ].filter(s => s.distance != null)
 
   if (services.length === 0) return null
