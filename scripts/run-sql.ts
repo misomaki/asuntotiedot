@@ -28,6 +28,7 @@ async function main() {
   const client = new pg.Client({ connectionString: databaseUrl })
   try {
     await client.connect()
+    await client.query("SET statement_timeout = '600s'")
     const result = await client.query(sql)
     console.log('Migration completed successfully.')
     if (result.command) {
