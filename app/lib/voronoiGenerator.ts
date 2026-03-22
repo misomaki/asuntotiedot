@@ -84,9 +84,29 @@ const DEFAULT_SPACING: Record<string, { lng: number; lat: number }> = {
   Tampere: { lng: 0.007, lat: 0.005 },
   Turku: { lng: 0.007, lat: 0.005 },
   Oulu: { lng: 0.007, lat: 0.005 },
+  Jyväskylä: { lng: 0.007, lat: 0.005 },
+  Kuopio: { lng: 0.007, lat: 0.005 },
+  Lahti: { lng: 0.007, lat: 0.005 },
 }
 
-const FALLBACK_SPACING = { lng: 0.007, lat: 0.005 }
+/** Metro areas to merge into single clusters (prevents gaps between adjacent cities) */
+const METRO_MERGES: Record<string, string[]> = {
+  'Helsinki metro': ['Helsinki', 'Espoo', 'Vantaa', 'Kauniainen'],
+  'Tampere metro': ['Tampere', 'Nokia', 'Ylöjärvi', 'Pirkkala', 'Kangasala', 'Lempäälä'],
+  'Turku metro': ['Turku', 'Kaarina', 'Raisio', 'Naantali', 'Lieto'],
+}
+
+/** Reverse lookup: municipality → metro group name */
+const MUNICIPALITY_TO_METRO = new Map<string, string>()
+for (const [metro, cities] of Object.entries(METRO_MERGES)) {
+  for (const city of cities) {
+    MUNICIPALITY_TO_METRO.set(city, metro)
+  }
+}
+
+/** Safety caps to prevent browser memory issues */
+const MAX_CELLS_PER_CLUSTER = 5000
+const MAX_TOTAL_CELLS = 60000
 
 // ---------------------------------------------------------------------------
 // IDW interpolation
@@ -120,15 +140,34 @@ function idwInterpolate(
  * Groups anchors by municipality and creates cluster configs with
  * auto-detected bounding boxes.
  */
+/**
+ * Auto-detect spacing based on anchor density within a cluster's bbox.
+ * Known cities keep their tuned spacing; others get density-adaptive spacing.
+ */
+function autoSpacing(
+  anchorCount: number,
+  bboxArea: number
+): { lng: number; lat: number } {
+  const density = anchorCount / Math.max(bboxArea, 0.001)
+
+  // Tier 2: major cities (~medium density, >20 anchors per degree²)
+  if (density > 20 || anchorCount > 30)
+    return { lng: 0.007, lat: 0.005 }
+
+  // Tier 3: medium density (>10 anchors)
+  if (anchorCount > 10)
+    return { lng: 0.012, lat: 0.009 }
+
+  // Tier 4: sparse / rural
+  return { lng: 0.020, lat: 0.015 }
+}
+
 function buildClusters(anchors: VoronoiAnchor[]): ClusterConfig[] {
-  // Group by municipality (with Helsinki metro merged)
-  const helsinkiMetro = new Set(['Helsinki', 'Espoo', 'Vantaa', 'Kauniainen'])
+  // Group by municipality, merging metro areas
   const groups = new Map<string, VoronoiAnchor[]>()
 
   for (const a of anchors) {
-    const key = helsinkiMetro.has(a.municipality)
-      ? 'Helsinki metro'
-      : a.municipality
+    const key = MUNICIPALITY_TO_METRO.get(a.municipality) ?? a.municipality
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push(a)
   }
@@ -155,13 +194,32 @@ function buildClusters(anchors: VoronoiAnchor[]): ClusterConfig[] {
     const lngPad = (maxLng - minLng) * 0.15 || 0.05
     const latPad = (maxLat - minLat) * 0.15 || 0.03
 
-    // Determine spacing
+    // Determine spacing: known city overrides first, then density-adaptive
     const firstMunicipality = groupAnchors[0].municipality
-    const spacing =
+    const bboxArea = (maxLng - minLng) * (maxLat - minLat)
+    let spacing =
       DEFAULT_SPACING[firstMunicipality] ??
       (groupName === 'Helsinki metro'
         ? DEFAULT_SPACING['Helsinki']
-        : FALLBACK_SPACING)
+        : groupName === 'Tampere metro'
+          ? DEFAULT_SPACING['Tampere']
+          : groupName === 'Turku metro'
+            ? DEFAULT_SPACING['Turku']
+            : null)
+
+    if (!spacing) {
+      spacing = autoSpacing(groupAnchors.length, bboxArea)
+    }
+
+    // Safety: ensure cluster won't exceed MAX_CELLS_PER_CLUSTER
+    const bboxW = (maxLng + lngPad) - (minLng - lngPad)
+    const bboxH = (maxLat + latPad) - (minLat - latPad)
+    let estimatedCells = (bboxW / spacing.lng) * (bboxH / spacing.lat)
+
+    while (estimatedCells > MAX_CELLS_PER_CLUSTER) {
+      spacing = { lng: spacing.lng * 1.5, lat: spacing.lat * 1.5 }
+      estimatedCells = (bboxW / spacing.lng) * (bboxH / spacing.lat)
+    }
 
     clusters.push({
       bbox: [
@@ -265,6 +323,19 @@ function generateClusterCells(
 }
 
 // ---------------------------------------------------------------------------
+// Coordinate rounding (~11m precision, reduces GeoJSON size ~40%)
+// ---------------------------------------------------------------------------
+
+function roundCoordinates(coords: number[][][]): number[][][] {
+  return coords.map((ring) =>
+    ring.map((point) => [
+      Math.round(point[0] * 10000) / 10000,
+      Math.round(point[1] * 10000) / 10000,
+    ])
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
 
@@ -290,10 +361,20 @@ export function generateVoronoiGeoJSON(
   const clusters = buildClusters(validAnchors)
   const allCells: Array<{ cell: VoronoiCell; cluster: ClusterConfig }> = []
 
+  let totalCellCount = 0
   for (let ci = 0; ci < clusters.length; ci++) {
     const cells = generateClusterCells(clusters[ci], ci)
     for (const cell of cells) {
       allCells.push({ cell, cluster: clusters[ci] })
+    }
+    totalCellCount += cells.length
+
+    // Safety: stop generating if we hit the global cap
+    if (totalCellCount >= MAX_TOTAL_CELLS) {
+      console.warn(
+        `Voronoi: hit MAX_TOTAL_CELLS (${MAX_TOTAL_CELLS}) at cluster ${ci + 1}/${clusters.length}`
+      )
+      break
     }
   }
 
@@ -324,7 +405,7 @@ export function generateVoronoiGeoJSON(
         },
         geometry: {
           type: 'Polygon' as const,
-          coordinates: cell.coordinates,
+          coordinates: roundCoordinates(cell.coordinates),
         },
       }
     }),

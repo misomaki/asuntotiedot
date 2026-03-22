@@ -21,6 +21,9 @@ import { sleep } from './lib/pxwebClient'
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
 
+/** Whether to import water bodies for ALL Finland (not just target cities) */
+const IMPORT_ALL = process.argv.includes('--all')
+
 interface OverpassElement {
   type: 'way' | 'relation' | 'node'
   id: number
@@ -133,8 +136,76 @@ function wayToMultiPolygon(
   return { type: 'MultiPolygon', coordinates: [[ring]] }
 }
 
+/**
+ * Fetch bboxes from areas table, grouped by municipality.
+ */
+async function fetchMunicipalityBboxes(): Promise<Array<{ name: string; bbox: [number, number, number, number] }>> {
+  const { data, error } = await supabase
+    .from('areas')
+    .select('municipality, centroid')
+    .not('centroid', 'is', null)
+    .not('municipality', 'is', null)
+
+  if (error || !data) {
+    console.error('Failed to fetch areas:', error?.message)
+    return []
+  }
+
+  const groups = new Map<string, Array<[number, number]>>()
+  for (const row of data) {
+    const mun = row.municipality as string
+    if (!mun) continue
+
+    let coords: [number, number] | null = null
+    if (typeof row.centroid === 'object' && row.centroid !== null) {
+      const obj = row.centroid as { type?: string; coordinates?: number[] }
+      if (obj.type === 'Point' && Array.isArray(obj.coordinates)) {
+        coords = [obj.coordinates[0], obj.coordinates[1]]
+      }
+    } else if (typeof row.centroid === 'string') {
+      const match = (row.centroid as string).match(/POINT\(([^ ]+) ([^ ]+)\)/)
+      if (match) coords = [parseFloat(match[1]), parseFloat(match[2])]
+    }
+
+    if (!coords) continue
+    if (!groups.has(mun)) groups.set(mun, [])
+    groups.get(mun)!.push(coords)
+  }
+
+  const results: Array<{ name: string; bbox: [number, number, number, number] }> = []
+  for (const [mun, centroids] of groups) {
+    let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+    for (const [lng, lat] of centroids) {
+      minLng = Math.min(minLng, lng)
+      minLat = Math.min(minLat, lat)
+      maxLng = Math.max(maxLng, lng)
+      maxLat = Math.max(maxLat, lat)
+    }
+    const buf = 0.05
+    results.push({
+      name: mun,
+      bbox: [minLng - buf, minLat - buf, maxLng + buf, maxLat + buf],
+    })
+  }
+
+  return results
+}
+
 async function importWaterBodies(): Promise<number> {
-  console.log('Querying water bodies for all cities...\n')
+  // Determine which bboxes to query
+  const queryAreas: Array<{ name: string; bbox: [number, number, number, number] }> = []
+
+  if (IMPORT_ALL) {
+    console.log('Fetching municipality bboxes for Finland-wide water import...\n')
+    const munBboxes = await fetchMunicipalityBboxes()
+    queryAreas.push(...munBboxes)
+    console.log(`Will query water bodies for ${queryAreas.length} municipalities\n`)
+  } else {
+    for (const city of CITIES) {
+      queryAreas.push({ name: city.name, bbox: city.bbox })
+    }
+    console.log(`Querying water bodies for ${queryAreas.length} cities...\n`)
+  }
 
   // Collect all water features, deduplicate by OSM ID
   const allWater = new Map<number, {
@@ -144,17 +215,22 @@ async function importWaterBodies(): Promise<number> {
     geometry: { type: 'MultiPolygon'; coordinates: number[][][][] }
   }>()
 
-  for (const city of CITIES) {
-    const [west, south, east, north] = city.bbox
+  for (let qi = 0; qi < queryAreas.length; qi++) {
+    const area = queryAreas[qi]
+    const [west, south, east, north] = area.bbox
 
-    // Add ~5km buffer to catch water bodies near city edges
+    // Add ~5km buffer to catch water bodies near edges
     const buf = 0.05
     const s = south - buf
     const w = west - buf
     const n = north + buf
     const e = east + buf
 
-    console.log(`${city.name}: querying water in [${w.toFixed(2)}, ${s.toFixed(2)}, ${e.toFixed(2)}, ${n.toFixed(2)}]`)
+    if (IMPORT_ALL) {
+      console.log(`[${qi + 1}/${queryAreas.length}] ${area.name}`)
+    } else {
+      console.log(`${area.name}: querying water in [${w.toFixed(2)}, ${s.toFixed(2)}, ${e.toFixed(2)}, ${n.toFixed(2)}]`)
+    }
 
     // Query water polygons: ways AND relations (large lakes are OSM relations)
     const query = `
@@ -209,7 +285,7 @@ async function importWaterBodies(): Promise<number> {
     console.log(`  ${added} new water bodies added (total unique: ${allWater.size})`)
 
     // Overpass rate limit
-    if (CITIES.indexOf(city) < CITIES.length - 1) {
+    if (qi < queryAreas.length - 1) {
       console.log('  Waiting 10s...')
       await sleep(10000)
     }

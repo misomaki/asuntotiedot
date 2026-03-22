@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { Search, X, ChevronDown, MapPin } from 'lucide-react'
+import { Search, X, ChevronDown, MapPin, Navigation } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
 import { LogoMark } from '@/app/components/brand/LogoMark'
 import { CITIES, CityConfig } from '@/app/lib/cities'
 import { cn } from '@/app/lib/utils'
+import { searchAddresses, type GeocodingResult } from '@/app/lib/geocoding'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,7 +75,7 @@ function SearchNoResults({ compact }: { compact: boolean }) {
     )}>
       <p className="font-medium">Ei tuloksia</p>
       <p className={cn('mt-0.5', compact ? 'text-[10px]' : 'text-sm')}>
-        Kokeile postinumeroa tai alueen nimeä
+        Kokeile osoitetta, postinumeroa tai alueen nimeä
       </p>
     </div>
   )
@@ -152,6 +153,71 @@ export function Header() {
       .slice(0, maxResults)
   }, [searchQuery, searchableAreas, cityResults.length])
 
+  // Debounced address geocoding
+  const [addressResults, setAddressResults] = useState<GeocodingResult[]>([])
+  const [isAddressLoading, setIsAddressLoading] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    const query = searchQuery.trim()
+    if (query.length < 3) {
+      setAddressResults([])
+      setIsAddressLoading(false)
+      return
+    }
+
+    // Skip pure numeric queries (postal codes) — existing search handles those
+    if (/^\d+$/.test(query)) {
+      setAddressResults([])
+      return
+    }
+
+    setIsAddressLoading(true)
+
+    // Debounce: wait 350ms before calling Nominatim
+    const timer = setTimeout(() => {
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
+      searchAddresses(query, controller.signal)
+        .then((results) => {
+          if (!controller.signal.aborted) {
+            setAddressResults(results)
+            setIsAddressLoading(false)
+          }
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setAddressResults([])
+            setIsAddressLoading(false)
+          }
+        })
+    }, 350)
+
+    return () => {
+      clearTimeout(timer)
+      abortRef.current?.abort()
+    }
+  }, [searchQuery])
+
+  // Select an address from geocoding results — fly to its coordinates
+  const handleSelectAddress = useCallback(
+    (result: GeocodingResult) => {
+      setSearchQuery('')
+      setIsSearchFocused(false)
+      setAddressResults([])
+      searchInputRef.current?.blur()
+
+      flyTo({
+        longitude: result.longitude,
+        latitude: result.latitude,
+        zoom: 15,
+      })
+    },
+    [flyTo]
+  )
+
   // Select a city from search results — fly to its bounding box
   const handleSelectCity = useCallback(
     (city: CityConfig) => {
@@ -223,6 +289,8 @@ export function Header() {
           handleSelectCity(cityResults[0])
         } else if (searchResults.length > 0) {
           handleSelectArea(searchResults[0])
+        } else if (addressResults.length > 0) {
+          handleSelectAddress(addressResults[0])
         }
       }
       if (e.key === 'Escape') {
@@ -231,7 +299,7 @@ export function Header() {
         searchInputRef.current?.blur()
       }
     },
-    [cityResults, searchResults, handleSelectCity, handleSelectArea]
+    [cityResults, searchResults, addressResults, handleSelectCity, handleSelectArea, handleSelectAddress]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -257,8 +325,9 @@ export function Header() {
 
   const showSearchDropdown =
     isSearchFocused && searchQuery.trim().length > 0
+  const hasAnyResults = cityResults.length > 0 || searchResults.length > 0 || addressResults.length > 0
   const showNoResults =
-    showSearchDropdown && searchResults.length === 0 && cityResults.length === 0
+    showSearchDropdown && !hasAnyResults && !isAddressLoading
 
   return (
     <header className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
@@ -305,7 +374,7 @@ export function Header() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   onKeyDown={handleSearchKeyDown}
-                  placeholder={isDesktop ? 'Hae postinumeroa...' : 'Hae...'}
+                  placeholder={isDesktop ? 'Hae osoitetta tai aluetta...' : 'Hae...'}
                   className={cn(
                     'w-full pr-2 md:pr-2.5 bg-transparent text-[#1a1a1a]',
                     'placeholder:text-[#999] md:placeholder:text-[#666]',
@@ -377,6 +446,40 @@ export function Header() {
                           onSelect={handleSelectArea}
                         />
                       ))}
+                      {(cityResults.length > 0 || searchResults.length > 0) && addressResults.length > 0 && (
+                        <div className="border-t border-[#e5e5e5]" />
+                      )}
+                      {addressResults.map((result, i) => (
+                        <button
+                          key={`${result.latitude}-${result.longitude}-${i}`}
+                          type="button"
+                          onClick={() => handleSelectAddress(result)}
+                          className={cn(
+                            'w-full px-3 text-left',
+                            'flex items-center gap-2',
+                            isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                            'text-[#1a1a1a]',
+                            'hover:bg-pink-baby transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-pink-baby',
+                            isDesktop && 'animate-slide-up',
+                          )}
+                          style={isDesktop ? { animationDelay: `${(i + cityResults.length + searchResults.length) * 30}ms`, animationFillMode: 'both' } : undefined}
+                        >
+                          <Navigation size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                          <span className="truncate">{result.shortLabel}</span>
+                          <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                            Osoite
+                          </span>
+                        </button>
+                      ))}
+                      {isAddressLoading && !hasAnyResults && (
+                        <div className={cn(
+                          'px-3 py-3 text-muted-foreground text-center',
+                          isDesktop ? 'text-xs' : 'text-sm',
+                        )}>
+                          Haetaan osoitteita...
+                        </div>
+                      )}
                     </>
                   )}
                 </div>

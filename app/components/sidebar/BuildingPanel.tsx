@@ -114,7 +114,7 @@ export function BuildingPanel() {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-base font-display font-bold text-foreground truncate">
-            {building.address ?? 'Rakennus'}
+            {building.address ?? typeLabel ?? 'Rakennus'}
           </h2>
           {building.area_name && (
             <p className="text-xs text-muted-foreground mt-0.5">

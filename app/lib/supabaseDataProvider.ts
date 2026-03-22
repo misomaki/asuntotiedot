@@ -27,8 +27,6 @@ import {
   inferPropertyType,
   OKT_FALLBACK,
 } from './priceEstimation'
-import { ALL_POSTAL_PREFIXES } from './cities'
-
 export class SupabaseDataProvider implements DataProvider {
   private supabase: SupabaseClient
 
@@ -47,15 +45,11 @@ export class SupabaseDataProvider implements DataProvider {
     })
   }
 
-  /** Postal prefixes for cities with dense Voronoi data (from shared cities.ts) */
-  private static VORONOI_PREFIXES = ALL_POSTAL_PREFIXES
-
   async getAreasGeoJSON(
     year: number,
     propertyType: PropertyType
   ): Promise<GeoJSONFeatureCollection> {
-    // Fetch postal code centroids + prices — only target cities
-    // (municipality choropleth handles the zoomed-out Finland-wide view)
+    // Fetch all postal code centroids — Finland-wide Voronoi coverage
     const { data: areas, error } = await this.supabase
       .from('areas')
       .select(`
@@ -65,11 +59,7 @@ export class SupabaseDataProvider implements DataProvider {
         municipality,
         centroid
       `)
-      .or(
-        SupabaseDataProvider.VORONOI_PREFIXES
-          .map(p => `area_code.like.${p}%`)
-          .join(',')
-      )
+      .not('centroid', 'is', null)
 
     if (error) {
       console.error('Error fetching areas:', error.message)

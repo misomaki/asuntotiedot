@@ -24,6 +24,9 @@ import {
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
 
+/** Whether to import buildings for ALL Finnish postal areas (not just target cities) */
+const IMPORT_ALL = process.argv.includes('--all')
+
 /** Non-residential building types to exclude at import time.
  *  Combines the shared denylist with import-only niche types. */
 const EXCLUDED_BUILDING_TYPES = new Set([
@@ -222,27 +225,193 @@ async function assignAreasAndCentroids() {
   console.log('Spatial join result:', data)
 }
 
-async function main() {
-  console.log('=== Building Import (Overpass API) ===\n')
+/**
+ * Fetch all municipality bboxes from the areas table, grouped by municipality.
+ * Returns one CityConfig per municipality with bbox derived from postal area centroids.
+ */
+async function fetchMunicipalityBboxes(): Promise<CityConfig[]> {
+  console.log('Fetching municipality bboxes from areas table...')
 
-  let totalInserted = 0
+  const { data, error } = await supabase
+    .from('areas')
+    .select('municipality, centroid')
+    .not('centroid', 'is', null)
+    .not('municipality', 'is', null)
 
-  for (const city of CITIES) {
-    const count = await importBuildingsForCity(city)
-    totalInserted += count
+  if (error || !data) {
+    console.error('Failed to fetch areas:', error?.message)
+    return []
+  }
 
-    // Respect Overpass rate limits — wait between cities
-    if (CITIES.indexOf(city) < CITIES.length - 1) {
-      console.log('  Waiting 15s for Overpass rate limit...')
-      await sleep(15000)
+  // Group centroids by municipality
+  const groups = new Map<string, Array<[number, number]>>()
+  for (const row of data) {
+    const mun = row.municipality as string
+    if (!mun) continue
+
+    // Parse centroid (GeoJSON Point or WKT)
+    let coords: [number, number] | null = null
+    if (typeof row.centroid === 'object' && row.centroid !== null) {
+      const obj = row.centroid as { type?: string; coordinates?: number[] }
+      if (obj.type === 'Point' && Array.isArray(obj.coordinates)) {
+        coords = [obj.coordinates[0], obj.coordinates[1]]
+      }
+    } else if (typeof row.centroid === 'string') {
+      const match = (row.centroid as string).match(/POINT\(([^ ]+) ([^ ]+)\)/)
+      if (match) coords = [parseFloat(match[1]), parseFloat(match[2])]
+    }
+
+    if (!coords) continue
+    if (!groups.has(mun)) groups.set(mun, [])
+    groups.get(mun)!.push(coords)
+  }
+
+  // Build CityConfig per municipality
+  const configs: CityConfig[] = []
+  for (const [municipality, centroids] of groups) {
+    let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+    for (const [lng, lat] of centroids) {
+      minLng = Math.min(minLng, lng)
+      minLat = Math.min(minLat, lat)
+      maxLng = Math.max(maxLng, lng)
+      maxLat = Math.max(maxLat, lat)
+    }
+
+    // Add buffer (~5km) to catch buildings at edges
+    const buf = 0.05
+    configs.push({
+      name: municipality,
+      postalPrefixes: [],
+      bbox: [minLng - buf, minLat - buf, maxLng + buf, maxLat + buf],
+    })
+  }
+
+  console.log(`  Found ${configs.length} municipalities with postal areas`)
+  return configs
+}
+
+/**
+ * Split a large bbox into tiles of max ~0.5° × 0.5° to avoid Overpass timeouts.
+ */
+function splitBbox(bbox: [number, number, number, number], maxDeg = 0.5): Array<[number, number, number, number]> {
+  const [west, south, east, north] = bbox
+  const width = east - west
+  const height = north - south
+
+  if (width <= maxDeg && height <= maxDeg) return [bbox]
+
+  const tiles: Array<[number, number, number, number]> = []
+  const cols = Math.ceil(width / maxDeg)
+  const rows = Math.ceil(height / maxDeg)
+  const stepLng = width / cols
+  const stepLat = height / rows
+
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      tiles.push([
+        west + c * stepLng,
+        south + r * stepLat,
+        west + (c + 1) * stepLng,
+        south + (r + 1) * stepLat,
+      ])
     }
   }
 
-  if (totalInserted > 0) {
-    await assignAreasAndCentroids()
+  return tiles
+}
+
+async function importBuildingsForMunicipality(city: CityConfig): Promise<number> {
+  const tiles = splitBbox(city.bbox)
+
+  if (tiles.length > 1) {
+    console.log(`  Splitting ${city.name} into ${tiles.length} tiles`)
   }
 
-  console.log(`\n=== Import complete: ${totalInserted} buildings ===`)
+  let totalInserted = 0
+
+  for (let ti = 0; ti < tiles.length; ti++) {
+    const tile = tiles[ti]
+    if (tiles.length > 1) {
+      console.log(`  Tile ${ti + 1}/${tiles.length}`)
+    }
+
+    const count = await importBuildingsForCity({
+      name: `${city.name}${tiles.length > 1 ? ` (tile ${ti + 1})` : ''}`,
+      postalPrefixes: [],
+      bbox: tile,
+    })
+    totalInserted += count
+
+    // Rate limit between tiles
+    if (ti < tiles.length - 1) {
+      await sleep(5000)
+    }
+  }
+
+  return totalInserted
+}
+
+async function main() {
+  console.log('=== Building Import (Overpass API) ===\n')
+
+  if (IMPORT_ALL) {
+    console.log('MODE: Importing ALL Finnish municipalities (--all flag)\n')
+
+    // Fetch bboxes from areas table
+    const municipalities = await fetchMunicipalityBboxes()
+
+    // Skip municipalities that overlap with existing CITIES (already imported)
+    const existingNames = new Set(CITIES.map((c) => c.name))
+    // Also skip Helsinki metro sub-cities
+    const metroNames = new Set(['Helsinki', 'Espoo', 'Vantaa', 'Kauniainen'])
+    const toImport = municipalities.filter(
+      (m) => !existingNames.has(m.name) && !metroNames.has(m.name)
+    )
+
+    console.log(`  ${toImport.length} new municipalities to import (${municipalities.length - toImport.length} already covered by CITIES)\n`)
+
+    let totalInserted = 0
+    for (let i = 0; i < toImport.length; i++) {
+      const mun = toImport[i]
+      console.log(`\n[${i + 1}/${toImport.length}] ${mun.name}`)
+
+      const count = await importBuildingsForMunicipality(mun)
+      totalInserted += count
+
+      // Respect Overpass rate limits
+      if (i < toImport.length - 1) {
+        console.log('  Waiting 15s for Overpass rate limit...')
+        await sleep(15000)
+      }
+    }
+
+    if (totalInserted > 0) {
+      await assignAreasAndCentroids()
+    }
+
+    console.log(`\n=== Import complete: ${totalInserted} buildings from ${toImport.length} municipalities ===`)
+  } else {
+    console.log('MODE: Importing target cities only (use --all for all Finland)\n')
+
+    let totalInserted = 0
+
+    for (const city of CITIES) {
+      const count = await importBuildingsForCity(city)
+      totalInserted += count
+
+      // Respect Overpass rate limits — wait between cities
+      if (CITIES.indexOf(city) < CITIES.length - 1) {
+        console.log('  Waiting 15s for Overpass rate limit...')
+        await sleep(15000)
+      }
+    }
+
+    if (totalInserted > 0) {
+      await assignAreasAndCentroids()
+    }
+
+    console.log(`\n=== Import complete: ${totalInserted} buildings ===`)
+  }
 }
 
 main().catch((err) => {
