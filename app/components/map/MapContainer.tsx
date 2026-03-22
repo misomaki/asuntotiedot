@@ -113,11 +113,11 @@ export default function MapContainer() {
   // Whether buildings are visible at current zoom
   const showBuildings = viewport.zoom >= BUILDING_ZOOM_THRESHOLD
 
-  // Show zoom hint when approaching building level (z12–14), hide when loading
-  const showZoomHint = viewport.zoom >= 12 && viewport.zoom < BUILDING_ZOOM_THRESHOLD && !buildingsLoading
-
   // Track building tile loading via MapLibre sourcedata events
   const [buildingsLoading, setBuildingsLoading] = useState(false)
+
+  // Show zoom hint when approaching building level (z12–14), hide when loading
+  const showZoomHint = viewport.zoom >= 12 && viewport.zoom < BUILDING_ZOOM_THRESHOLD && !buildingsLoading
   const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
