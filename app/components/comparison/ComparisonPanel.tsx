@@ -183,10 +183,10 @@ interface BuildingAgeComparisonProps {
 
 function BuildingAgeComparison({ buildingsA, buildingsB }: BuildingAgeComparisonProps) {
   const segments: { label: string; color: string; keyA: keyof NonNullable<AreaWithStats['buildings']>; keyB: keyof NonNullable<AreaWithStats['buildings']> }[] = [
-    { label: 'ennen 1960', color: '#ef4444', keyA: 'pct_pre_1960', keyB: 'pct_pre_1960' },
-    { label: '1960-1980', color: '#f59e0b', keyA: 'pct_1960_1980', keyB: 'pct_1960_1980' },
-    { label: '1980-2000', color: '#3b82f6', keyA: 'pct_1980_2000', keyB: 'pct_1980_2000' },
-    { label: '2000 jalkeen', color: '#22c55e', keyA: 'pct_post_2000', keyB: 'pct_post_2000' },
+    { label: 'ennen 1960', color: '#d060b0', keyA: 'pct_pre_1960', keyB: 'pct_pre_1960' },
+    { label: '1960-1980', color: '#ff90e8', keyA: 'pct_1960_1980', keyB: 'pct_1960_1980' },
+    { label: '1980-2000', color: '#ffc900', keyA: 'pct_1980_2000', keyB: 'pct_1980_2000' },
+    { label: '2000 jalkeen', color: '#23c8a0', keyA: 'pct_post_2000', keyB: 'pct_post_2000' },
   ]
 
   return (
@@ -305,7 +305,7 @@ function WalkScoreComparison({ scoreA, scoreB }: WalkScoreComparisonProps) {
     <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
       <div className="flex justify-center">
         {scoreA != null ? (
-          <WalkScoreComparisonCircle score={scoreA} color="#3b82f6" />
+          <WalkScoreComparisonCircle score={scoreA} color="#ff90e8" />
         ) : (
           <span className="text-sm text-muted-foreground">Ei tietoa</span>
         )}
@@ -319,7 +319,7 @@ function WalkScoreComparison({ scoreA, scoreB }: WalkScoreComparisonProps) {
 
       <div className="flex justify-center">
         {scoreB != null ? (
-          <WalkScoreComparisonCircle score={scoreB} color="#8b5cf6" />
+          <WalkScoreComparisonCircle score={scoreB} color="#23c8a0" />
         ) : (
           <span className="text-sm text-muted-foreground">Ei tietoa</span>
         )}
@@ -482,7 +482,7 @@ export function ComparisonPanel() {
               name={dataA.name}
               areaCode={dataA.area_code}
               municipality={dataA.municipality}
-              color="#3b82f6"
+              color="#ff90e8"
               label="Alue 1"
             />
           ) : (
@@ -497,7 +497,7 @@ export function ComparisonPanel() {
               name={dataB.name}
               areaCode={dataB.area_code}
               municipality={dataB.municipality}
-              color="#8b5cf6"
+              color="#23c8a0"
               label="Alue 2"
             />
           ) : (

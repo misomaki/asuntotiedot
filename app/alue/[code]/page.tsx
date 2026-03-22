@@ -277,19 +277,19 @@ function SocioeconomicsBlock({ data }: { data: NonNullable<AreaWithStats['socioe
       {hasIncome && (
         <Section icon={<TrendingUp size={18} />} title="Tulotaso">
           <PercentBarStatic segments={[
-            { label: 'Korkea', value: data.income_high ?? 0, color: '#22c55e' },
-            { label: 'Keski', value: data.income_medium ?? 0, color: '#3b82f6' },
-            { label: 'Matala', value: data.income_low ?? 0, color: '#f59e0b' },
+            { label: 'Korkea', value: data.income_high ?? 0, color: '#23c8a0' },
+            { label: 'Keski', value: data.income_medium ?? 0, color: '#ffc900' },
+            { label: 'Matala', value: data.income_low ?? 0, color: '#ff90e8' },
           ]} />
         </Section>
       )}
       {hasEducation && (
         <Section icon={<GraduationCap size={18} />} title="Koulutustaso">
           <PercentBarStatic segments={[
-            { label: 'Korkeakoulu', value: (data.education_upper_tertiary ?? 0) + (data.education_university ?? 0) + (data.education_lower_tertiary ?? 0), color: '#8b5cf6' },
-            { label: 'Ammatillinen', value: data.education_vocational ?? 0, color: '#3b82f6' },
-            { label: 'Toinen aste', value: data.education_secondary ?? 0, color: '#60a5fa' },
-            { label: 'Perusaste', value: data.education_basic ?? 0, color: '#93c5fd' },
+            { label: 'Korkeakoulu', value: (data.education_upper_tertiary ?? 0) + (data.education_university ?? 0) + (data.education_lower_tertiary ?? 0), color: '#23c8a0' },
+            { label: 'Ammatillinen', value: data.education_vocational ?? 0, color: '#ffc900' },
+            { label: 'Toinen aste', value: data.education_secondary ?? 0, color: '#ff90e8' },
+            { label: 'Perusaste', value: data.education_basic ?? 0, color: '#c8b8a8' },
           ]} />
           {universityPct != null && (
             <p className="text-sm text-muted-foreground mt-2">
@@ -309,9 +309,9 @@ function HousingBlock({ data }: { data: NonNullable<AreaWithStats['housing']> })
   return (
     <Section icon={<Home size={18} />} title="Asuminen">
       <PercentBarStatic segments={[
-        { label: 'Omistus', value: data.owner_occupied ?? 0, color: '#22c55e' },
-        { label: 'Vuokra', value: data.rented ?? 0, color: '#f59e0b' },
-        { label: 'Muu', value: data.other_tenure ?? 0, color: '#94a3b8' },
+        { label: 'Omistus', value: data.owner_occupied ?? 0, color: '#23c8a0' },
+        { label: 'Vuokra', value: data.rented ?? 0, color: '#ff90e8' },
+        { label: 'Muu', value: data.other_tenure ?? 0, color: '#c8b8a8' },
       ]} />
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
         {data.avg_apartment_size_sqm != null && data.avg_apartment_size_sqm > 0 && (
