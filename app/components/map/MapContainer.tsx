@@ -25,7 +25,7 @@ const MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 /** Minimum zoom level at which individual buildings appear */
-const BUILDING_ZOOM_THRESHOLD = 14
+const BUILDING_ZOOM_THRESHOLD = 13
 
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {
@@ -116,8 +116,8 @@ export default function MapContainer() {
   // Track building tile loading via MapLibre sourcedata events
   const [buildingsLoading, setBuildingsLoading] = useState(false)
 
-  // Show zoom hint when approaching building level (z12–14), hide when loading
-  const showZoomHint = viewport.zoom >= 12 && viewport.zoom < BUILDING_ZOOM_THRESHOLD && !buildingsLoading
+  // Show zoom hint when approaching building level (z11–13), hide when loading
+  const showZoomHint = viewport.zoom >= 11 && viewport.zoom < BUILDING_ZOOM_THRESHOLD && !buildingsLoading
   const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
@@ -620,7 +620,7 @@ export default function MapContainer() {
           id="building-tiles"
           type="vector"
           tiles={[buildingTileUrl]}
-          minzoom={14}
+          minzoom={13}
           maxzoom={16}
         >
           {/* Base building fill */}
@@ -628,7 +628,7 @@ export default function MapContainer() {
             id="building-price-fill"
             type="fill"
             source-layer="buildings"
-            minzoom={14}
+            minzoom={13}
             paint={{
               'fill-color': buildingColorExpression,
               'fill-opacity': [
@@ -655,7 +655,7 @@ export default function MapContainer() {
             id="building-outline"
             type="line"
             source-layer="buildings"
-            minzoom={14}
+            minzoom={13}
             paint={{
               'line-color': buildingOutlineColorExpression,
               'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1.2, 16, 2.0] as unknown as ExpressionSpecification,
@@ -673,7 +673,7 @@ export default function MapContainer() {
             id="building-hover-fill"
             type="fill"
             source-layer="buildings"
-            minzoom={14}
+            minzoom={13}
             filter={hoveredBuildingUuid
               ? ['==', ['get', 'id'], hoveredBuildingUuid] as unknown as ExpressionSpecification
               : ['==', ['get', 'id'], ''] as unknown as ExpressionSpecification
@@ -688,7 +688,7 @@ export default function MapContainer() {
             id="building-hover-outline"
             type="line"
             source-layer="buildings"
-            minzoom={14}
+            minzoom={13}
             filter={hoveredBuildingUuid
               ? ['==', ['get', 'id'], hoveredBuildingUuid] as unknown as ExpressionSpecification
               : ['==', ['get', 'id'], ''] as unknown as ExpressionSpecification
