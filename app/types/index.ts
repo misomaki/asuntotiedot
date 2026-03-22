@@ -160,6 +160,13 @@ export interface BuildingWithPrice {
   neighborhood_factor: number
   ryhti_main_purpose: string | null
   is_residential: boolean | null
+  // Amenity distances (meters)
+  min_distance_to_school_m: number | null
+  min_distance_to_kindergarten_m: number | null
+  min_distance_to_grocery_m: number | null
+  min_distance_to_transit_m: number | null
+  min_distance_to_park_m: number | null
+  min_distance_to_health_m: number | null
 }
 
 /** Properties on a building GeoJSON feature */

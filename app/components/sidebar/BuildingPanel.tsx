@@ -18,6 +18,12 @@ import {
   Users,
   Home,
   Info,
+  GraduationCap,
+  ShoppingCart,
+  Bus,
+  TreePine,
+  Heart,
+  Baby,
 } from 'lucide-react'
 import type { BuildingWithPrice } from '@/app/types'
 
@@ -295,11 +301,58 @@ export function BuildingPanel() {
         )}
       </div>
 
+      {/* ── Nearby services (Lähipalvelut) ── */}
+      <NearbyServices building={building} />
+
       {/* ── Disclaimer ── */}
       <p className="text-xs text-muted-foreground/70 leading-snug">
         Arvio perustuu Tilastokeskuksen tilastohintoihin ja rakennuksen ominaisuuksiin. Suuntaa-antava.
       </p>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Nearby services section
+// ---------------------------------------------------------------------------
+
+function formatDistance(meters: number | null): string | null {
+  if (meters == null) return null
+  if (meters < 1000) return `${Math.round(meters)} m`
+  return `${(meters / 1000).toFixed(1)} km`
+}
+
+function NearbyServices({ building }: { building: BuildingWithPrice }) {
+  const services = [
+    { icon: <GraduationCap size={14} />, label: 'Koulu', distance: building.min_distance_to_school_m },
+    { icon: <Baby size={14} />, label: 'Päiväkoti', distance: building.min_distance_to_kindergarten_m },
+    { icon: <ShoppingCart size={14} />, label: 'Kauppa', distance: building.min_distance_to_grocery_m },
+    { icon: <Bus size={14} />, label: 'Pysäkki', distance: building.min_distance_to_transit_m },
+    { icon: <TreePine size={14} />, label: 'Puisto', distance: building.min_distance_to_park_m },
+    { icon: <Heart size={14} />, label: 'Terveys', distance: building.min_distance_to_health_m },
+    { icon: <Droplets size={14} />, label: 'Ranta', distance: building.min_distance_to_water_m },
+  ].filter(s => s.distance != null)
+
+  if (services.length === 0) return null
+
+  return (
+    <>
+      <div className="flex items-center gap-2 pt-1">
+        <span className="text-muted-foreground"><Info size={14} /></span>
+        <h3 className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Lähipalvelut</h3>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {services.map((s) => (
+          <CompactAttribute
+            key={s.label}
+            icon={s.icon}
+            label={s.label}
+            value={formatDistance(s.distance)!}
+            delay={0}
+          />
+        ))}
+      </div>
+    </>
   )
 }
 

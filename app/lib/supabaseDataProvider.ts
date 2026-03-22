@@ -401,7 +401,10 @@ export class SupabaseDataProvider implements DataProvider {
          footprint_area_sqm, address, estimated_price_per_sqm,
          min_distance_to_water_m, area_id,
          energy_class, apartment_count,
-         ryhti_main_purpose, is_residential`
+         ryhti_main_purpose, is_residential,
+         min_distance_to_school_m, min_distance_to_kindergarten_m,
+         min_distance_to_grocery_m, min_distance_to_transit_m,
+         min_distance_to_park_m, min_distance_to_health_m`
       )
       .eq('id', buildingId)
       .single()
@@ -488,6 +491,12 @@ export class SupabaseDataProvider implements DataProvider {
       neighborhood_factor: dampenedNeighborhoodFactor,
       ryhti_main_purpose: building.ryhti_main_purpose ?? null,
       is_residential: building.is_residential ?? null,
+      min_distance_to_school_m: building.min_distance_to_school_m != null ? Number(building.min_distance_to_school_m) : null,
+      min_distance_to_kindergarten_m: building.min_distance_to_kindergarten_m != null ? Number(building.min_distance_to_kindergarten_m) : null,
+      min_distance_to_grocery_m: building.min_distance_to_grocery_m != null ? Number(building.min_distance_to_grocery_m) : null,
+      min_distance_to_transit_m: building.min_distance_to_transit_m != null ? Number(building.min_distance_to_transit_m) : null,
+      min_distance_to_park_m: building.min_distance_to_park_m != null ? Number(building.min_distance_to_park_m) : null,
+      min_distance_to_health_m: building.min_distance_to_health_m != null ? Number(building.min_distance_to_health_m) : null,
     }
   }
   /**
