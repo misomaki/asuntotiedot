@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3, Home, Warehouse } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
@@ -388,12 +388,6 @@ export default function FAQPage() {
   const [faqRef, faqInView] = useInView()
   const [ctaRef, ctaInView] = useInView()
 
-  // Smooth scroll for anchor links
-  const scrollToSection = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault()
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
   return (
     <div className="min-h-screen bg-[#FFFBF5]">
       {/* Header */}
@@ -445,28 +439,7 @@ export default function FAQPage() {
               yhdeksi interaktiiviseksi kartaksi. Katso minkä tahansa asuinrakennuksen arvioitu
               neliöhinta — ja ymmärrä mistä se koostuu.
             </p>
-            <div
-              className={cn(
-                'mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 transition-all duration-700 delay-500',
-                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-              )}
-            >
-              <Link
-                href="/"
-                className="pointer-events-auto neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink hover:shadow-hard transition-all duration-200"
-              >
-                <MapPin size={16} />
-                Avaa kartta
-              </Link>
-              <a
-                href="#miten-toimii"
-                onClick={(e) => scrollToSection(e, 'miten-toimii')}
-                className="pointer-events-auto group inline-flex items-center gap-1.5 text-sm font-display font-bold text-[#1a1a1a] px-5 py-3 rounded-full border-2 border-[#1a1a1a] bg-white hover:bg-pink-baby transition-colors"
-              >
-                Miten se toimii?
-                <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
-              </a>
-            </div>
+{/* CTA buttons removed — header has Karttanäkymä link */}
           </div>
         </section>
 
@@ -485,11 +458,10 @@ export default function FAQPage() {
                   style={{ transitionDelay: statsInView ? `${i * 120}ms` : '0ms' }}
                 >
                   <div className={cn(
-                    'h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-500',
+                    'h-9 w-9 rounded-lg border-2 border-[#1a1a1a]/15 bg-[#FFFBF5] flex items-center justify-center mb-2 transition-all duration-500',
                     statsInView ? 'scale-100' : 'scale-0',
-                    i === 3 ? 'bg-mint/15' : 'bg-pink-baby'
                   )} style={{ transitionDelay: statsInView ? `${i * 120 + 200}ms` : '0ms' }}>
-                    <Icon size={20} className={i === 3 ? 'text-mint' : 'text-pink-deep'} />
+                    <Icon size={16} strokeWidth={2.2} className="text-[#1a1a1a]" />
                   </div>
                   <div className="text-2xl md:text-3xl font-display font-black text-[#1a1a1a]">
                     <AnimatedCounter
