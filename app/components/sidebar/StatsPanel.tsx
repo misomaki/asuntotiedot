@@ -319,8 +319,9 @@ function EmploymentSection({
   const hasEmployment = data.employed != null && data.unemployed != null
   if (!hasEmployment) return null
 
-  const total = (data.employed ?? 0) + (data.unemployed ?? 0) + (data.students ?? 0) + (data.retirees ?? 0)
-  const unemploymentRate = total > 0 ? ((data.unemployed ?? 0) / ((data.employed ?? 0) + (data.unemployed ?? 0)) * 100) : null
+  const labourForce = (data.employed ?? 0) + (data.unemployed ?? 0)
+  const employmentRate = labourForce > 0 ? ((data.employed ?? 0) / labourForce * 100) : null
+  const unemploymentRate = labourForce > 0 ? ((data.unemployed ?? 0) / labourForce * 100) : null
 
   // Top sectors
   const sectors = employment ? [
@@ -340,12 +341,14 @@ function EmploymentSection({
     <>
       <SectionHeader icon={<Briefcase size={14} />} title="Työllistyminen" />
       <div className="grid grid-cols-2 gap-2">
-        <CompactAttribute
-          icon={<UserCheck size={14} />}
-          label="Työllisiä"
-          value={formatNumber(data.employed ?? 0)}
-          delay={0}
-        />
+        {employmentRate != null && (
+          <CompactAttribute
+            icon={<UserCheck size={14} />}
+            label="Työllisiä"
+            value={`${employmentRate.toFixed(1)}%`}
+            delay={0}
+          />
+        )}
         {unemploymentRate != null && (
           <CompactAttribute
             icon={<Briefcase size={14} />}
