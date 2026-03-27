@@ -1,18 +1,17 @@
-import { Metadata } from 'next'
+'use client'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3 } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Tietoa palvelusta – Neliöt',
-  description: 'Neliöt on ilmainen karttapalvelu suomalaisten asuntojen hinta-arvioille. Tutustu palveluun, algoritmiin ja datalähtöisiin.',
-  keywords: ['neliöt', 'hinta-arvio', 'FAQ', 'asuntohinnat', 'algoritmi', 'karttapalvelu'],
-}
+import { cn } from '@/app/lib/utils'
+import { useInView } from '@/app/hooks/useInView'
+import type { LucideIcon } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Data
 // ---------------------------------------------------------------------------
 
-const FEATURES = [
+const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
   {
     icon: Building2,
     title: '700 000+ rakennusta',
@@ -95,79 +94,256 @@ const FAQ_ITEMS: FAQItem[] = [
   },
 ]
 
+const STATS = [
+  { value: 700000, label: 'Rakennusta', suffix: '+', format: true },
+  { value: 107, label: 'Kuntaa', suffix: '', format: false },
+  { value: 6, label: 'Hintatekijää', suffix: '', format: false },
+  { value: 2024, label: 'Vuoteen asti', suffix: '', format: false },
+]
+
+// ---------------------------------------------------------------------------
+// AnimatedCounter — rolls up from 0 to target when in view
+// ---------------------------------------------------------------------------
+
+function AnimatedCounter({
+  target,
+  suffix = '',
+  format = false,
+  inView,
+}: {
+  target: number
+  suffix?: string
+  format?: boolean
+  inView: boolean
+}) {
+  const [current, setCurrent] = useState(0)
+  const hasAnimated = useRef(false)
+
+  useEffect(() => {
+    if (!inView || hasAnimated.current) return
+    hasAnimated.current = true
+
+    const duration = 1200
+    const steps = 40
+    const stepTime = duration / steps
+    let step = 0
+
+    const timer = setInterval(() => {
+      step++
+      // Ease-out cubic
+      const progress = 1 - Math.pow(1 - step / steps, 3)
+      setCurrent(Math.round(target * progress))
+      if (step >= steps) {
+        setCurrent(target)
+        clearInterval(timer)
+      }
+    }, stepTime)
+
+    return () => clearInterval(timer)
+  }, [inView, target])
+
+  const display = format
+    ? current.toLocaleString('fi-FI')
+    : String(current)
+
+  return (
+    <span className="tabular-nums">
+      {display}{suffix}
+    </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// FAQAccordion — with smooth height animation
+// ---------------------------------------------------------------------------
+
+function FAQAccordion({ item, index, inView }: { item: FAQItem; index: number; inView: boolean }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState(0)
+  const answerLines = Array.isArray(item.answer) ? item.answer : [item.answer]
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(isOpen ? contentRef.current.scrollHeight : 0)
+    }
+  }, [isOpen])
+
+  return (
+    <div
+      className={cn(
+        'rounded-xl border-2 bg-white overflow-hidden transition-all duration-300',
+        isOpen ? 'border-pink shadow-hard-sm' : 'border-[#1a1a1a]/10 hover:border-[#1a1a1a]/20',
+        inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      )}
+      style={{
+        transitionDelay: inView ? `${index * 80}ms` : '0ms',
+        transitionProperty: 'opacity, transform, border-color, box-shadow',
+      }}
+    >
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between cursor-pointer px-4 py-3 md:px-5 md:py-4 text-sm md:text-base font-display font-bold text-[#1a1a1a] text-left"
+      >
+        <span className="pr-4">{item.question}</span>
+        <ChevronDown
+          size={18}
+          className={cn(
+            'flex-shrink-0 text-[#999] transition-transform duration-300',
+            isOpen && 'rotate-180 text-pink'
+          )}
+        />
+      </button>
+      <div
+        className="overflow-hidden transition-[height] duration-300 ease-out"
+        style={{ height }}
+      >
+        <div ref={contentRef} className="px-4 pb-4 md:px-5 md:pb-5 text-sm text-muted-foreground space-y-2 leading-relaxed">
+          {answerLines.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Floating decorative shapes for hero
+// ---------------------------------------------------------------------------
+
+function HeroDecorations() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      {/* Pink circle — top right */}
+      <div className="absolute -top-6 right-[10%] w-20 h-20 rounded-full bg-pink/15 animate-float" />
+      {/* Yellow square — left */}
+      <div className="absolute top-1/3 -left-4 w-14 h-14 rounded-xl bg-yellow/20 border-2 border-yellow/20 animate-float-delayed rotate-12" />
+      {/* Mint pill — bottom right */}
+      <div className="absolute bottom-8 right-[15%] w-24 h-8 rounded-full bg-mint/15 animate-float-slow" />
+      {/* Small pink dot — mid-left */}
+      <div className="absolute top-1/2 left-[8%] w-4 h-4 rounded-full bg-pink/30 animate-bounce-gentle" />
+      {/* Yellow dot — top left */}
+      <div className="absolute top-12 left-[20%] w-3 h-3 rounded-full bg-yellow/40 animate-bounce-gentle" style={{ animationDelay: '1s' }} />
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default function FAQPage() {
+  // Scroll-triggered sections
+  const [heroRef, heroInView] = useInView()
+  const [statsRef, statsInView] = useInView(0.3)
+  const [featuresRef, featuresInView] = useInView()
+  const [citiesRef, citiesInView] = useInView()
+  const [faqRef, faqInView] = useInView()
+  const [ctaRef, ctaInView] = useInView()
+
+  // Smooth scroll for anchor links
+  const scrollToSection = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault()
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
   return (
     <div className="min-h-screen bg-[#FFFBF5]">
       {/* Header */}
-      <header className="border-b-2 border-[#1a1a1a] bg-[#FFFBF5]">
+      <header className="border-b-2 border-[#1a1a1a] bg-[#FFFBF5] sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg text-[#1a1a1a] hover:text-pink transition-colors">
             Neliöt
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-4 py-2 rounded-full border-2 border-[#1a1a1a] hover:bg-pink transition-colors"
-            >
-              <MapPin size={16} />
-              <span className="hidden sm:inline">Karttanäkymä</span>
-              <span className="sm:hidden">Kartta</span>
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="neo-press flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-4 py-2 rounded-full border-2 border-[#1a1a1a] hover:bg-pink transition-colors"
+          >
+            <MapPin size={16} />
+            <span className="hidden sm:inline">Karttanäkymä</span>
+            <span className="sm:hidden">Kartta</span>
+          </Link>
         </div>
       </header>
 
       <main>
         {/* ── Hero section ── */}
-        <section className="relative overflow-hidden border-b-2 border-[#1a1a1a]/10">
-          {/* Subtle gradient bg */}
+        <section ref={heroRef} className="relative overflow-hidden border-b-2 border-[#1a1a1a]/10">
           <div className="absolute inset-0 bg-gradient-to-br from-[#FFFBF5] via-[#fff0f8] to-[#fff8e0] opacity-60" />
-          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center">
-            <p className="text-xs md:text-sm font-mono font-bold text-pink uppercase tracking-wider">
+          <HeroDecorations />
+          <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-24 text-center">
+            <p
+              className={cn(
+                'text-xs md:text-sm font-mono font-bold text-pink uppercase tracking-wider transition-all duration-700',
+                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              )}
+            >
               Ilmainen karttapalvelu
             </p>
-            <h1 className="mt-3 text-3xl md:text-5xl font-display font-black text-[#1a1a1a] leading-tight">
+            <h1
+              className={cn(
+                'mt-3 text-3xl md:text-5xl font-display font-black text-[#1a1a1a] leading-tight transition-all duration-700 delay-150',
+                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              )}
+            >
               Jokaisen suomalaisen<br className="hidden md:block" /> rakennuksen hinta-arvio
             </h1>
-            <p className="mt-4 md:mt-6 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p
+              className={cn(
+                'mt-4 md:mt-6 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed transition-all duration-700 delay-300',
+                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              )}
+            >
               Neliöt yhdistää Tilastokeskuksen kauppahinnat, rakennusrekisterit ja avoimet datalähteet
               yhdeksi interaktiiviseksi kartaksi. Katso minkä tahansa asuinrakennuksen arvioitu
               neliöhinta — ja ymmärrä mistä se koostuu.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div
+              className={cn(
+                'mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 transition-all duration-700 delay-500',
+                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              )}
+            >
               <Link
                 href="/"
-                className="neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink transition-colors"
+                className="neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink hover:shadow-hard transition-all duration-200"
               >
                 <MapPin size={16} />
                 Avaa kartta
               </Link>
               <a
                 href="#miten-toimii"
-                className="inline-flex items-center gap-1.5 text-sm font-display font-bold text-[#1a1a1a] px-5 py-3 rounded-full border-2 border-[#1a1a1a] bg-white hover:bg-pink-baby transition-colors"
+                onClick={(e) => scrollToSection(e, 'miten-toimii')}
+                className="group inline-flex items-center gap-1.5 text-sm font-display font-bold text-[#1a1a1a] px-5 py-3 rounded-full border-2 border-[#1a1a1a] bg-white hover:bg-pink-baby transition-colors"
               >
                 Miten se toimii?
-                <ChevronDown size={14} />
+                <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
               </a>
             </div>
           </div>
         </section>
 
         {/* ── Stats bar ── */}
-        <section className="border-b-2 border-[#1a1a1a]/10 bg-white">
+        <section ref={statsRef} className="border-b-2 border-[#1a1a1a]/10 bg-white">
           <div className="max-w-4xl mx-auto px-4 py-6 md:py-8 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
-            {[
-              { value: '700 000+', label: 'Rakennusta' },
-              { value: '7', label: 'Kaupunkia' },
-              { value: '6', label: 'Hintatekijää' },
-              { value: '2018–2024', label: 'Vuosidata' },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <div className="text-xl md:text-2xl font-display font-black text-[#1a1a1a]">{stat.value}</div>
+            {STATS.map((stat, i) => (
+              <div
+                key={stat.label}
+                className={cn(
+                  'transition-all duration-500',
+                  statsInView ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+                )}
+                style={{ transitionDelay: statsInView ? `${i * 100}ms` : '0ms' }}
+              >
+                <div className="text-xl md:text-2xl font-display font-black text-[#1a1a1a]">
+                  <AnimatedCounter
+                    target={stat.value}
+                    suffix={stat.suffix}
+                    format={stat.format}
+                    inView={statsInView}
+                  />
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground font-body mt-0.5">{stat.label}</div>
               </div>
             ))}
@@ -175,22 +351,41 @@ export default function FAQPage() {
         </section>
 
         {/* ── Features grid ── */}
-        <section id="miten-toimii" className="max-w-4xl mx-auto px-4 py-12 md:py-16 scroll-mt-20">
-          <h2 className="text-xl md:text-2xl font-display font-black text-[#1a1a1a] text-center">
+        <section ref={featuresRef} id="miten-toimii" className="max-w-4xl mx-auto px-4 py-12 md:py-16 scroll-mt-20">
+          <h2
+            className={cn(
+              'text-xl md:text-2xl font-display font-black text-[#1a1a1a] text-center transition-all duration-600',
+              featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            )}
+          >
             Mitä Neliöt tekee?
           </h2>
-          <p className="mt-2 text-sm md:text-base text-muted-foreground text-center max-w-xl mx-auto">
+          <p
+            className={cn(
+              'mt-2 text-sm md:text-base text-muted-foreground text-center max-w-xl mx-auto transition-all duration-600 delay-100',
+              featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            )}
+          >
             Avoimen datan pohjalta rakennettu työkalu asuntojen hintatason ymmärtämiseen.
           </p>
           <div className="mt-8 md:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {FEATURES.map((feature) => {
+            {FEATURES.map((feature, i) => {
               const Icon = feature.icon
               return (
                 <div
                   key={feature.title}
-                  className="rounded-xl border-2 border-[#1a1a1a]/10 bg-white p-5 hover:border-pink hover:shadow-hard-sm transition-all group"
+                  className={cn(
+                    'neo-lift rounded-xl border-2 border-[#1a1a1a]/10 bg-white p-5 cursor-default',
+                    'hover:border-pink hover:shadow-hard-sm transition-all duration-300',
+                    'group',
+                    featuresInView ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'
+                  )}
+                  style={{
+                    transitionDelay: featuresInView ? `${200 + i * 80}ms` : '0ms',
+                    transitionProperty: 'opacity, transform, border-color, box-shadow',
+                  }}
                 >
-                  <div className="h-9 w-9 rounded-lg bg-pink-baby flex items-center justify-center group-hover:bg-pink/20 transition-colors">
+                  <div className="h-9 w-9 rounded-lg bg-pink-baby flex items-center justify-center group-hover:bg-pink/20 group-hover:scale-110 transition-all duration-200">
                     <Icon size={18} className="text-[#1a1a1a]" />
                   </div>
                   <h3 className="mt-3 text-sm font-display font-bold text-[#1a1a1a]">{feature.title}</h3>
@@ -202,16 +397,30 @@ export default function FAQPage() {
         </section>
 
         {/* ── Cities ── */}
-        <section className="border-y-2 border-[#1a1a1a]/10 bg-white">
+        <section ref={citiesRef} className="border-y-2 border-[#1a1a1a]/10 bg-white">
           <div className="max-w-4xl mx-auto px-4 py-10 md:py-14">
-            <h2 className="text-xl md:text-2xl font-display font-black text-[#1a1a1a] text-center">
+            <h2
+              className={cn(
+                'text-xl md:text-2xl font-display font-black text-[#1a1a1a] text-center transition-all duration-600',
+                citiesInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              )}
+            >
               Mukana olevat kaupungit
             </h2>
             <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2 md:gap-3">
-              {CITIES.map((city) => (
+              {CITIES.map((city, i) => (
                 <span
                   key={city.name}
-                  className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#1a1a1a]/10 bg-[#FFFBF5] px-4 py-2 text-sm font-display font-bold text-[#1a1a1a]"
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border-2 border-[#1a1a1a]/10 bg-[#FFFBF5] px-4 py-2 text-sm font-display font-bold text-[#1a1a1a]',
+                    'hover:border-pink hover:bg-pink-pale hover:shadow-hard-sm transition-all duration-200 cursor-default',
+                    citiesInView ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                  )}
+                  style={{
+                    transitionDelay: citiesInView ? `${100 + i * 60}ms` : '0ms',
+                    transitionDuration: '400ms',
+                    transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  }}
                 >
                   <MapPin size={13} className="text-pink" />
                   {city.name}
@@ -223,31 +432,52 @@ export default function FAQPage() {
                 </span>
               ))}
             </div>
-            <p className="mt-4 text-xs text-muted-foreground text-center">
+            <p
+              className={cn(
+                'mt-4 text-xs text-muted-foreground text-center transition-all duration-500 delay-700',
+                citiesInView ? 'opacity-100' : 'opacity-0'
+              )}
+            >
               Laajennamme kattavuutta jatkuvasti.
             </p>
           </div>
         </section>
 
         {/* ── FAQ accordion ── */}
-        <section className="max-w-3xl mx-auto px-4 py-12 md:py-16">
-          <h2 className="text-xl md:text-2xl font-display font-black text-[#1a1a1a] text-center">
+        <section ref={faqRef} className="max-w-3xl mx-auto px-4 py-12 md:py-16">
+          <h2
+            className={cn(
+              'text-xl md:text-2xl font-display font-black text-[#1a1a1a] text-center transition-all duration-600',
+              faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            )}
+          >
             Usein kysytyt kysymykset
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground text-center">
+          <p
+            className={cn(
+              'mt-2 text-sm text-muted-foreground text-center transition-all duration-600 delay-100',
+              faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            )}
+          >
             Miten hinta-arviot lasketaan ja mistä data tulee.
           </p>
 
           <div className="mt-8 md:mt-10 space-y-2.5">
-            {FAQ_ITEMS.map((item) => (
-              <FAQAccordion key={item.question} item={item} />
+            {FAQ_ITEMS.map((item, i) => (
+              <FAQAccordion key={item.question} item={item} index={i} inView={faqInView} />
             ))}
           </div>
         </section>
 
         {/* ── CTA ── */}
-        <section className="max-w-3xl mx-auto px-4 pb-12 md:pb-16">
-          <div className="rounded-xl border-2 border-[#1a1a1a] bg-pink-baby p-6 md:p-10 text-center shadow-hard-sm">
+        <section ref={ctaRef} className="max-w-3xl mx-auto px-4 pb-12 md:pb-16">
+          <div
+            className={cn(
+              'rounded-xl border-2 border-[#1a1a1a] bg-pink-baby p-6 md:p-10 text-center shadow-hard-sm',
+              'transition-all duration-700',
+              ctaInView ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'
+            )}
+          >
             <h2 className="text-lg md:text-xl font-display font-bold text-[#1a1a1a]">
               Kokeile itse
             </h2>
@@ -257,7 +487,7 @@ export default function FAQPage() {
             <div className="mt-5">
               <Link
                 href="/"
-                className="neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink transition-colors"
+                className="neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink hover:shadow-hard transition-all duration-200"
               >
                 <MapPin size={16} />
                 Avaa kartta
@@ -274,30 +504,5 @@ export default function FAQPage() {
         </div>
       </footer>
     </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Components
-// ---------------------------------------------------------------------------
-
-function FAQAccordion({ item }: { item: FAQItem }) {
-  const answerLines = Array.isArray(item.answer) ? item.answer : [item.answer]
-
-  return (
-    <details className="group rounded-xl border-2 border-[#1a1a1a]/10 bg-white overflow-hidden transition-all hover:border-[#1a1a1a]/20">
-      <summary className="flex items-center justify-between cursor-pointer px-4 py-3 md:px-5 md:py-4 text-sm md:text-base font-display font-bold text-[#1a1a1a] select-none list-none [&::-webkit-details-marker]:hidden">
-        <span className="pr-4">{item.question}</span>
-        <ChevronDown
-          size={18}
-          className="flex-shrink-0 text-[#999] transition-transform duration-200 group-open:rotate-180"
-        />
-      </summary>
-      <div className="px-4 pb-4 md:px-5 md:pb-5 text-sm text-muted-foreground space-y-2 leading-relaxed">
-        {answerLines.map((line, i) => (
-          <p key={i}>{line}</p>
-        ))}
-      </div>
-    </details>
   )
 }

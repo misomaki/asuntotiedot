@@ -128,16 +128,15 @@ export function getDynamicScale(minPrice: number, maxPrice: number): {
   const max = roundTo(maxPrice, step)
   const span = max - min || step
 
-  // 6 breaks = 7 color bands, sampled from the 13-color PRICE_COLORS palette
-  const numBreaks = 6
+  // 10 breaks = 11 color bands, sampled from the 13-color PRICE_COLORS palette
+  const numBreaks = 10
   const breaks: number[] = []
   for (let i = 1; i <= numBreaks; i++) {
     breaks.push(roundTo(min + (span * i) / (numBreaks + 1), step))
   }
 
-  // Sample 7 colors from the subdued end of the palette (indices 0–9).
-  // Skip the deep plum end (10–12) — municipality overview should feel calm.
-  const maxPaletteIdx = 9
+  // Sample colors from the full palette (0–12) for clear visual range
+  const maxPaletteIdx = PRICE_COLORS.length - 1
   const numColors = numBreaks + 1
   const colors: string[] = []
   for (let i = 0; i < numColors; i++) {
@@ -157,9 +156,12 @@ export function getDynamicScale(minPrice: number, maxPrice: number): {
 }
 
 /**
- * Generate quantile-based color breaks from actual price values.
- * Each color band gets roughly the same number of municipalities,
- * maximizing visual contrast even when prices cluster tightly.
+ * Generate hybrid quantile+linear breaks from actual price values.
+ *
+ * Lower half: quantile breaks (equal-count bins) to spread out
+ * the many low-price municipalities.
+ * Upper half: finer linear breaks so the high-price range (where most
+ * residential buildings cluster) gets more color distinction.
  */
 export function getQuantileScale(sortedValues: number[]): {
   breaks: number[]
@@ -168,25 +170,49 @@ export function getQuantileScale(sortedValues: number[]): {
 } | null {
   if (sortedValues.length < 2) return null
 
-  const numBreaks = 6
-  const numColors = numBreaks + 1 // 7 bands
+  // Split: 4 quantile breaks for the lower half, 6 linear breaks for the upper half
+  const quantileCount = 4
+  const linearCount = 6
+  // --- Lower half: quantile breaks ---
+  const medianIdx = Math.floor(sortedValues.length / 2)
+  const medianValue = sortedValues[medianIdx]
+  const rawBreaks: number[] = []
 
-  // Compute quantile breaks (roughly equal-count bins)
-  const breaks: number[] = []
-  for (let i = 1; i <= numBreaks; i++) {
-    const idx = Math.floor((i / numColors) * sortedValues.length)
+  for (let i = 1; i <= quantileCount; i++) {
+    const idx = Math.floor((i / (quantileCount + 1)) * medianIdx)
     const raw = sortedValues[Math.min(idx, sortedValues.length - 1)]
-    // Round to nice numbers for labels
+    rawBreaks.push(raw)
+  }
+
+  // --- Upper half: linear breaks from median to max ---
+  const maxValue = sortedValues[sortedValues.length - 1]
+  const upperSpan = maxValue - medianValue
+  for (let i = 1; i <= linearCount; i++) {
+    rawBreaks.push(medianValue + (upperSpan * i) / (linearCount + 1))
+  }
+
+  // Round to nice numbers and deduplicate
+  const breaks: number[] = []
+  for (const raw of rawBreaks) {
     const step = raw > 5000 ? 500 : raw > 2000 ? 250 : 100
     const rounded = Math.round(raw / step) * step
-    // Avoid duplicate breaks
     if (breaks.length === 0 || rounded > breaks[breaks.length - 1]) {
       breaks.push(rounded)
     }
   }
 
-  // If we lost breaks to deduplication, fall back to linear
-  if (breaks.length < 3) return null
+  // If we lost too many breaks to deduplication, fall back to linear
+  if (breaks.length < 4) return null
+
+  // Build labels that show actual data extremes in first/last band
+  const fmt = formatNumber
+  const actualMin = Math.round(sortedValues[0])
+  const actualMax = Math.round(sortedValues[sortedValues.length - 1])
+  const labels: string[] = [
+    `${fmt(actualMin)}\u2013${fmt(breaks[0])}`,
+    ...breaks.slice(0, -1).map((b, i) => `${fmt(b)}\u2013${fmt(breaks[i + 1])}`),
+    `${fmt(breaks[breaks.length - 1])}\u2013${fmt(actualMax)}`,
+  ]
 
   // Sample colors from the FULL palette (0–12) for maximum contrast
   const colors: string[] = []
@@ -196,14 +222,6 @@ export function getQuantileScale(sortedValues: number[]): {
     const idx = Math.round((i / (numBands - 1)) * maxIdx)
     colors.push(PRICE_COLORS[idx])
   }
-
-  // Labels
-  const fmt = formatNumber
-  const labels: string[] = [
-    `< ${fmt(breaks[0])}`,
-    ...breaks.slice(0, -1).map((b, i) => `${fmt(b)}\u2013${fmt(breaks[i + 1])}`),
-    `> ${fmt(breaks[breaks.length - 1])}`,
-  ]
 
   return { breaks, colors, labels }
 }
