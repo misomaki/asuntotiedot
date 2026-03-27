@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { AreaWithStats, PriceEstimate, PropertyType } from '@/app/types'
 import {
   formatPricePerSqm,
@@ -24,6 +24,8 @@ import {
   Briefcase,
   Home,
   TrendingUp,
+  TrendingDown,
+  Minus,
   Baby,
   UserCheck,
 } from 'lucide-react'
@@ -35,6 +37,7 @@ import {
 interface StatsPanelProps {
   data: AreaWithStats | null
   isLoading: boolean
+  year: number
 }
 
 // ---------------------------------------------------------------------------
@@ -442,8 +445,33 @@ function StatsPanelSkeleton() {
  *   6. Walk score
  *   7. Trend chart
  */
-export function StatsPanel({ data, isLoading }: StatsPanelProps) {
+export function StatsPanel({ data, isLoading, year }: StatsPanelProps) {
   const [showPriceBreakdown, setShowPriceBreakdown] = useState(false)
+
+  // Fetch previous year's price for year-over-year indicator
+  const [prevYearPrice, setPrevYearPrice] = useState<number | null>(null)
+  useEffect(() => {
+    setPrevYearPrice(null)
+    if (!data?.area_code || year <= 2009) return
+
+    const controller = new AbortController()
+    fetch(`/api/areas/${encodeURIComponent(data.area_code)}?year=${year - 1}`, {
+      signal: controller.signal,
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((prev: AreaWithStats | null) => {
+        if (!prev?.prices?.length) return
+        const prevPrimary =
+          prev.prices.find((p) => p.property_type === 'kerrostalo') ??
+          prev.prices.find((p) => p.property_type === 'rivitalo') ??
+          prev.prices[0]
+        const val = prevPrimary?.price_per_sqm_median ?? prevPrimary?.price_per_sqm_avg ?? null
+        if (val != null && val > 0) setPrevYearPrice(Math.round(val))
+      })
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [data?.area_code, year])
 
   if (isLoading) return <StatsPanelSkeleton />
 
@@ -497,9 +525,37 @@ export function StatsPanel({ data, isLoading }: StatsPanelProps) {
         {primaryPriceValue ? (
           <div className="px-4 pt-3 pb-2.5">
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Keskihinta</div>
-            <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
-              <AnimatedNumber value={primaryPriceValue} />
-              <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
+            <div className="flex items-baseline gap-2 mt-0.5">
+              <div className="text-2xl font-bold text-foreground tabular-nums">
+                <AnimatedNumber value={primaryPriceValue} />
+                <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
+              </div>
+              {prevYearPrice != null && primaryPriceValue !== prevYearPrice && (() => {
+                const diff = primaryPriceValue - prevYearPrice
+                const pct = ((diff / prevYearPrice) * 100)
+                const isUp = diff > 0
+                return (
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-0.5 text-[11px] font-mono font-medium tabular-nums rounded-full px-1.5 py-0.5',
+                      isUp ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50',
+                    )}
+                    title={`${year - 1}: ${formatNumber(prevYearPrice)} €/m²`}
+                  >
+                    {isUp ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                    {isUp ? '+' : ''}{pct.toFixed(1)}%
+                  </span>
+                )
+              })()}
+              {prevYearPrice != null && primaryPriceValue === prevYearPrice && (
+                <span
+                  className="inline-flex items-center gap-0.5 text-[11px] font-mono font-medium tabular-nums rounded-full px-1.5 py-0.5 text-[#999] bg-[#f0efed]"
+                  title={`${year - 1}: ${formatNumber(prevYearPrice)} €/m²`}
+                >
+                  <Minus size={11} />
+                  0%
+                </span>
+              )}
             </div>
           </div>
         ) : (

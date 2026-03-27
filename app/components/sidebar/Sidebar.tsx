@@ -105,7 +105,7 @@ export function Sidebar() {
     }
 
     // Normal mode: show stats panel
-    return <StatsPanel data={data} isLoading={isLoading} />
+    return <StatsPanel data={data} isLoading={isLoading} year={filters.year} />
   }
 
   // ---- Floating building card (both mobile and desktop) ----
