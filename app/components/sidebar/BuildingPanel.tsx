@@ -353,7 +353,7 @@ const FACTOR_TOOLTIPS: Record<string, string> = {
   'Kerroskerroin': 'Kerrosmäärän vaikutus. Korkeat kerrostalot ja yksikerroksiset rivitalot saavat pienen lisän.',
   'Kokokerroin': 'Rakennuksen pohja-alan vaikutus hintaan.',
   'Vesikerroin': 'Vesistön läheisyyden vaikutus. Alle 200 m järvestä tai merestä nostaa hintaa.',
-  'Naapurustokerroin': 'Alueen hintatason poikkeama perushinnasta, laskettu Etuovi.fi-ilmoituksista.',
+  'Naapurustokerroin': 'Alueen hintatason poikkeama perushinnasta, laskettu toteutuneiden kauppahintojen perusteella.',
 }
 
 function FactorRow({

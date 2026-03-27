@@ -11,7 +11,7 @@ export interface CityConfig {
 
 export const CITIES: CityConfig[] = [
   { name: 'Helsinki metro', postalPrefixes: ['00', '01', '02'], bbox: [24.50, 60.05, 25.30, 60.35] },
-  { name: 'Tampere', postalPrefixes: ['33', '34'], bbox: [23.55, 61.38, 24.00, 61.60] },
+  { name: 'Tampere', postalPrefixes: ['33', '34', '37'], bbox: [23.42, 61.38, 24.00, 61.60] },
   { name: 'Turku', postalPrefixes: ['20', '21'], bbox: [22.05, 60.35, 22.50, 60.55] },
   { name: 'Oulu', postalPrefixes: ['90'], bbox: [25.25, 64.85, 25.70, 65.15] },
   { name: 'Jyväskylä', postalPrefixes: ['40'], bbox: [25.55, 62.15, 25.95, 62.35] },

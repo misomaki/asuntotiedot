@@ -115,15 +115,24 @@ export async function GET(request: NextRequest) {
       priceByName.set(row.municipality, Number(row.median_price))
     }
 
-    // Include ALL municipalities — priced ones get their color, others get neutral fill
-    const features = boundaries.map((f) => ({
-      type: 'Feature' as const,
-      properties: {
-        municipality: f.properties.nimi,
-        price_per_sqm_avg: priceByName.get(f.properties.nimi) ?? null,
-      },
-      geometry: f.geometry,
-    }))
+    // Log municipalities with price data for debugging name mismatches
+    const wfsNames = new Set(boundaries.map((f) => f.properties.nimi))
+    const unmatchedPrices = [...priceByName.keys()].filter((name) => !wfsNames.has(name))
+    if (unmatchedPrices.length > 0) {
+      console.warn('Municipality price data with no WFS boundary match:', unmatchedPrices)
+    }
+
+    // Only include municipalities that have price data — uncovered areas show as basemap
+    const features = boundaries
+      .filter((f) => priceByName.has(f.properties.nimi))
+      .map((f) => ({
+        type: 'Feature' as const,
+        properties: {
+          municipality: f.properties.nimi,
+          price_per_sqm_avg: priceByName.get(f.properties.nimi) ?? null,
+        },
+        geometry: f.geometry,
+      }))
 
     // Compute price range from municipalities that have data
     const pricedValues = [...priceByName.values()]

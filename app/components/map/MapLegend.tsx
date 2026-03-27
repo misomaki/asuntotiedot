@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { PRICE_COLORS, PRICE_LABELS, BUILDING_OUTLINE_COLORS } from '@/app/lib/colorScales'
+import { cn } from '@/app/lib/utils'
 
 /** Dynamic scale from getDynamicScale() */
 interface DynamicScale {
@@ -16,6 +17,8 @@ interface MapLegendProps {
   municipalityScale?: DynamicScale | null
   /** Current map zoom level */
   zoom?: number
+  /** Hide on mobile (e.g. when sidebar sheet is open) */
+  hiddenOnMobile?: boolean
 }
 
 /** Zoom threshold: below this we show municipality legend */
@@ -26,7 +29,7 @@ const MUNICIPALITY_ZOOM_MAX = 9.5
  * Switches between municipality-level and building-level scales based on zoom.
  * Crossfades between the two scales for a smooth transition.
  */
-export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendProps) {
+export default function MapLegend({ municipalityScale, zoom = 12, hiddenOnMobile }: MapLegendProps) {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const showMunicipalityScale = zoom < MUNICIPALITY_ZOOM_MAX && municipalityScale
@@ -51,7 +54,10 @@ export default function MapLegend({ municipalityScale, zoom = 12 }: MapLegendPro
   const title = showMunicipalityScale ? 'Kuntamediaani €/m²' : 'Hinta €/m²'
 
   return (
-    <div className="absolute bottom-16 right-3 md:bottom-6 md:right-6 z-40">
+    <div className={cn(
+      'absolute bottom-16 right-3 md:bottom-6 md:right-6 z-40 transition-opacity duration-200',
+      hiddenOnMobile && 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'
+    )}>
       <div className="neo-lift bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
         {/* Header / toggle button */}
         <button

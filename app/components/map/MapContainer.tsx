@@ -77,6 +77,7 @@ export default function MapContainer() {
     isCompareMode,
     filters,
     setIsLoading,
+    isSidebarOpen,
     setIsSidebarOpen,
     setSelectedBuilding,
     setFlyTo,
@@ -722,29 +723,32 @@ export default function MapContainer() {
         />
       )}
 
-      {/* Legend — switches between municipality and building scale based on zoom */}
+      {/* Legend — switches between municipality and building scale based on zoom.
+          Hidden on mobile when sidebar sheet is open (to avoid overlap). */}
       <MapLegend
         municipalityScale={municipalityScale}
         zoom={viewport.zoom}
+        hiddenOnMobile={isSidebarOpen && (!!selectedArea || isCompareMode)}
       />
 
-      {/* Zoom hint — bottom-center, fades in/out smoothly */}
+      {/* Zoom hint — bottom-center, above legend on mobile */}
       <div
-        className="absolute bottom-24 md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
+        className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
         style={{ opacity: showZoomHint ? 1 : 0, transform: `translateX(-50%) translateY(${showZoomHint ? '0' : '8px'})` }}
       >
-        <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
+        <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
           <span className="inline-block h-2 w-2 rounded-full bg-pink animate-pulse" />
-          Lähennä nähdäksesi rakennukset
+          <span className="hidden sm:inline">Lähennä nähdäksesi rakennukset</span>
+          <span className="sm:hidden">Lähennä lähemmäs</span>
         </div>
       </div>
 
-      {/* Building tile loading indicator — bottom-center, fades in/out */}
+      {/* Building tile loading indicator — bottom-center */}
       <div
-        className="absolute bottom-24 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
         style={{ opacity: showBuildings && buildingsLoading && !dataLoading ? 1 : 0 }}
       >
-        <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
+        <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
           <span className="relative inline-block h-2.5 w-2.5 rounded-full border-2 border-pink border-t-transparent animate-spin" />
           <span className="relative">Ladataan rakennuksia...</span>
@@ -753,20 +757,20 @@ export default function MapContainer() {
 
       {/* Compare mode indicator — bottom-center */}
       {isCompareMode && !selectedArea && comparedArea && (
-        <div className="absolute bottom-24 md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
-          <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
+        <div className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
+          <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
             <div className="h-3 w-3 rounded-full bg-pink animate-pulse" />
             Valitse toinen alue vertailuun
           </div>
         </div>
       )}
 
-      {/* Loading indicator — bottom-center, fades in/out */}
+      {/* Loading indicator — bottom-center */}
       <div
-        className="absolute bottom-24 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
         style={{ opacity: dataLoading ? 1 : 0 }}
       >
-        <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-4 py-2 text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
+        <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
           <span className="relative">Ladataan aluedataa...</span>
         </div>

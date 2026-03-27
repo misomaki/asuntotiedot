@@ -405,7 +405,7 @@ export function Header() {
                     'absolute top-full left-0 right-0 mt-1.5 z-50',
                     'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                     'shadow-hard overflow-hidden',
-                    !isDesktop && 'animate-fade-in'
+                    !isDesktop && 'animate-fade-in max-h-[60vh] overflow-y-auto'
                   )}
                 >
                   {showNoResults ? (

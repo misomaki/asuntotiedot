@@ -13,7 +13,7 @@ import { PAAVO_WFS_URL, CITIES, isTargetPostalCode } from './config'
 /** Whether to import ALL Finnish postal areas (not just target cities) */
 const IMPORT_ALL = process.argv.includes('--all')
 
-/** Municipality code → name mapping (loaded at runtime) */
+/** Municipality code → name mapping (fallback if API fails) */
 let MUNICIPALITY_NAMES: Record<string, string> = {
   '049': 'Espoo',
   '091': 'Helsinki',
@@ -30,6 +30,27 @@ let MUNICIPALITY_NAMES: Record<string, string> = {
   '106': 'Hyvinkää',
   '753': 'Sipoo',
   '257': 'Kirkkonummi',
+  // Newer target cities + their satellite municipalities
+  '179': 'Jyväskylä',
+  '500': 'Muurame',
+  '297': 'Kuopio',
+  '749': 'Siilinjärvi',
+  '398': 'Lahti',
+  '098': 'Hollola',
+  '532': 'Nastola',
+  // Tampere area satellites
+  '536': 'Nokia',
+  '211': 'Kangasala',
+  '418': 'Lempäälä',
+  '980': 'Ylöjärvi',
+  '604': 'Pirkkala',
+  // Turku area satellites
+  '202': 'Kaarina',
+  '680': 'Raisio',
+  '529': 'Naantali',
+  '423': 'Lieto',
+  // Oulu area satellites
+  '244': 'Kempele',
 }
 
 /** Fetch all Finnish municipality names from Statistics Finland classification API */
@@ -421,9 +442,11 @@ async function importAreas(features: PaavoFeature[]) {
 async function main() {
   console.log('=== Paavo Areas Import ===\n')
 
+  // Always fetch full municipality names to avoid "Kunta XXX" fallbacks
+  MUNICIPALITY_NAMES = await fetchMunicipalityNames()
+
   if (IMPORT_ALL) {
     console.log('MODE: Importing ALL Finnish postal areas (--all flag)')
-    MUNICIPALITY_NAMES = await fetchMunicipalityNames()
   } else {
     console.log('MODE: Importing target cities only (use --all for all Finland)')
   }

@@ -128,8 +128,10 @@ export function Sidebar() {
           <div
             className={cn(
               'bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm',
-              'max-h-[calc(100vh-8rem)] overflow-y-auto',
-              'p-5',
+              'overflow-y-auto',
+              isDesktop
+                ? 'max-h-[calc(100vh-8rem)] p-5'
+                : 'max-h-[calc(100vh-5rem)] p-4',
             )}
           >
             <BuildingPanel />

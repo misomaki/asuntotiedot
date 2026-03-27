@@ -25,13 +25,13 @@ export default function MapControls() {
   }, [setViewport])
 
   return (
-    <div className="absolute top-14 md:top-[4.5rem] right-3 md:right-4 z-40 flex flex-col gap-2">
+    <div className="absolute top-[4.25rem] md:top-[4.5rem] right-2 md:right-4 z-40 flex flex-col gap-2">
       {/* Reset view */}
       <button
         onClick={handleResetView}
         aria-label="Palauta oletusnäkymä"
         title="Palauta oletusnäkymä"
-        className="neo-press bg-[#FFFBF5] border-2 border-[#1a1a1a] flex h-11 w-11 items-center justify-center rounded-lg text-[#666] hover:text-[#1a1a1a] shadow-hard-sm"
+        className="neo-press bg-[#FFFBF5] border-2 border-[#1a1a1a] flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-lg text-[#666] hover:text-[#1a1a1a] shadow-hard-sm"
       >
         <RotateCcw className="h-4 w-4" />
       </button>

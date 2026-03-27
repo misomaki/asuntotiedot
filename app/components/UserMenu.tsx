@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, LogOut, ChevronDown } from 'lucide-react'
+import { User, LogOut, ChevronDown, HelpCircle } from 'lucide-react'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { cn } from '@/app/lib/utils'
@@ -29,23 +29,82 @@ export function UserMenu() {
 
   if (loading) return null
 
-  // Not logged in — show login button
+  // Menu links shared between logged-in and logged-out states
+  const menuLinks = (
+    <button
+      type="button"
+      onClick={() => { setIsOpen(false); router.push('/faq') }}
+      className={cn(
+        'w-full px-3 text-left',
+        'flex items-center gap-2',
+        isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+        'text-[#1a1a1a] font-body',
+        'hover:bg-pink-baby transition-colors',
+        'animate-slide-up'
+      )}
+      style={{ animationDelay: '0ms', animationFillMode: 'both' }}
+    >
+      <HelpCircle size={isDesktop ? 12 : 14} className="text-[#999]" />
+      Tietoa palvelusta
+    </button>
+  )
+
+  // Not logged in — show menu button with dropdown
   if (!user) {
     return (
-      <button
-        type="button"
-        onClick={() => router.push('/login')}
-        className={cn(
-          'neo-press flex-shrink-0',
-          'h-10 md:h-9 px-3 md:px-3 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
-          'text-sm md:text-xs font-mono font-bold text-[#1a1a1a]',
-          'shadow-hard-sm hover:bg-pink-baby transition-colors',
-          'flex items-center gap-1.5'
+      <div ref={menuRef} className="relative flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label="Valikko"
+          aria-expanded={isOpen}
+          className={cn(
+            'neo-press',
+            'h-10 md:h-9 px-3 md:px-3 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
+            'text-sm md:text-xs font-mono font-bold text-[#1a1a1a]',
+            'shadow-hard-sm hover:bg-pink-baby transition-colors',
+            'flex items-center gap-1.5',
+            'cursor-pointer select-none'
+          )}
+        >
+          <User size={isDesktop ? 13 : 16} />
+          <span className="hidden md:inline">Kirjaudu</span>
+          <ChevronDown
+            size={isDesktop ? 11 : 14}
+            className={cn('transition-transform', isOpen && 'rotate-180')}
+          />
+        </button>
+
+        {isOpen && (
+          <div
+            className={cn(
+              'absolute top-full right-0 mt-1.5 z-50',
+              'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
+              'shadow-hard overflow-hidden',
+              'min-w-[200px] md:min-w-[180px]'
+            )}
+          >
+            {menuLinks}
+            <div className="border-t border-[#e5e5e5]" />
+            <button
+              type="button"
+              onClick={() => { setIsOpen(false); router.push('/login') }}
+              className={cn(
+                'w-full px-3 text-left',
+                'flex items-center gap-2',
+                isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                'text-[#1a1a1a] font-body',
+                'hover:bg-pink-baby transition-colors',
+                'animate-slide-up'
+              )}
+              style={{ animationDelay: '40ms', animationFillMode: 'both' }}
+            >
+              <User size={isDesktop ? 12 : 14} className="text-[#999]" />
+              Kirjaudu sisään
+            </button>
+          </div>
         )}
-      >
-        <User size={isDesktop ? 13 : 16} />
-        <span className="hidden md:inline">Kirjaudu</span>
-      </button>
+      </div>
     )
   }
 
@@ -110,6 +169,10 @@ export function UserMenu() {
             )}
           </div>
 
+          {/* Navigation links */}
+          {menuLinks}
+          <div className="border-t border-[#e5e5e5]" />
+
           {/* Sign out */}
           <button
             type="button"
@@ -126,7 +189,7 @@ export function UserMenu() {
               'hover:bg-pink-baby transition-colors',
               'animate-slide-up'
             )}
-            style={{ animationDelay: '20ms', animationFillMode: 'both' }}
+            style={{ animationDelay: '40ms', animationFillMode: 'both' }}
           >
             <LogOut size={isDesktop ? 12 : 14} className="text-[#999]" />
             Kirjaudu ulos
