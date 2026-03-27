@@ -14,7 +14,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
-import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression } from '@/app/lib/colorScales'
+import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression, getQuantileScale } from '@/app/lib/colorScales'
 import { formatPricePerSqm, getBuildingTypeLabel } from '@/app/lib/formatters'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
@@ -89,7 +89,7 @@ export default function MapContainer() {
   )
 
   // Fetch municipality polygons for zoomed-out overview
-  const { geojson: municipalityGeojson, priceRange: municipalityPriceRange } = useMunicipalityData(
+  const { geojson: municipalityGeojson, priceRange: municipalityPriceRange, priceValues: municipalityPriceValues } = useMunicipalityData(
     filters.year,
     filters.propertyType
   )
@@ -174,11 +174,18 @@ export default function MapContainer() {
     []
   )
 
-  // Dynamic color scale for municipality layer based on actual price range
+  // Dynamic color scale for municipality layer — prefer quantile breaks for
+  // better contrast, fall back to linear if insufficient data
   const municipalityScale = useMemo(() => {
+    // Try quantile-based scale first (equal-count bins)
+    if (municipalityPriceValues.length >= 4) {
+      const quantile = getQuantileScale(municipalityPriceValues)
+      if (quantile) return quantile
+    }
+    // Fallback to linear scale
     if (!municipalityPriceRange) return null
     return getDynamicScale(municipalityPriceRange.min, municipalityPriceRange.max)
-  }, [municipalityPriceRange])
+  }, [municipalityPriceValues, municipalityPriceRange])
 
   const municipalityColorExpression = useMemo(
     (): ExpressionSpecification => {

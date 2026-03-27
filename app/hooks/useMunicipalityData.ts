@@ -14,6 +14,8 @@ export interface PriceRange {
 interface UseMunicipalityDataReturn {
   geojson: MunicipalityGeoJSON | null
   priceRange: PriceRange | null
+  /** All non-null municipality prices for quantile-based color scaling */
+  priceValues: number[]
   isLoading: boolean
 }
 
@@ -27,6 +29,7 @@ export function useMunicipalityData(
 ): UseMunicipalityDataReturn {
   const [geojson, setGeojson] = useState<MunicipalityGeoJSON | null>(null)
   const [priceRange, setPriceRange] = useState<PriceRange | null>(null)
+  const [priceValues, setPriceValues] = useState<number[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -60,6 +63,14 @@ export function useMunicipalityData(
         const range = data.priceRange as PriceRange | undefined
         setPriceRange(range ?? null)
 
+        // Extract individual prices for quantile-based scaling
+        const prices: number[] = []
+        for (const f of data.features ?? []) {
+          const p = f.properties?.price_per_sqm_avg
+          if (p != null && p > 0) prices.push(Number(p))
+        }
+        setPriceValues(prices.sort((a: number, b: number) => a - b))
+
         // Set geojson (features only — standard GeoJSON)
         setGeojson({
           type: 'FeatureCollection',
@@ -80,5 +91,5 @@ export function useMunicipalityData(
     }
   }, [year, propertyType])
 
-  return { geojson, priceRange, isLoading }
+  return { geojson, priceRange, priceValues, isLoading }
 }
