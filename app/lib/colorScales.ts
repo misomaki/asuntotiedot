@@ -156,32 +156,83 @@ export function getDynamicScale(minPrice: number, maxPrice: number): {
   return { breaks, colors, labels }
 }
 
+/**
+ * Generate quantile-based color breaks from actual price values.
+ * Each color band gets roughly the same number of municipalities,
+ * maximizing visual contrast even when prices cluster tightly.
+ */
+export function getQuantileScale(sortedValues: number[]): {
+  breaks: number[]
+  colors: string[]
+  labels: string[]
+} | null {
+  if (sortedValues.length < 2) return null
+
+  const numBreaks = 6
+  const numColors = numBreaks + 1 // 7 bands
+
+  // Compute quantile breaks (roughly equal-count bins)
+  const breaks: number[] = []
+  for (let i = 1; i <= numBreaks; i++) {
+    const idx = Math.floor((i / numColors) * sortedValues.length)
+    const raw = sortedValues[Math.min(idx, sortedValues.length - 1)]
+    // Round to nice numbers for labels
+    const step = raw > 5000 ? 500 : raw > 2000 ? 250 : 100
+    const rounded = Math.round(raw / step) * step
+    // Avoid duplicate breaks
+    if (breaks.length === 0 || rounded > breaks[breaks.length - 1]) {
+      breaks.push(rounded)
+    }
+  }
+
+  // If we lost breaks to deduplication, fall back to linear
+  if (breaks.length < 3) return null
+
+  // Sample colors from the FULL palette (0–12) for maximum contrast
+  const colors: string[] = []
+  const maxIdx = PRICE_COLORS.length - 1
+  const numBands = breaks.length + 1
+  for (let i = 0; i < numBands; i++) {
+    const idx = Math.round((i / (numBands - 1)) * maxIdx)
+    colors.push(PRICE_COLORS[idx])
+  }
+
+  // Labels
+  const fmt = formatNumber
+  const labels: string[] = [
+    `< ${fmt(breaks[0])}`,
+    ...breaks.slice(0, -1).map((b, i) => `${fmt(b)}\u2013${fmt(breaks[i + 1])}`),
+    `> ${fmt(breaks[breaks.length - 1])}`,
+  ]
+
+  return { breaks, colors, labels }
+}
+
 /** Neutral fill for municipalities without price data */
 const NO_DATA_COLOR = '#e8e6e3'
 
-/** Build a MapLibre expression from dynamic breaks + colors.
+/** Build a MapLibre step expression from dynamic breaks + colors.
+ *  Uses discrete color bands (step) for clear visual distinction.
  *  Municipalities with null price get a neutral fill. */
 export function getDynamicColorExpression(
   breaks: number[],
   colors: string[],
 ): unknown[] {
-  // Inner interpolation for priced municipalities
-  const interpolate: unknown[] = [
-    'interpolate',
-    ['linear'],
+  // Step expression: discrete bands (no blending between colors)
+  const stepExpr: unknown[] = [
+    'step',
     ['get', 'price_per_sqm_avg'],
+    colors[0], // default (below first break)
   ]
-  interpolate.push(breaks[0], colors[0])
-  for (let i = 1; i < breaks.length; i++) {
-    interpolate.push(breaks[i], colors[i])
+  for (let i = 0; i < breaks.length; i++) {
+    stepExpr.push(breaks[i], colors[Math.min(i + 1, colors.length - 1)])
   }
-  interpolate.push(breaks[breaks.length - 1] + 1000, colors[colors.length - 1])
 
-  // Wrap: null/0 → neutral, otherwise → interpolated color
+  // Wrap: null/0 → neutral, otherwise → stepped color
   return [
     'case',
     ['==', ['get', 'price_per_sqm_avg'], null], NO_DATA_COLOR,
     ['==', ['get', 'price_per_sqm_avg'], 0], NO_DATA_COLOR,
-    interpolate,
+    stepExpr,
   ]
 }

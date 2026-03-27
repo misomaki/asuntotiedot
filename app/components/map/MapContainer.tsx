@@ -14,7 +14,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
-import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression } from '@/app/lib/colorScales'
+import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression, getQuantileScale } from '@/app/lib/colorScales'
 import { formatPricePerSqm, getBuildingTypeLabel } from '@/app/lib/formatters'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
@@ -90,7 +90,7 @@ export default function MapContainer() {
   )
 
   // Fetch municipality polygons for zoomed-out overview
-  const { geojson: municipalityGeojson, priceRange: municipalityPriceRange } = useMunicipalityData(
+  const { geojson: municipalityGeojson, priceRange: municipalityPriceRange, priceValues: municipalityPriceValues } = useMunicipalityData(
     filters.year,
     filters.propertyType
   )
@@ -175,11 +175,18 @@ export default function MapContainer() {
     []
   )
 
-  // Dynamic color scale for municipality layer based on actual price range
+  // Dynamic color scale for municipality layer — prefer quantile breaks for
+  // better contrast, fall back to linear if insufficient data
   const municipalityScale = useMemo(() => {
+    // Try quantile-based scale first (equal-count bins)
+    if (municipalityPriceValues.length >= 4) {
+      const quantile = getQuantileScale(municipalityPriceValues)
+      if (quantile) return quantile
+    }
+    // Fallback to linear scale
     if (!municipalityPriceRange) return null
     return getDynamicScale(municipalityPriceRange.min, municipalityPriceRange.max)
-  }, [municipalityPriceRange])
+  }, [municipalityPriceValues, municipalityPriceRange])
 
   const municipalityColorExpression = useMemo(
     (): ExpressionSpecification => {
@@ -571,6 +578,7 @@ export default function MapContainer() {
         onMove={handleViewStateChange}
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
+        maxBounds={[19.0, 59.0, 32.0, 70.5]}
         cursor={cursor}
         interactiveLayerIds={interactiveLayerIds}
         onMouseMove={handleMouseMove}
@@ -733,7 +741,7 @@ export default function MapContainer() {
 
       {/* Zoom hint — bottom-center, above legend on mobile */}
       <div
-        className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
+        className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
         style={{ opacity: showZoomHint ? 1 : 0, transform: `translateX(-50%) translateY(${showZoomHint ? '0' : '8px'})` }}
       >
         <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
@@ -745,7 +753,7 @@ export default function MapContainer() {
 
       {/* Building tile loading indicator — bottom-center */}
       <div
-        className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
         style={{ opacity: showBuildings && buildingsLoading && !dataLoading ? 1 : 0 }}
       >
         <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
@@ -757,7 +765,7 @@ export default function MapContainer() {
 
       {/* Compare mode indicator — bottom-center */}
       {isCompareMode && !selectedArea && comparedArea && (
-        <div className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
+        <div className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
           <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
             <div className="h-3 w-3 rounded-full bg-pink animate-pulse" />
             Valitse toinen alue vertailuun
@@ -767,7 +775,7 @@ export default function MapContainer() {
 
       {/* Loading indicator — bottom-center */}
       <div
-        className="absolute bottom-[7rem] md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
         style={{ opacity: dataLoading ? 1 : 0 }}
       >
         <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">

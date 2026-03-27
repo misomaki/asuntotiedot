@@ -21,6 +21,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { formatNumber, formatPricePerSqm } from '@/app/lib/formatters'
 import { cn } from '@/app/lib/utils'
 import type { PriceEstimate, PropertyType } from '@/app/types'
+import { OKT_FALLBACK } from '@/app/lib/priceEstimation'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -205,7 +206,11 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
     fetchData()
   }, [fetchData])
 
-  // Combine all three datasets into a single series keyed by year
+  // Track whether omakotitalo data is derived (estimated) vs. real
+  const hasRealOktData = rawData.omakotitalo.length > 0
+
+  // Combine all three datasets into a single series keyed by year.
+  // When omakotitalo has no real data, derive it from rivitalo × OKT_FALLBACK.
   const chartData = useMemo<TrendDataPoint[]>(() => {
     const yearMap = new Map<number, TrendDataPoint>()
 
@@ -226,8 +231,17 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
       }
     }
 
+    // Derive omakotitalo from rivitalo when no real data exists
+    if (!hasRealOktData) {
+      for (const point of yearMap.values()) {
+        if (point.rivitalo != null) {
+          point.omakotitalo = Math.round(point.rivitalo * OKT_FALLBACK.fromRivitalo)
+        }
+      }
+    }
+
     return Array.from(yearMap.values()).sort((a, b) => a.year - b.year)
-  }, [rawData])
+  }, [rawData, hasRealOktData])
 
   const isEmpty = chartData.length === 0
 
@@ -294,6 +308,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
                 name={LINE_CONFIG[type].label}
                 stroke={LINE_CONFIG[type].color}
                 strokeWidth={2}
+                strokeDasharray={type === 'omakotitalo' && !hasRealOktData ? '6 3' : undefined}
                 dot={{ r: 3, fill: LINE_CONFIG[type].color, strokeWidth: 0 }}
                 activeDot={{
                   r: 5,
@@ -309,6 +324,14 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Note when omakotitalo is derived */}
+      {!hasRealOktData && chartData.some((d) => d.omakotitalo != null) && (
+        <p className="mt-2 text-[11px] text-[#999] leading-tight">
+          <span className="inline-block w-4 border-t border-dashed border-[#ffc900] mr-1 align-middle" />
+          Omakotitalo arvioitu rivitalohinnoista
+        </p>
+      )}
     </div>
   )
 }
