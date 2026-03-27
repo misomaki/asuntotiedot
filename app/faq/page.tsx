@@ -60,60 +60,37 @@ interface FAQItem {
   answer: string | string[]
 }
 
-const FAQ_SECTIONS: { title: string; items: FAQItem[] }[] = [
+const FAQ_ITEMS: FAQItem[] = [
   {
-    title: 'Hinta-arviot',
-    items: [
-      {
-        question: 'Miten hinta-arviot lasketaan?',
-        answer: [
-          'Jokaisen rakennuksen hinta-arvio perustuu kuuteen tekijään:',
-          '1. Perushinta — Tilastokeskuksen toteutuneet kauppahinnat (€/m²) postinumero- ja talotyyppitasolla.',
-          '2. Ikäkerroin — Rakennusvuosi vaikuttaa hintaan U-käyrämäisesti: uudisrakentaminen ja yli 100-vuotiaat historialliset talot ovat arvostetumpia, kun taas 1960–80-luvun elementtirakentaminen on edullisinta.',
-          '3. Vesistökerroin — Etäisyys lähimpään järveen (>1 ha) tai mereen nostaa hintaa jopa 35 %.',
-          '4. Kerroskerroin — Esimerkiksi yksikerroksisissa rivitaloissa ja korkeissa kerrostaloissa on pieni preemio.',
-          '5. Kokokerroin — Pienemmät kerrostalot (alle 10 asuntoa) ovat tyypillisesti arvokkaampia per neliö.',
-          '6. Aluekerroin — Alueen toteutunut hintataso suhteessa perushintoihin.',
-        ],
-      },
-      {
-        question: 'Kuinka tarkkoja hinta-arviot ovat?',
-        answer: [
-          'Hinta-arviot on validoitu vertaamalla niitä toteutuneisiin markkinahintoihin. Keskimääräinen poikkeama on noin 19 %.',
-          'Arvio ei huomioi remonttitasoa, energiatodistusta (data ei vielä saatavilla) eikä yksittäisen asunnon ominaisuuksia — kyseessä on rakennustason arvio.',
-        ],
-      },
-      {
-        question: 'Miksi hinta-arvio puuttuu joiltain rakennuksilta?',
-        answer: 'Hinta-arvio lasketaan vain asuinrakennuksille. Koulut, kaupat, teollisuusrakennukset yms. on luokiteltu ei-asuinrakennuksiksi eikä niille näytetä hinta-arviota. Joissakin tapauksissa rakennukselta puuttuu tarvittava lähtödata (esim. postinumeroalueen hintatieto).',
-      },
-      {
-        question: 'Mikä on "aluekerroin"?',
-        answer: 'Aluekerroin kuvaa, kuinka paljon tietyn postinumeroalueen todelliset markkinahinnat poikkeavat Tilastokeskuksen perushinnasta. Esimerkiksi kerroin 1.30 tarkoittaa, että alueen hinnat ovat 30 % perushinnan yläpuolella.',
-      },
+    question: 'Miten hinta-arviot lasketaan?',
+    answer: [
+      'Jokaisen rakennuksen hinta-arvio perustuu kuuteen tekijään:',
+      '1. Perushinta — Tilastokeskuksen toteutuneet kauppahinnat (€/m²) postinumero- ja talotyyppitasolla.',
+      '2. Ikäkerroin — Rakennusvuosi vaikuttaa hintaan U-käyrämäisesti: uudisrakentaminen ja yli 100-vuotiaat historialliset talot ovat arvostetumpia, kun taas 1960–80-luvun elementtirakentaminen on edullisinta.',
+      '3. Vesistökerroin — Etäisyys lähimpään järveen (>1 ha) tai mereen nostaa hintaa jopa 35 %.',
+      '4. Kerroskerroin — Esimerkiksi yksikerroksisissa rivitaloissa ja korkeissa kerrostaloissa on pieni preemio.',
+      '5. Kokokerroin — Pienemmät kerrostalot (alle 10 asuntoa) ovat tyypillisesti arvokkaampia per neliö.',
+      '6. Aluekerroin — Alueen toteutunut hintataso suhteessa perushintoihin.',
     ],
   },
   {
-    title: 'Data ja lähteet',
-    items: [
-      {
-        question: 'Mistä data tulee?',
-        answer: [
-          'Tilastokeskus (Paavo & StatFin) — Postinumeroalueiden rajat, väestötiedot ja asuntojen kauppahinnat. CC BY 4.0.',
-          'OpenStreetMap — Rakennusten geometriat (pohjapiirros kartalla).',
-          'SYKE Ryhti-rekisteri — Rakennusvuosi, kerrosluku, asuntomäärä ja käyttötarkoitus. CC BY 4.0.',
-          'Maanmittauslaitos (MML) — Osoitetiedot rakennuksille.',
-          'Toteutuneet markkinahinnat — Aluekertoimien laskentaan ja validointiin.',
-        ],
-      },
-      {
-        question: 'Kuinka usein data päivittyy?',
-        answer: 'Tilastokeskuksen hintatiedot päivittyvät neljännesvuosittain. Rakennusdata (OSM, Ryhti) päivitetään tarvittaessa. Aluekertoimet lasketaan uudelleen kun uutta markkinadataa on saatavilla.',
-      },
-      {
-        question: 'Onko palvelu ilmainen?',
-        answer: 'Kyllä, Neliöt on täysin ilmainen.',
-      },
+    question: 'Kuinka tarkkoja hinta-arviot ovat?',
+    answer: [
+      'Hinta-arviot on validoitu vertaamalla niitä toteutuneisiin markkinahintoihin. Keskimääräinen poikkeama on noin 19 %.',
+      'Arvio ei huomioi remonttitasoa, energiatodistusta (data ei vielä saatavilla) eikä yksittäisen asunnon ominaisuuksia — kyseessä on rakennustason arvio.',
+    ],
+  },
+  {
+    question: 'Miksi hinta-arvio puuttuu joiltain rakennuksilta?',
+    answer: 'Hinta-arvio lasketaan vain asuinrakennuksille. Koulut, kaupat, teollisuusrakennukset yms. on luokiteltu ei-asuinrakennuksiksi eikä niille näytetä hinta-arviota. Joissakin tapauksissa rakennukselta puuttuu tarvittava lähtödata (esim. postinumeroalueen hintatieto).',
+  },
+  {
+    question: 'Mistä data tulee?',
+    answer: [
+      'Tilastokeskus (Paavo & StatFin) — Postinumeroalueiden rajat, väestötiedot ja asuntojen kauppahinnat. CC BY 4.0.',
+      'OpenStreetMap — Rakennusten geometriat (pohjapiirros kartalla).',
+      'SYKE Ryhti-rekisteri — Rakennusvuosi, kerrosluku, asuntomäärä ja käyttötarkoitus. CC BY 4.0.',
+      'Maanmittauslaitos (MML) — Osoitetiedot rakennuksille.',
     ],
   },
 ]
@@ -261,19 +238,9 @@ export default function FAQPage() {
             Miten hinta-arviot lasketaan ja mistä data tulee.
           </p>
 
-          <div className="mt-8 md:mt-10 space-y-8 md:space-y-10">
-            {FAQ_SECTIONS.map((section) => (
-              <div key={section.title}>
-                <h3 className="text-base md:text-lg font-display font-bold text-[#1a1a1a] mb-3 flex items-center gap-2">
-                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink" />
-                  {section.title}
-                </h3>
-                <div className="space-y-2.5">
-                  {section.items.map((item) => (
-                    <FAQAccordion key={item.question} item={item} />
-                  ))}
-                </div>
-              </div>
+          <div className="mt-8 md:mt-10 space-y-2.5">
+            {FAQ_ITEMS.map((item) => (
+              <FAQAccordion key={item.question} item={item} />
             ))}
           </div>
         </section>
