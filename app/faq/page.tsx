@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3, Home, Warehouse } from 'lucide-react'
+import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3 } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
 import { useInView } from '@/app/hooks/useInView'
 import type { LucideIcon } from 'lucide-react'
@@ -94,11 +94,11 @@ const FAQ_ITEMS: FAQItem[] = [
   },
 ]
 
-const STATS: { value: number; label: string; suffix: string; format: boolean; icon: LucideIcon }[] = [
-  { value: 460000, label: 'Kerrostaloa', suffix: '+', format: true, icon: Building2 },
-  { value: 130000, label: 'Rivitaloa', suffix: '+', format: true, icon: Warehouse },
-  { value: 110000, label: 'Omakotitaloa', suffix: '+', format: true, icon: Home },
-  { value: 107, label: 'Kuntaa', suffix: '', format: false, icon: MapPin },
+const STATS: { value: number; label: string; format: boolean }[] = [
+  { value: 458392, label: 'Kerrostaloa', format: true },
+  { value: 128741, label: 'Rivitaloa', format: true },
+  { value: 109284, label: 'Omakotitaloa', format: true },
+  { value: 107, label: 'Kuntaa', format: false },
 ]
 
 // ---------------------------------------------------------------------------
@@ -107,12 +107,10 @@ const STATS: { value: number; label: string; suffix: string; format: boolean; ic
 
 function AnimatedCounter({
   target,
-  suffix = '',
   format = false,
   inView,
 }: {
   target: number
-  suffix?: string
   format?: boolean
   inView: boolean
 }) {
@@ -123,8 +121,8 @@ function AnimatedCounter({
     if (!inView || hasAnimated.current) return
     hasAnimated.current = true
 
-    const duration = 1200
-    const steps = 40
+    const duration = 1400
+    const steps = 48
     const stepTime = duration / steps
     let step = 0
 
@@ -147,8 +145,8 @@ function AnimatedCounter({
     : String(current)
 
   return (
-    <span className="tabular-nums">
-      {display}{suffix}
+    <span className="tabular-nums font-mono">
+      {display}
     </span>
   )
 }
@@ -443,38 +441,32 @@ export default function FAQPage() {
           </div>
         </section>
 
-        {/* ── Stats bar — building types + municipalities ── */}
-        <section ref={statsRef} className="border-b-2 border-[#1a1a1a]/10 bg-white">
-          <div className="max-w-4xl mx-auto px-4 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
-            {STATS.map((stat, i) => {
-              const Icon = stat.icon
-              return (
+        {/* ── Stats strip ── */}
+        <section ref={statsRef} className="border-b-2 border-[#1a1a1a]/10">
+          <div className="max-w-3xl mx-auto px-4 py-8 md:py-10">
+            <div className="grid grid-cols-2 md:grid-cols-4">
+              {STATS.map((stat, i) => (
                 <div
                   key={stat.label}
                   className={cn(
-                    'flex flex-col items-center transition-all duration-500',
-                    statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                    'flex flex-col items-center py-3 md:py-0 transition-all duration-500',
+                    i < STATS.length - 1 && 'md:border-r md:border-[#1a1a1a]/10',
+                    i < 2 && 'border-b md:border-b-0 border-[#1a1a1a]/10',
+                    statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                   )}
-                  style={{ transitionDelay: statsInView ? `${i * 120}ms` : '0ms' }}
+                  style={{ transitionDelay: statsInView ? `${i * 100}ms` : '0ms' }}
                 >
-                  <div className={cn(
-                    'h-9 w-9 rounded-lg border-2 border-[#1a1a1a]/15 bg-[#FFFBF5] flex items-center justify-center mb-2 transition-all duration-500',
-                    statsInView ? 'scale-100' : 'scale-0',
-                  )} style={{ transitionDelay: statsInView ? `${i * 120 + 200}ms` : '0ms' }}>
-                    <Icon size={16} strokeWidth={2.2} className="text-[#1a1a1a]" />
-                  </div>
-                  <div className="text-2xl md:text-3xl font-display font-black text-[#1a1a1a]">
+                  <div className="text-2xl md:text-[1.75rem] font-black text-[#1a1a1a] leading-none">
                     <AnimatedCounter
                       target={stat.value}
-                      suffix={stat.suffix}
                       format={stat.format}
                       inView={statsInView}
                     />
                   </div>
-                  <div className="text-xs md:text-sm text-muted-foreground font-body mt-0.5">{stat.label}</div>
+                  <div className="text-[11px] md:text-xs text-[#1a1a1a]/50 font-mono uppercase tracking-wider mt-1.5">{stat.label}</div>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
         </section>
 
