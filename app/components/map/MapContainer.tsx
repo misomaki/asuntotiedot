@@ -577,6 +577,7 @@ export default function MapContainer() {
         onMove={handleViewStateChange}
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
+        maxBounds={[19.0, 59.0, 32.0, 70.5]}
         cursor={cursor}
         interactiveLayerIds={interactiveLayerIds}
         onMouseMove={handleMouseMove}
