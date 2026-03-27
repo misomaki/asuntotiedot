@@ -73,13 +73,13 @@ const FAQ_SECTIONS: { title: string; items: FAQItem[] }[] = [
           '3. Vesistökerroin — Etäisyys lähimpään järveen (>1 ha) tai mereen nostaa hintaa jopa 35 %.',
           '4. Kerroskerroin — Esimerkiksi yksikerroksisissa rivitaloissa ja korkeissa kerrostaloissa on pieni preemio.',
           '5. Kokokerroin — Pienemmät kerrostalot (alle 10 asuntoa) ovat tyypillisesti arvokkaampia per neliö.',
-          '6. Aluekerroin — Myynti-ilmoituksista laskettu alueen markkina-asema suhteessa perushintoihin.',
+          '6. Aluekerroin — Alueen toteutunut hintataso suhteessa perushintoihin.',
         ],
       },
       {
         question: 'Kuinka tarkkoja hinta-arviot ovat?',
         answer: [
-          'Hinta-arviot on validoitu vertaamalla niitä todellisiin myynti-ilmoituksiin. Keskimääräinen poikkeama on noin 19 %. Huomaa, että pyyntihinnat ovat tyypillisesti 5–10 % toteutuneita kauppahintoja korkeampia.',
+          'Hinta-arviot on validoitu vertaamalla niitä toteutuneisiin markkinahintoihin. Keskimääräinen poikkeama on noin 19 %.',
           'Arvio ei huomioi remonttitasoa, energiatodistusta (data ei vielä saatavilla) eikä yksittäisen asunnon ominaisuuksia — kyseessä on rakennustason arvio.',
         ],
       },
@@ -89,28 +89,7 @@ const FAQ_SECTIONS: { title: string; items: FAQItem[] }[] = [
       },
       {
         question: 'Mikä on "aluekerroin"?',
-        answer: 'Aluekerroin kuvaa, kuinka paljon tietyn postinumeroalueen todelliset markkinahinnat poikkeavat Tilastokeskuksen perushinnasta. Se on laskettu myynti-ilmoituksista. Esimerkiksi kerroin 1.30 tarkoittaa, että alueen hinnat ovat 30 % perushinnan yläpuolella.',
-      },
-    ],
-  },
-  {
-    title: 'Kartan käyttö',
-    items: [
-      {
-        question: 'Miten karttaa käytetään?',
-        answer: [
-          'Karttanäkymässä värikenttä visualisoi alueen hintatasoa — lämpimät sävyt (keltainen → pinkki) kertovat korkeammista hinnoista.',
-          'Zoomaa lähemmäs nähdäksesi yksittäiset rakennukset. Klikkaa rakennusta nähdäksesi sen hinta-arvion ja tekijäerittelyn.',
-          'Käytä hakupalkkia etsiäksesi osoitteita, postinumeroita tai alueita. Voit myös vaihtaa vuotta ja talotyyppiä yläpalkista.',
-        ],
-      },
-      {
-        question: 'Mitä värit kartalla tarkoittavat?',
-        answer: 'Lämmin väriskaala (ivory → amber → rose → pinkki) kuvaa hintatasoa: vaaleat sävyt ovat edullisempia ja tummat/pinkit kalliimpia. Harmaat rakennukset ovat ei-asuinkäytössä.',
-      },
-      {
-        question: 'Voinko vertailla kahta aluetta?',
-        answer: 'Kyllä. Avaa ensin yhden alueen tiedot klikkaamalla, ja paina "Vertaile"-nappia. Klikkaa sitten toista aluetta kartalla. Vertailunäkymä näyttää molemmat alueet rinnakkain.',
+        answer: 'Aluekerroin kuvaa, kuinka paljon tietyn postinumeroalueen todelliset markkinahinnat poikkeavat Tilastokeskuksen perushinnasta. Esimerkiksi kerroin 1.30 tarkoittaa, että alueen hinnat ovat 30 % perushinnan yläpuolella.',
       },
     ],
   },
@@ -124,7 +103,7 @@ const FAQ_SECTIONS: { title: string; items: FAQItem[] }[] = [
           'OpenStreetMap — Rakennusten geometriat (pohjapiirros kartalla).',
           'SYKE Ryhti-rekisteri — Rakennusvuosi, kerrosluku, asuntomäärä ja käyttötarkoitus. CC BY 4.0.',
           'Maanmittauslaitos (MML) — Osoitetiedot rakennuksille.',
-          'Asuntojen myynti-ilmoitukset — Aluekertoimien laskentaan ja validointiin.',
+          'Toteutuneet markkinahinnat — Aluekertoimien laskentaan ja validointiin.',
         ],
       },
       {
@@ -279,7 +258,7 @@ export default function FAQPage() {
             Usein kysytyt kysymykset
           </h2>
           <p className="mt-2 text-sm text-muted-foreground text-center">
-            Miten hinta-arviot lasketaan, mistä data tulee ja miten palvelua käytetään.
+            Miten hinta-arviot lasketaan ja mistä data tulee.
           </p>
 
           <div className="mt-8 md:mt-10 space-y-8 md:space-y-10">
