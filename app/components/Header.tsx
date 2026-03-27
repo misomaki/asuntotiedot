@@ -23,23 +23,44 @@ interface SearchableArea {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Highlight matching substring within text. */
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>
+  const idx = text.toLowerCase().indexOf(query.toLowerCase())
+  if (idx === -1) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-yellow/40 text-inherit rounded-sm px-px">{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] as const
 
-/** Shared search result item */
+/** Shared search result item with query highlighting */
 function SearchResultItem({
   area,
   compact,
   index,
+  query,
   onSelect,
 }: {
   area: SearchableArea
   compact: boolean
   index?: number
+  query?: string
   onSelect: (area: SearchableArea) => void
 }) {
+  const q = query ?? ''
   return (
     <button
       key={area.areaCode}
@@ -57,11 +78,11 @@ function SearchResultItem({
       style={compact && index !== undefined ? { animationDelay: `${index * 30}ms`, animationFillMode: 'both' } : undefined}
     >
       <span className={cn('font-mono text-[#999] flex-shrink-0', !compact && 'text-sm')} data-number>
-        {area.areaCode}
+        <HighlightMatch text={area.areaCode} query={q} />
       </span>
-      <span className="truncate">{area.name}</span>
+      <span className="truncate"><HighlightMatch text={area.name} query={q} /></span>
       <span className={cn('text-[#999] ml-auto flex-shrink-0', !compact && 'text-sm')}>
-        {area.municipality}
+        <HighlightMatch text={area.municipality} query={q} />
       </span>
     </button>
   )
@@ -139,30 +160,60 @@ export function Header() {
     return CITIES.filter((city) => city.name.toLowerCase().includes(query))
   }, [searchQuery])
 
-  // Filter areas based on search query (limit fewer when city results present)
+  // Filter areas based on search query with relevance sorting
   const searchResults: SearchableArea[] = useMemo(() => {
     if (!searchQuery.trim()) return []
     const query = searchQuery.toLowerCase().trim()
     const maxResults = cityResults.length > 0 ? 6 : 8
-    return searchableAreas
-      .filter(
-        (area) =>
-          area.areaCode.includes(query) ||
-          area.name.toLowerCase().includes(query) ||
-          area.municipality.toLowerCase().includes(query)
-      )
+
+    // Score each matching area for relevance ranking:
+    // Lower score = higher relevance (sorted ascending)
+    const scored: { area: SearchableArea; score: number }[] = []
+
+    for (const area of searchableAreas) {
+      const code = area.areaCode
+      const name = area.name.toLowerCase()
+      const muni = area.municipality.toLowerCase()
+
+      let score = -1 // -1 means no match
+
+      if (code.startsWith(query)) {
+        score = 0 // Postal code prefix — best match
+      } else if (name.startsWith(query)) {
+        score = 1 // Name starts with query
+      } else if (name.includes(query)) {
+        score = 2 // Name contains query
+      } else if (code.includes(query)) {
+        score = 3 // Postal code contains query
+      } else if (muni.startsWith(query)) {
+        score = 4 // Municipality starts with query
+      } else if (muni.includes(query)) {
+        score = 5 // Municipality contains query
+      }
+
+      if (score >= 0) {
+        scored.push({ area, score })
+      }
+    }
+
+    return scored
+      .sort((a, b) => a.score - b.score || a.area.areaCode.localeCompare(b.area.areaCode))
       .slice(0, maxResults)
+      .map((s) => s.area)
   }, [searchQuery, searchableAreas, cityResults.length])
 
   // Debounced address geocoding
   const [addressResults, setAddressResults] = useState<GeocodingResult[]>([])
   const [isAddressLoading, setIsAddressLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  // Track which query the address results belong to, so stale results are hidden
+  const [addressResultsQuery, setAddressResultsQuery] = useState('')
 
   useEffect(() => {
     const query = searchQuery.trim()
     if (query.length < 3) {
       setAddressResults([])
+      setAddressResultsQuery('')
       setIsAddressLoading(false)
       return
     }
@@ -170,6 +221,7 @@ export function Header() {
     // Skip pure numeric queries (postal codes) — existing search handles those
     if (/^\d+$/.test(query)) {
       setAddressResults([])
+      setAddressResultsQuery('')
       return
     }
 
@@ -185,12 +237,14 @@ export function Header() {
         .then((results) => {
           if (!controller.signal.aborted) {
             setAddressResults(results)
+            setAddressResultsQuery(query)
             setIsAddressLoading(false)
           }
         })
         .catch(() => {
           if (!controller.signal.aborted) {
             setAddressResults([])
+            setAddressResultsQuery('')
             setIsAddressLoading(false)
           }
         })
@@ -290,8 +344,8 @@ export function Header() {
           handleSelectCity(cityResults[0])
         } else if (searchResults.length > 0) {
           handleSelectArea(searchResults[0])
-        } else if (addressResults.length > 0) {
-          handleSelectAddress(addressResults[0])
+        } else if (filteredAddressResults.length > 0) {
+          handleSelectAddress(filteredAddressResults[0])
         }
       }
       if (e.key === 'Escape') {
@@ -300,7 +354,7 @@ export function Header() {
         searchInputRef.current?.blur()
       }
     },
-    [cityResults, searchResults, addressResults, handleSelectCity, handleSelectArea, handleSelectAddress]
+    [cityResults, searchResults, filteredAddressResults, handleSelectCity, handleSelectArea, handleSelectAddress]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -324,9 +378,21 @@ export function Header() {
     return () => document.removeEventListener('pointerdown', handleClickOutside)
   }, [])
 
+  // Only show address results if they belong to the current (or similar) query
+  const currentQuery = searchQuery.trim().toLowerCase()
+  const filteredAddressResults = useMemo(() => {
+    if (!addressResultsQuery || !currentQuery) return []
+    // Show address results only if current query starts with, or matches, the query that produced them
+    if (!currentQuery.startsWith(addressResultsQuery.toLowerCase()) &&
+        !addressResultsQuery.toLowerCase().startsWith(currentQuery)) {
+      return []
+    }
+    return addressResults
+  }, [addressResults, addressResultsQuery, currentQuery])
+
   const showSearchDropdown =
     isSearchFocused && searchQuery.trim().length > 0
-  const hasAnyResults = cityResults.length > 0 || searchResults.length > 0 || addressResults.length > 0
+  const hasAnyResults = cityResults.length > 0 || searchResults.length > 0 || filteredAddressResults.length > 0
   const showNoResults =
     showSearchDropdown && !hasAnyResults && !isAddressLoading
 
@@ -429,7 +495,7 @@ export function Header() {
                           style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
                         >
                           <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
-                          <span className="font-medium">{city.name}</span>
+                          <span className="font-medium"><HighlightMatch text={city.name} query={searchQuery.trim()} /></span>
                           <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
                             Kaupunki
                           </span>
@@ -444,13 +510,14 @@ export function Header() {
                           area={area}
                           compact={isDesktop}
                           index={isDesktop ? i + cityResults.length : undefined}
+                          query={searchQuery.trim()}
                           onSelect={handleSelectArea}
                         />
                       ))}
-                      {(cityResults.length > 0 || searchResults.length > 0) && addressResults.length > 0 && (
+                      {(cityResults.length > 0 || searchResults.length > 0) && filteredAddressResults.length > 0 && (
                         <div className="border-t border-[#e5e5e5]" />
                       )}
-                      {addressResults.map((result, i) => (
+                      {filteredAddressResults.map((result, i) => (
                         <button
                           key={`${result.latitude}-${result.longitude}-${i}`}
                           type="button"
