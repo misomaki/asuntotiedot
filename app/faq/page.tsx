@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3 } from 'lucide-react'
+import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3, Home, Warehouse } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
 import { useInView } from '@/app/hooks/useInView'
 import type { LucideIcon } from 'lucide-react'
@@ -94,11 +94,11 @@ const FAQ_ITEMS: FAQItem[] = [
   },
 ]
 
-const STATS = [
-  { value: 700000, label: 'Rakennusta', suffix: '+', format: true },
-  { value: 107, label: 'Kuntaa', suffix: '', format: false },
-  { value: 6, label: 'Hintatekijää', suffix: '', format: false },
-  { value: 2024, label: 'Vuoteen asti', suffix: '', format: false },
+const STATS: { value: number; label: string; suffix: string; format: boolean; icon: LucideIcon }[] = [
+  { value: 460000, label: 'Kerrostaloa', suffix: '+', format: true, icon: Building2 },
+  { value: 130000, label: 'Rivitaloa', suffix: '+', format: true, icon: Warehouse },
+  { value: 110000, label: 'Omakotitaloa', suffix: '+', format: true, icon: Home },
+  { value: 107, label: 'Kuntaa', suffix: '', format: false, icon: MapPin },
 ]
 
 // ---------------------------------------------------------------------------
@@ -209,22 +209,168 @@ function FAQAccordion({ item, index, inView }: { item: FAQItem; index: number; i
 }
 
 // ---------------------------------------------------------------------------
-// Floating decorative shapes for hero
+// Floating decorative shapes that flee the cursor
 // ---------------------------------------------------------------------------
 
+interface Shape {
+  id: number
+  x: number       // % position
+  y: number       // % position
+  baseX: number   // home position
+  baseY: number
+  size: number    // px
+  className: string
+  rotation: number
+  floatSpeed: number  // base drift speed
+  floatPhase: number  // animation offset
+}
+
+const SHAPE_DEFS: Omit<Shape, 'x' | 'y' | 'floatPhase'>[] = [
+  { id: 0, baseX: 85, baseY: 10, size: 80, className: 'rounded-full bg-pink/15', rotation: 0, floatSpeed: 0.8 },
+  { id: 1, baseX: 8, baseY: 35, size: 56, className: 'rounded-xl bg-yellow/20 border-2 border-yellow/20', rotation: 12, floatSpeed: 0.6 },
+  { id: 2, baseX: 80, baseY: 75, size: 96, className: 'rounded-full bg-mint/15', rotation: 0, floatSpeed: 0.7 },
+  { id: 3, baseX: 12, baseY: 55, size: 16, className: 'rounded-full bg-pink/30', rotation: 0, floatSpeed: 1.2 },
+  { id: 4, baseX: 22, baseY: 15, size: 12, className: 'rounded-full bg-yellow/40', rotation: 0, floatSpeed: 1.0 },
+  { id: 5, baseX: 50, baseY: 20, size: 40, className: 'rounded-lg bg-mint/10 border-2 border-mint/15', rotation: -8, floatSpeed: 0.5 },
+  { id: 6, baseX: 70, baseY: 45, size: 20, className: 'rounded-full bg-pink/20', rotation: 0, floatSpeed: 0.9 },
+  { id: 7, baseX: 35, baseY: 70, size: 28, className: 'rounded-xl bg-yellow/15 border-2 border-yellow/10', rotation: 20, floatSpeed: 0.7 },
+]
+
+const REPEL_RADIUS = 150   // px — how close the mouse needs to be
+const REPEL_STRENGTH = 60  // px — max push distance
+const RETURN_SPEED = 0.08  // spring factor (0–1, lower = slower return)
+
 function HeroDecorations() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mouseRef = useRef({ x: -1000, y: -1000 })
+  const shapesRef = useRef<{ dx: number; dy: number }[]>(SHAPE_DEFS.map(() => ({ dx: 0, dy: 0 })))
+  const frameRef = useRef(0)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  // Stable initial shapes with random phases
+  const initialShapes = useMemo<Shape[]>(() =>
+    SHAPE_DEFS.map((s) => ({
+      ...s,
+      x: s.baseX,
+      y: s.baseY,
+      floatPhase: s.id * 1.3,
+    })),
+    []
+  )
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setReducedMotion(true)
+      return
+    }
+
+    const container = containerRef.current
+    if (!container) return
+
+    const handleMouse = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect()
+      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    }
+
+    const handleLeave = () => {
+      mouseRef.current = { x: -1000, y: -1000 }
+    }
+
+    // Listen on document so shapes react even when pointer is over text
+    container.addEventListener('mousemove', handleMouse)
+    container.addEventListener('mouseleave', handleLeave)
+
+    let time = 0
+    const animate = () => {
+      time += 0.016
+      const rect = container.getBoundingClientRect()
+      const shapes = shapesRef.current
+      const els = container.children
+
+      for (let i = 0; i < initialShapes.length; i++) {
+        const s = initialShapes[i]
+        // Shape center in px
+        const cx = (s.baseX / 100) * rect.width
+        const cy = (s.baseY / 100) * rect.height
+
+        // Float drift (gentle sine wave)
+        const floatX = Math.sin(time * s.floatSpeed + s.floatPhase) * 8
+        const floatY = Math.cos(time * s.floatSpeed * 0.7 + s.floatPhase) * 10
+
+        // Mouse repulsion
+        const mx = mouseRef.current.x
+        const my = mouseRef.current.y
+        const distX = (cx + shapes[i].dx) - mx
+        const distY = (cy + shapes[i].dy) - my
+        const dist = Math.sqrt(distX * distX + distY * distY)
+
+        let pushX = 0
+        let pushY = 0
+        if (dist < REPEL_RADIUS && dist > 0) {
+          const force = (1 - dist / REPEL_RADIUS) * REPEL_STRENGTH
+          pushX = (distX / dist) * force
+          pushY = (distY / dist) * force
+        }
+
+        // Spring back to home + apply push
+        const targetX = floatX + pushX
+        const targetY = floatY + pushY
+        shapes[i].dx += (targetX - shapes[i].dx) * RETURN_SPEED
+        shapes[i].dy += (targetY - shapes[i].dy) * RETURN_SPEED
+
+        // Apply transform directly (no React state — 60fps)
+        const el = els[i] as HTMLElement
+        if (el) {
+          el.style.transform = `translate(${shapes[i].dx}px, ${shapes[i].dy}px) rotate(${s.rotation + Math.sin(time * 0.5 + s.floatPhase) * 3}deg)`
+        }
+      }
+
+      frameRef.current = requestAnimationFrame(animate)
+    }
+
+    frameRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      cancelAnimationFrame(frameRef.current)
+      container.removeEventListener('mousemove', handleMouse)
+      container.removeEventListener('mouseleave', handleLeave)
+    }
+  }, [initialShapes, reducedMotion])
+
+  if (reducedMotion) {
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        {initialShapes.map((s) => (
+          <div
+            key={s.id}
+            className={`absolute ${s.className}`}
+            style={{
+              left: `${s.baseX}%`,
+              top: `${s.baseY}%`,
+              width: s.size,
+              height: s.id === 2 ? s.size / 3 : s.size,
+              transform: `rotate(${s.rotation}deg)`,
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      {/* Pink circle — top right */}
-      <div className="absolute -top-6 right-[10%] w-20 h-20 rounded-full bg-pink/15 animate-float" />
-      {/* Yellow square — left */}
-      <div className="absolute top-1/3 -left-4 w-14 h-14 rounded-xl bg-yellow/20 border-2 border-yellow/20 animate-float-delayed rotate-12" />
-      {/* Mint pill — bottom right */}
-      <div className="absolute bottom-8 right-[15%] w-24 h-8 rounded-full bg-mint/15 animate-float-slow" />
-      {/* Small pink dot — mid-left */}
-      <div className="absolute top-1/2 left-[8%] w-4 h-4 rounded-full bg-pink/30 animate-bounce-gentle" />
-      {/* Yellow dot — top left */}
-      <div className="absolute top-12 left-[20%] w-3 h-3 rounded-full bg-yellow/40 animate-bounce-gentle" style={{ animationDelay: '1s' }} />
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden pointer-events-auto" aria-hidden="true" style={{ zIndex: 0 }}>
+      {initialShapes.map((s) => (
+        <div
+          key={s.id}
+          className={`absolute transition-none will-change-transform ${s.className}`}
+          style={{
+            left: `${s.baseX}%`,
+            top: `${s.baseY}%`,
+            width: s.size,
+            height: s.id === 2 ? s.size / 3 : s.size,
+          }}
+        />
+      ))}
     </div>
   )
 }
@@ -270,9 +416,9 @@ export default function FAQPage() {
       <main>
         {/* ── Hero section ── */}
         <section ref={heroRef} className="relative overflow-hidden border-b-2 border-[#1a1a1a]/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#FFFBF5] via-[#fff0f8] to-[#fff8e0] opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#FFFBF5] via-[#fff0f8] to-[#fff8e0] opacity-60 pointer-events-none" />
           <HeroDecorations />
-          <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-24 text-center">
+          <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-24 text-center pointer-events-none" style={{ zIndex: 1 }}>
             <p
               className={cn(
                 'text-xs md:text-sm font-mono font-bold text-pink uppercase tracking-wider transition-all duration-700',
@@ -307,7 +453,7 @@ export default function FAQPage() {
             >
               <Link
                 href="/"
-                className="neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink hover:shadow-hard transition-all duration-200"
+                className="pointer-events-auto neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-sm px-6 py-3 rounded-full border-2 border-[#1a1a1a] shadow-hard-sm hover:bg-pink hover:shadow-hard transition-all duration-200"
               >
                 <MapPin size={16} />
                 Avaa kartta
@@ -315,7 +461,7 @@ export default function FAQPage() {
               <a
                 href="#miten-toimii"
                 onClick={(e) => scrollToSection(e, 'miten-toimii')}
-                className="group inline-flex items-center gap-1.5 text-sm font-display font-bold text-[#1a1a1a] px-5 py-3 rounded-full border-2 border-[#1a1a1a] bg-white hover:bg-pink-baby transition-colors"
+                className="pointer-events-auto group inline-flex items-center gap-1.5 text-sm font-display font-bold text-[#1a1a1a] px-5 py-3 rounded-full border-2 border-[#1a1a1a] bg-white hover:bg-pink-baby transition-colors"
               >
                 Miten se toimii?
                 <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
@@ -324,29 +470,39 @@ export default function FAQPage() {
           </div>
         </section>
 
-        {/* ── Stats bar ── */}
+        {/* ── Stats bar — building types + municipalities ── */}
         <section ref={statsRef} className="border-b-2 border-[#1a1a1a]/10 bg-white">
-          <div className="max-w-4xl mx-auto px-4 py-6 md:py-8 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
-            {STATS.map((stat, i) => (
-              <div
-                key={stat.label}
-                className={cn(
-                  'transition-all duration-500',
-                  statsInView ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-                )}
-                style={{ transitionDelay: statsInView ? `${i * 100}ms` : '0ms' }}
-              >
-                <div className="text-xl md:text-2xl font-display font-black text-[#1a1a1a]">
-                  <AnimatedCounter
-                    target={stat.value}
-                    suffix={stat.suffix}
-                    format={stat.format}
-                    inView={statsInView}
-                  />
+          <div className="max-w-4xl mx-auto px-4 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
+            {STATS.map((stat, i) => {
+              const Icon = stat.icon
+              return (
+                <div
+                  key={stat.label}
+                  className={cn(
+                    'flex flex-col items-center transition-all duration-500',
+                    statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                  )}
+                  style={{ transitionDelay: statsInView ? `${i * 120}ms` : '0ms' }}
+                >
+                  <div className={cn(
+                    'h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-500',
+                    statsInView ? 'scale-100' : 'scale-0',
+                    i === 3 ? 'bg-mint/15' : 'bg-pink-baby'
+                  )} style={{ transitionDelay: statsInView ? `${i * 120 + 200}ms` : '0ms' }}>
+                    <Icon size={20} className={i === 3 ? 'text-mint' : 'text-pink-deep'} />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-display font-black text-[#1a1a1a]">
+                    <AnimatedCounter
+                      target={stat.value}
+                      suffix={stat.suffix}
+                      format={stat.format}
+                      inView={statsInView}
+                    />
+                  </div>
+                  <div className="text-xs md:text-sm text-muted-foreground font-body mt-0.5">{stat.label}</div>
                 </div>
-                <div className="text-xs md:text-sm text-muted-foreground font-body mt-0.5">{stat.label}</div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
