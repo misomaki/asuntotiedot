@@ -132,6 +132,7 @@ export function Header() {
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
@@ -256,13 +257,19 @@ export function Header() {
     }
   }, [searchQuery])
 
+  // Close search and reset state (shared by all select handlers)
+  const closeSearch = useCallback(() => {
+    setSearchQuery('')
+    setIsSearchFocused(false)
+    setIsMobileSearchOpen(false)
+    searchInputRef.current?.blur()
+  }, [])
+
   // Select an address from geocoding results — fly to its coordinates
   const handleSelectAddress = useCallback(
     (result: GeocodingResult) => {
-      setSearchQuery('')
-      setIsSearchFocused(false)
+      closeSearch()
       setAddressResults([])
-      searchInputRef.current?.blur()
 
       flyTo({
         longitude: result.longitude,
@@ -270,15 +277,13 @@ export function Header() {
         zoom: 15,
       })
     },
-    [flyTo]
+    [flyTo, closeSearch]
   )
 
   // Select a city from search results — fly to its bounding box
   const handleSelectCity = useCallback(
     (city: CityConfig) => {
-      setSearchQuery('')
-      setIsSearchFocused(false)
-      searchInputRef.current?.blur()
+      closeSearch()
 
       const [west, south, east, north] = city.bbox
       flyTo({
@@ -287,7 +292,7 @@ export function Header() {
         zoom: 12,
       })
     },
-    [flyTo]
+    [flyTo, closeSearch]
   )
 
   // Select an area from search results
@@ -299,9 +304,7 @@ export function Header() {
         name: area.name,
       })
       setIsSidebarOpen(true)
-      setSearchQuery('')
-      setIsSearchFocused(false)
-      searchInputRef.current?.blur()
+      closeSearch()
 
       // Find the feature to get its center coordinates for animated fly-to
       const feature = geojson?.features.find(
@@ -349,12 +352,10 @@ export function Header() {
         }
       }
       if (e.key === 'Escape') {
-        setSearchQuery('')
-        setIsSearchFocused(false)
-        searchInputRef.current?.blur()
+        closeSearch()
       }
     },
-    [cityResults, searchResults, filteredAddressResults, handleSelectCity, handleSelectArea, handleSelectAddress]
+    [cityResults, searchResults, filteredAddressResults, handleSelectCity, handleSelectArea, handleSelectAddress, closeSearch]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -365,6 +366,7 @@ export function Header() {
         !searchContainerRef.current.contains(e.target as Node)
       ) {
         setIsSearchFocused(false)
+        setIsMobileSearchOpen(false)
       }
       if (
         yearContainerRef.current &&
@@ -417,142 +419,173 @@ export function Header() {
 
           {/* Search + Year selector — inline on both mobile and desktop */}
           <div className="flex items-center gap-2 md:gap-2 ml-auto flex-1 md:flex-none justify-end">
-            {/* Search input */}
-            <div ref={searchContainerRef} className="relative flex-1 md:flex-none">
-              <div
+            {/* Mobile: search icon button (collapsed) */}
+            {!isDesktop && !isMobileSearchOpen && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileSearchOpen(true)
+                  // Auto-focus the input after it renders
+                  setTimeout(() => searchInputRef.current?.focus(), 50)
+                }}
+                aria-label="Avaa haku"
                 className={cn(
                   'neo-press',
-                  'flex items-center gap-1.5 md:gap-2 h-10 md:h-9 rounded-lg border-2 bg-bg-primary',
+                  'h-10 w-10 rounded-lg border-2 bg-bg-primary',
                   'border-[#1a1a1a] shadow-hard-sm',
-                  'transition-all duration-200',
-                  isDesktop
-                    ? isSearchFocused ? 'w-64' : 'w-48'
-                    : 'w-full'
+                  'flex items-center justify-center',
+                  'text-[#1a1a1a]',
                 )}
               >
-                <Search
-                  size={isDesktop ? 14 : 16}
-                  className="ml-2.5 md:ml-2.5 text-[#999] md:text-[#1a1a1a] flex-shrink-0"
-                />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onKeyDown={handleSearchKeyDown}
-                  placeholder={isDesktop ? 'Hae osoitetta tai aluetta...' : 'Hae...'}
-                  className={cn(
-                    'w-full pr-2 md:pr-2.5 bg-transparent text-[#1a1a1a]',
-                    'placeholder:text-[#999] md:placeholder:text-[#666]',
-                    'focus:outline-none',
-                    isDesktop
-                      ? 'text-xs font-mono font-bold'
-                      : 'text-sm font-body'
-                  )}
-                />
-                {/* Mobile: clear button when searching */}
-                {!isDesktop && searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => { setSearchQuery(''); searchInputRef.current?.focus() }}
-                    className="pr-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#999] hover:text-[#1a1a1a] flex-shrink-0"
-                    aria-label="Tyhjennä haku"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
-              </div>
+                <Search size={18} />
+              </button>
+            )}
 
-              {/* Search results dropdown */}
-              {showSearchDropdown && (
+            {/* Search input — always visible on desktop, expandable on mobile */}
+            {(isDesktop || isMobileSearchOpen) && (
+              <div ref={searchContainerRef} className={cn('relative', isDesktop ? 'flex-none' : 'flex-1 animate-fade-in')}>
                 <div
                   className={cn(
-                    'absolute top-full left-0 right-0 mt-1.5 z-50',
-                    'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
-                    'shadow-hard overflow-hidden',
-                    !isDesktop && 'animate-fade-in'
+                    'neo-press',
+                    'flex items-center gap-1.5 md:gap-2 h-10 md:h-9 rounded-lg border-2 bg-bg-primary',
+                    'border-[#1a1a1a] shadow-hard-sm',
+                    'transition-all duration-200',
+                    isDesktop
+                      ? isSearchFocused ? 'w-64' : 'w-48'
+                      : 'w-full'
                   )}
                 >
-                  {showNoResults ? (
-                    <SearchNoResults compact={isDesktop} />
-                  ) : (
-                    <>
-                      {cityResults.map((city, i) => (
-                        <button
-                          key={city.name}
-                          type="button"
-                          onClick={() => handleSelectCity(city)}
-                          className={cn(
-                            'w-full px-3 text-left',
-                            'flex items-center gap-2',
-                            isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
-                            'text-[#1a1a1a]',
-                            'hover:bg-pink-baby transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-pink-baby',
-                            isDesktop && 'animate-slide-up',
-                          )}
-                          style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
-                        >
-                          <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
-                          <span className="font-medium"><HighlightMatch text={city.name} query={searchQuery.trim()} /></span>
-                          <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
-                            Kaupunki
-                          </span>
-                        </button>
-                      ))}
-                      {cityResults.length > 0 && searchResults.length > 0 && (
-                        <div className="border-t border-[#e5e5e5]" />
-                      )}
-                      {searchResults.map((area, i) => (
-                        <SearchResultItem
-                          key={area.areaCode}
-                          area={area}
-                          compact={isDesktop}
-                          index={isDesktop ? i + cityResults.length : undefined}
-                          query={searchQuery.trim()}
-                          onSelect={handleSelectArea}
-                        />
-                      ))}
-                      {(cityResults.length > 0 || searchResults.length > 0) && filteredAddressResults.length > 0 && (
-                        <div className="border-t border-[#e5e5e5]" />
-                      )}
-                      {filteredAddressResults.map((result, i) => (
-                        <button
-                          key={`${result.latitude}-${result.longitude}-${i}`}
-                          type="button"
-                          onClick={() => handleSelectAddress(result)}
-                          className={cn(
-                            'w-full px-3 text-left',
-                            'flex items-center gap-2',
-                            isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
-                            'text-[#1a1a1a]',
-                            'hover:bg-pink-baby transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-pink-baby',
-                            isDesktop && 'animate-slide-up',
-                          )}
-                          style={isDesktop ? { animationDelay: `${(i + cityResults.length + searchResults.length) * 30}ms`, animationFillMode: 'both' } : undefined}
-                        >
-                          <Navigation size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
-                          <span className="truncate">{result.shortLabel}</span>
-                          <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
-                            Osoite
-                          </span>
-                        </button>
-                      ))}
-                      {isAddressLoading && !hasAnyResults && (
-                        <div className={cn(
-                          'px-3 py-3 text-muted-foreground text-center',
-                          isDesktop ? 'text-xs' : 'text-sm',
-                        )}>
-                          Haetaan osoitteita...
-                        </div>
-                      )}
-                    </>
+                  <Search
+                    size={isDesktop ? 14 : 16}
+                    className="ml-2.5 md:ml-2.5 text-[#999] md:text-[#1a1a1a] flex-shrink-0"
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder={isDesktop ? 'Hae osoitetta tai aluetta...' : 'Hae osoitetta tai aluetta...'}
+                    className={cn(
+                      'w-full pr-2 md:pr-2.5 bg-transparent text-[#1a1a1a]',
+                      'placeholder:text-[#999] md:placeholder:text-[#666]',
+                      'focus:outline-none',
+                      isDesktop
+                        ? 'text-xs font-mono font-bold'
+                        : 'text-sm font-body'
+                    )}
+                  />
+                  {/* Close / clear button */}
+                  {!isDesktop && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (searchQuery) {
+                          setSearchQuery('')
+                          searchInputRef.current?.focus()
+                        } else {
+                          closeSearch()
+                        }
+                      }}
+                      className="pr-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#999] hover:text-[#1a1a1a] flex-shrink-0"
+                      aria-label={searchQuery ? 'Tyhjennä haku' : 'Sulje haku'}
+                    >
+                      <X size={18} />
+                    </button>
                   )}
                 </div>
-              )}
-            </div>
+
+                {/* Search results dropdown */}
+                {showSearchDropdown && (
+                  <div
+                    className={cn(
+                      'absolute top-full left-0 right-0 mt-1.5 z-50',
+                      'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
+                      'shadow-hard overflow-hidden',
+                      !isDesktop && 'animate-fade-in'
+                    )}
+                  >
+                    {showNoResults ? (
+                      <SearchNoResults compact={isDesktop} />
+                    ) : (
+                      <>
+                        {cityResults.map((city, i) => (
+                          <button
+                            key={city.name}
+                            type="button"
+                            onClick={() => handleSelectCity(city)}
+                            className={cn(
+                              'w-full px-3 text-left',
+                              'flex items-center gap-2',
+                              isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                              'text-[#1a1a1a]',
+                              'hover:bg-pink-baby transition-colors',
+                              'focus-visible:outline-none focus-visible:bg-pink-baby',
+                              isDesktop && 'animate-slide-up',
+                            )}
+                            style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
+                          >
+                            <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                            <span className="font-medium"><HighlightMatch text={city.name} query={searchQuery.trim()} /></span>
+                            <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                              Kaupunki
+                            </span>
+                          </button>
+                        ))}
+                        {cityResults.length > 0 && searchResults.length > 0 && (
+                          <div className="border-t border-[#e5e5e5]" />
+                        )}
+                        {searchResults.map((area, i) => (
+                          <SearchResultItem
+                            key={area.areaCode}
+                            area={area}
+                            compact={isDesktop}
+                            index={isDesktop ? i + cityResults.length : undefined}
+                            query={searchQuery.trim()}
+                            onSelect={handleSelectArea}
+                          />
+                        ))}
+                        {(cityResults.length > 0 || searchResults.length > 0) && filteredAddressResults.length > 0 && (
+                          <div className="border-t border-[#e5e5e5]" />
+                        )}
+                        {filteredAddressResults.map((result, i) => (
+                          <button
+                            key={`${result.latitude}-${result.longitude}-${i}`}
+                            type="button"
+                            onClick={() => handleSelectAddress(result)}
+                            className={cn(
+                              'w-full px-3 text-left',
+                              'flex items-center gap-2',
+                              isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                              'text-[#1a1a1a]',
+                              'hover:bg-pink-baby transition-colors',
+                              'focus-visible:outline-none focus-visible:bg-pink-baby',
+                              isDesktop && 'animate-slide-up',
+                            )}
+                            style={isDesktop ? { animationDelay: `${(i + cityResults.length + searchResults.length) * 30}ms`, animationFillMode: 'both' } : undefined}
+                          >
+                            <Navigation size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                            <span className="truncate">{result.shortLabel}</span>
+                            <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                              Osoite
+                            </span>
+                          </button>
+                        ))}
+                        {isAddressLoading && !hasAnyResults && (
+                          <div className={cn(
+                            'px-3 py-3 text-muted-foreground text-center',
+                            isDesktop ? 'text-xs' : 'text-sm',
+                          )}>
+                            Haetaan osoitteita...
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Year selector */}
             <div ref={yearContainerRef} className="relative flex-shrink-0">
