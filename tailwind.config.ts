@@ -143,6 +143,11 @@ const config: Config = {
         shimmer: "shimmer 1.5s infinite ease-in-out",
         "pop-in": "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "count-up": "countUp 0.4s ease-out",
+        float: "float 6s ease-in-out infinite",
+        "float-delayed": "float 6s ease-in-out 3s infinite",
+        "float-slow": "float 8s ease-in-out 1.5s infinite",
+        wiggle: "wiggle 2s ease-in-out infinite",
+        "bounce-gentle": "bounceGentle 2s ease-in-out infinite",
       },
 
       keyframes: {
@@ -181,6 +186,18 @@ const config: Config = {
         countUp: {
           "0%": { transform: "translateY(8px)", opacity: "0", filter: "blur(2px)" },
           "100%": { transform: "translateY(0)", opacity: "1", filter: "blur(0)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "50%": { transform: "translateY(-12px) rotate(3deg)" },
+        },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-2deg)" },
+          "50%": { transform: "rotate(2deg)" },
+        },
+        bounceGentle: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-4px)" },
         },
       },
 

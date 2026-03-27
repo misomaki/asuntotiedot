@@ -578,6 +578,7 @@ export default function MapContainer() {
         onMove={handleViewStateChange}
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
+        minZoom={4.5}
         maxBounds={[19.0, 59.0, 32.0, 70.5]}
         cursor={cursor}
         interactiveLayerIds={interactiveLayerIds}
@@ -598,7 +599,8 @@ export default function MapContainer() {
                 'fill-color': municipalityColorExpression,
                 'fill-opacity': [
                   'interpolate', ['linear'], ['zoom'],
-                  5, 0.75,
+                  4.5, 0.80,
+                  7, 0.75,
                   8, 0.65,
                   9.5, 0,
                 ] as unknown as ExpressionSpecification,

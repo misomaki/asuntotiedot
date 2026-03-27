@@ -48,6 +48,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     /areas/[id]/route.ts              # Yksittäisen alueen tilastot
     /buildings/route.ts               # Rakennukset bbox:n sisällä (zoom ≥14)
     /buildings/[id]/route.ts          # Yksittäisen rakennuksen tiedot
+    /municipalities/route.ts          # Kuntatason GeoJSON (WFS + hintadata, vain hinnoitellut kunnat)
   /components
     /map/
       MapContainer.tsx                # Pääkarttakomponentti (Voronoi + rakennukset)
@@ -70,9 +71,13 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     /mockData.ts                      # Mock-data fallback
   /types
     /index.ts                         # TypeScript-tyypit
+  /faq
+    /page.tsx                         # FAQ-sivu (client component, scroll-animaatiot)
+    /layout.tsx                       # FAQ metadata (server component)
   /hooks
     /useMapData.ts                    # Aluedatan hakeminen kartalle
     /useBuildingData.ts               # Rakennusdatan hakeminen (viewport-aware)
+    /useInView.ts                     # IntersectionObserver hook (fire-once, respects reduced-motion)
   /contexts
     /MapContext.tsx                    # Kartan tila (valittu alue, rakennus, filtterit)
 
@@ -189,7 +194,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 - URL: `https://geo.stat.fi/geoserver/postialue/ows`
 - typeName: `postialue:pno_tilasto`
 - **Kenttänimet:** `postinumeroalue` (EI `posti_alue`), `nimi`, `kunta` (koodi, esim. "091" = Helsinki)
-- Kuntanimeä EI ole datassa – tarvitaan oma lookup-taulu kuntakoodeille
+- Kuntanimeä EI ole datassa – haetaan Tilastokeskuksen luokitus-API:sta: `https://data.stat.fi/api/classifications/v2/classifications/kunta_1_XXXX/classificationItems?content=data&format=json&lang=fi` (XXXX = vuosi). Import-scripti hakee nimet aina automaattisesti.
 - **Väestöikäryhmät:** Ei valmiita `he_0_14` tai `he_65_` kenttiä. Lasketaan yksittäisistä ikäryhmistä: `he_0_2`, `he_3_6`, `he_7_12`, `he_13_15`, `he_16_17`, `he_18_19`, ..., `he_85_`
 - Geometria voi olla `Polygon` tai `MultiPolygon` – normalisoitava MultiPolygoniksi
 
@@ -264,6 +269,8 @@ Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 - **IDW-interpolointi:** Smooth price gradients anchor-pisteiden välillä (power=2)
 - **Rakennuskerros:** Yksittäiset rakennukset näkyvät zoom ≥14. Väri hinta-arvion mukaan: ivory→amber→rose→pink (sama lämmin sävyalue kuin Voronoi, mutta syvempi/terävämpi). Klikkaus avaa BuildingPanel-sivupaneelin.
 - **Interaktio:** Vain rakennukset ovat interaktiivisia (hover + click). Voronoi EI ole interaktiivinen — ei hover-highlightia, ei klikkiä.
+- **Kuntataso (zoom 4.5–9.5):** Municipality choropleth näkyy matalilla zoom-tasoilla. Data haetaan `/api/municipalities`-endpointista (WFS-rajat + hintadata). Vain kunnat joilla on hintadataa näytetään — muut näkyvät basemappina. Legendi käyttää hybrid quantile+linear -skaalaa (`getQuantileScale`).
+- **Zoom-rajat:** `minZoom={4.5}` mahdollistaa koko Suomen näkymän. `maxBounds={[19.0, 59.0, 32.0, 70.5]}` rajaa kartan Suomen alueelle.
 
 ### Basemap-tyylien ylikirjoitus (`handleMapLoad`)
 
@@ -377,6 +384,8 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 - **Energialuokka (energy_class):** 0% — Ryhti open data ei sisällä energiatodistuksia. Data on erillisessä energiatodistusrekisterissä (ARA), ei avoimesti saatavilla.
 - **Hinta-arvio:** 677 000 / 677 058 (100%) — kuntatasoinen fallback + neighborhood factors + energy/size factors (migraatiot 006, 009, 015)
 - **Rakennusluokittelu:** `is_residential` (3-tasoinen: OSM building_type denylist → Ryhti main_purpose → pinta-alaheuristiikka). Denylist-prioriteetti korjattu 2026-03 (migraatio 018).
+- **Kunnat:** ~107 kuntaa hintadatalla (municipality choropleth). WFS-rajat haetaan Tilastokeskukselta, hintadata median per kunta `areas` + `price_estimates` -tauluista.
+- **Nokia:** Postinumeroprefxi '37' lisätty Tampereen konfiguraatioon (`cities.ts`). Nokia-alueen data sisältyy Tampere-hakuun.
 
 ### Overpass API -huomiot
 - Endpoint: `https://overpass-api.de/api/interpreter`, POST, URL-encoded `data`-parametri
@@ -427,6 +436,7 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 ### SEO-sivut
 - `/alue/[code]` — ISR 24h, server-rendered area page with dynamic metadata + JSON-LD
 - `/alue` — area index grouped by city
+- `/faq` — Info/FAQ page (client component). Scroll-triggered animations: staggered reveals, animated counters, smooth accordion, floating decorations. Metadata in separate `layout.tsx` (server component).
 - `/sitemap.xml` — dynamic sitemap with all area URLs
 - `generateMetadata()` + page component both call `getAreaDetails()` — TODO: deduplicate with React `cache()`
 
@@ -620,7 +630,7 @@ uudet+vanhat kaupat → uudispreemio laimenee. Puolittainen korjaus (half-correc
 
 ## Seuraavat vaiheet
 
-- Vercel-deployment
-- Mobiiliresponsiivisuus
 - Käyttäjätilit ja suosikkialueet
 - Julkinen API
+- Lisää Etuovi-dataa neighborhood factoreihin (harvan datan alueet)
+- Energiatodistusdata (ARA-rekisteri, ei avoin)
