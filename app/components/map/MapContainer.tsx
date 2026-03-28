@@ -797,6 +797,7 @@ function BuildingTooltip({
   y: number
 }) {
   const isResidential = !!props.is_residential
+  const hasValidPrice = props.price !== null && Number.isFinite(props.price)
 
   if (!isResidential) {
     const buildingLabel = props.building_type
@@ -822,7 +823,7 @@ function BuildingTooltip({
     )
   }
 
-  const price = props.price
+  const price = hasValidPrice ? props.price : null
   const priceColor = price !== null ? getColorForPrice(price) : null
   const priceStr =
     price !== null
