@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : null
 
   const title = `${area.name} (${area.area_code}) – Asuntohinnat ${priceStr ? priceStr + ' €/m²' : ''} | Neliöt`
-  const description = `${area.name}, ${area.municipality}: asuntojen hinta-arviot, väestötiedot, tulotaso, koulutus ja palvelut. ${priceStr ? `Keskihinta ${priceStr} €/m².` : ''} Postinumero ${area.area_code}.`
+  const description = `${area.name}, ${area.municipality}: asuntojen hinta-arviot, hintakehitys vuodesta 2018 lähtien, väestötiedot, tulotaso, koulutus ja palvelut. ${priceStr ? `Keskihinta ${priceStr} €/m².` : ''} Postinumero ${area.area_code}.`
 
   return {
     title,
