@@ -119,10 +119,10 @@ export function getDynamicScale(minPrice: number, maxPrice: number): {
   colors: string[]
   labels: string[]
 } {
-  // Round to nice numbers
-  const roundTo = (n: number, step: number) => Math.round(n / step) * step
+  // Round to even numbers for clean legend labels
+  const roundTo = (n: number, s: number) => Math.round(n / s) * s
   const range = maxPrice - minPrice
-  const step = range > 3000 ? 500 : range > 1500 ? 250 : 100
+  const step = range > 3000 ? 1000 : range > 1500 ? 500 : 200
 
   const min = roundTo(minPrice, step)
   const max = roundTo(maxPrice, step)
@@ -191,10 +191,10 @@ export function getQuantileScale(sortedValues: number[]): {
     rawBreaks.push(medianValue + (upperSpan * i) / (linearCount + 1))
   }
 
-  // Round to nice numbers and deduplicate
+  // Round to even numbers for clean legend labels and deduplicate
   const breaks: number[] = []
   for (const raw of rawBreaks) {
-    const step = raw > 5000 ? 500 : raw > 2000 ? 250 : 100
+    const step = raw > 5000 ? 1000 : raw > 2000 ? 500 : 200
     const rounded = Math.round(raw / step) * step
     if (breaks.length === 0 || rounded > breaks[breaks.length - 1]) {
       breaks.push(rounded)

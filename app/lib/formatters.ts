@@ -14,7 +14,7 @@ export function formatPrice(value: number): string {
 }
 
 export function formatPricePerSqm(value: number | null): string {
-  if (value === null) return 'Ei tietoa'
+  if (value === null || !Number.isFinite(value)) return 'Ei tietoa'
   return `${fiFormatter.format(Math.round(value))} €/m²`
 }
 

@@ -270,6 +270,7 @@ export function TrendChart({ areaCode, className }: TrendChartProps) {
         <TrendingUp className="h-4 w-4 text-accent" />
         <h3 className="text-sm font-heading font-semibold text-foreground">
           Hintakehitys
+          <span className="font-normal text-muted-foreground ml-1">vuodesta 2018</span>
         </h3>
       </div>
 

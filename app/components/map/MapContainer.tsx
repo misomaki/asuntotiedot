@@ -81,6 +81,7 @@ export default function MapContainer() {
     setIsSidebarOpen,
     setSelectedBuilding,
     setFlyTo,
+    flyTo,
   } = useMapContext()
 
   // Fetch Voronoi GeoJSON based on current filters
@@ -122,6 +123,9 @@ export default function MapContainer() {
 
   // Show zoom hint when approaching building level (z11–13), hide when loading
   const showZoomHint = viewport.zoom >= 11 && viewport.zoom < BUILDING_ZOOM_THRESHOLD && !buildingsLoading
+
+  // Geolocation state for the locate-me button
+  const [isLocating, setIsLocating] = useState(false)
   const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
@@ -733,6 +737,45 @@ export default function MapContainer() {
         />
       )}
 
+      {/* Locate me button — bottom-right, above legend */}
+      <button
+        type="button"
+        aria-label="Näytä sijaintini"
+        onClick={() => {
+          if (!navigator.geolocation) return
+          setIsLocating(true)
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              flyTo({
+                longitude: pos.coords.longitude,
+                latitude: pos.coords.latitude,
+                zoom: 15,
+              })
+              setIsLocating(false)
+            },
+            () => setIsLocating(false),
+            { enableHighAccuracy: true, timeout: 8000 },
+          )
+        }}
+        className={cn(
+          'absolute z-40 right-3 md:right-6',
+          'bottom-[8.5rem] md:bottom-[4.5rem]',
+          'neo-press h-10 w-10 md:h-9 md:w-9',
+          'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary shadow-hard-sm',
+          'flex items-center justify-center',
+          'text-[#1a1a1a] hover:bg-pink-baby transition-colors',
+          isLocating && 'animate-pulse',
+        )}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <line x1="12" y1="2" x2="12" y2="6" />
+          <line x1="12" y1="18" x2="12" y2="22" />
+          <line x1="2" y1="12" x2="6" y2="12" />
+          <line x1="18" y1="12" x2="22" y2="12" />
+        </svg>
+      </button>
+
       {/* Legend — switches between municipality and building scale based on zoom.
           Hidden on mobile when sidebar sheet is open (to avoid overlap). */}
       <MapLegend
@@ -741,9 +784,9 @@ export default function MapContainer() {
         hiddenOnMobile={isSidebarOpen && (!!selectedArea || isCompareMode)}
       />
 
-      {/* Zoom hint — bottom-center, above legend on mobile */}
+      {/* Zoom hint — bottom-center, well above legend on mobile */}
       <div
-        className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
+        className="absolute bottom-56 md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
         style={{ opacity: showZoomHint ? 1 : 0, transform: `translateX(-50%) translateY(${showZoomHint ? '0' : '8px'})` }}
       >
         <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
@@ -755,7 +798,7 @@ export default function MapContainer() {
 
       {/* Building tile loading indicator — bottom-center */}
       <div
-        className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className="absolute bottom-56 md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
         style={{ opacity: showBuildings && buildingsLoading && !dataLoading ? 1 : 0 }}
       >
         <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
@@ -767,7 +810,7 @@ export default function MapContainer() {
 
       {/* Compare mode indicator — bottom-center */}
       {isCompareMode && !selectedArea && comparedArea && (
-        <div className="absolute bottom-40 md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
+        <div className="absolute bottom-56 md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
           <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
             <div className="h-3 w-3 rounded-full bg-pink animate-pulse" />
             Valitse toinen alue vertailuun
@@ -803,6 +846,7 @@ function BuildingTooltip({
   y: number
 }) {
   const isResidential = !!props.is_residential
+  const hasValidPrice = props.price !== null && Number.isFinite(props.price)
 
   if (!isResidential) {
     const buildingLabel = props.building_type
@@ -828,7 +872,7 @@ function BuildingTooltip({
     )
   }
 
-  const price = props.price
+  const price = hasValidPrice ? props.price : null
   const priceColor = price !== null ? getColorForPrice(price) : null
   const priceStr =
     price !== null
