@@ -66,17 +66,28 @@ async function main() {
   console.log(`Listings with area_id: ${listings.length}`)
 
   // 2. Fetch all base prices (latest year per area + property type)
-  const { data: priceRows, error: priceErr } = await supabase
-    .from('price_estimates')
-    .select('area_id, property_type, price_per_sqm_avg, price_per_sqm_median, year')
-    .not('price_per_sqm_avg', 'is', null)
-    .order('year', { ascending: false })
+  // Paginate to avoid Supabase 1000-row default limit (7,373 records total)
+  let priceRows: { area_id: string; property_type: string; price_per_sqm_avg: number; price_per_sqm_median: number | null; year: number }[] = []
+  const PAGE_SIZE = 1000
+  let from = 0
+  while (true) {
+    const { data: page, error: pageErr } = await supabase
+      .from('price_estimates')
+      .select('area_id, property_type, price_per_sqm_avg, price_per_sqm_median, year')
+      .not('price_per_sqm_avg', 'is', null)
+      .order('year', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1)
 
-  if (priceErr) {
-    console.error('Failed to fetch price estimates:', priceErr.message)
-    process.exit(1)
+    if (pageErr) {
+      console.error('Failed to fetch price estimates:', pageErr.message)
+      process.exit(1)
+    }
+    if (!page || page.length === 0) break
+    priceRows = priceRows.concat(page)
+    if (page.length < PAGE_SIZE) break
+    from += PAGE_SIZE
   }
-
+  console.log(`Fetched ${priceRows.length} price estimate records`)
   // Build lookup: area_id+type → latest price
   const priceMap = new Map<string, number>()
   for (const row of priceRows ?? []) {

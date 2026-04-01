@@ -11,6 +11,8 @@ import type { Map as MaplibreMap } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useMapContext } from '@/app/contexts/MapContext'
+import { trackBuildingClick, trackZoomLevel } from '@/app/lib/analytics'
+import { cn } from '@/app/lib/utils'
 import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
@@ -296,6 +298,7 @@ export default function MapContainer() {
         bearing: evt.viewState.bearing,
         pitch: evt.viewState.pitch,
       })
+      trackZoomLevel(evt.viewState.zoom, evt.viewState.latitude, evt.viewState.longitude)
     },
     [setViewport]
   )
@@ -349,6 +352,12 @@ export default function MapContainer() {
 
       setSelectedBuilding(buildingId)
       setIsSidebarOpen(true)
+      trackBuildingClick({
+        buildingId,
+        price: props.price ?? null,
+        constructionYear: props.construction_year ?? null,
+        address: props.address ?? null,
+      })
 
       // Clear tooltip immediately so it doesn't linger over the building card
       setTooltipContent(null)

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3 } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
+import { trackFaqAccordion } from '@/app/lib/analytics'
 import { useInView } from '@/app/hooks/useInView'
 import type { LucideIcon } from 'lucide-react'
 
@@ -180,7 +181,11 @@ function FAQAccordion({ item, index, inView }: { item: FAQItem; index: number; i
       }}
     >
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const next = !isOpen
+          setIsOpen(next)
+          if (next) trackFaqAccordion({ question: item.question, opened: true })
+        }}
         className="flex w-full items-center justify-between cursor-pointer px-4 py-3 md:px-5 md:py-4 text-sm md:text-base font-display font-bold text-[#1a1a1a] text-left"
       >
         <span className="pr-4">{item.question}</span>
@@ -411,17 +416,9 @@ export default function FAQPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#FFFBF5] via-[#fff0f8] to-[#fff8e0] opacity-60 pointer-events-none" />
           <HeroDecorations />
           <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-24 text-center pointer-events-none" style={{ zIndex: 1 }}>
-            <p
-              className={cn(
-                'text-xs md:text-sm font-mono font-bold text-pink uppercase tracking-wider transition-all duration-700',
-                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              )}
-            >
-              Ilmainen karttapalvelu
-            </p>
             <h1
               className={cn(
-                'mt-3 text-3xl md:text-5xl font-display font-black text-[#1a1a1a] leading-tight transition-all duration-700 delay-150',
+                'text-3xl md:text-5xl font-display font-black text-[#1a1a1a] leading-tight transition-all duration-700 delay-150',
                 heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               )}
             >
@@ -437,7 +434,6 @@ export default function FAQPage() {
               yhdeksi interaktiiviseksi kartaksi. Katso minkä tahansa asuinrakennuksen arvioitu
               neliöhinta — ja ymmärrä mistä se koostuu.
             </p>
-{/* CTA buttons removed — header has Karttanäkymä link */}
           </div>
         </section>
 

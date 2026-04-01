@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useAreaStats } from '@/app/hooks/useAreaStats'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
@@ -10,6 +11,7 @@ import { Sheet } from '@/app/components/ui/sheet'
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/app/lib/utils'
+import { trackSidebarOpen, trackAreaComparison } from '@/app/lib/analytics'
 
 /**
  * Sidebar – Side panel that displays area details when an area is selected.
@@ -52,6 +54,23 @@ export function Sidebar() {
   const isOpen =
     isSidebarOpen &&
     (hasSelectedArea || isCompareMode)
+
+  // Track panel opens
+  const prevOpenRef = useRef(false)
+  useEffect(() => {
+    if (isOpen && !prevOpenRef.current) {
+      if (isComparisonReady) {
+        trackSidebarOpen('comparison')
+        trackAreaComparison({
+          area1: comparedArea?.areaCode ?? '',
+          area2: selectedArea?.areaCode ?? '',
+        })
+      } else {
+        trackSidebarOpen('stats')
+      }
+    }
+    prevOpenRef.current = isOpen
+  }, [isOpen, isComparisonReady, comparedArea, selectedArea])
 
   function handleClose() {
     setIsSidebarOpen(false)

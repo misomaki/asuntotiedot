@@ -10,6 +10,7 @@ import { CITIES, CityConfig } from '@/app/lib/cities'
 import { cn } from '@/app/lib/utils'
 import { searchAddresses, type GeocodingResult } from '@/app/lib/geocoding'
 import { UserMenu } from '@/app/components/UserMenu'
+import { trackAreaClick, trackCityClick, trackAddressClick, trackFilterChange, trackSearch } from '@/app/lib/analytics'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -240,6 +241,7 @@ export function Header() {
             setAddressResults(results)
             setAddressResultsQuery(query)
             setIsAddressLoading(false)
+            trackSearch({ query, areaResults: searchResults.length, addressResults: results.length, cityResults: cityResults.length })
           }
         })
         .catch(() => {
@@ -270,6 +272,7 @@ export function Header() {
     (result: GeocodingResult) => {
       closeSearch()
       setAddressResults([])
+      trackAddressClick({ label: result.shortLabel ?? '' })
 
       flyTo({
         longitude: result.longitude,
@@ -284,6 +287,7 @@ export function Header() {
   const handleSelectCity = useCallback(
     (city: CityConfig) => {
       closeSearch()
+      trackCityClick({ cityName: city.name })
 
       const [west, south, east, north] = city.bbox
       flyTo({
@@ -305,6 +309,7 @@ export function Header() {
       })
       setIsSidebarOpen(true)
       closeSearch()
+      trackAreaClick({ areaCode: area.areaCode, areaName: area.name, municipality: area.municipality })
 
       // Find the feature to get its center coordinates for animated fly-to
       const feature = geojson?.features.find(
@@ -624,6 +629,7 @@ export function Header() {
                       onClick={() => {
                         updateFilter('year', year)
                         setIsYearOpen(false)
+                        trackFilterChange({ filterType: 'year', value: year })
                       }}
                       className={cn(
                         'w-full px-3 py-2.5 md:py-1.5 text-left',
