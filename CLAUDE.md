@@ -107,6 +107,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/016_recalibrated_age_factors.sql    # Uudelleenkalibroidut ikäkertoimet (uudisrakentaminen boosted)
   /migrations/017_recalibrated_water_factors.sql  # Uudelleenkalibroidut vesistökertoimet (7-tasoinen, max 1.35)
   /migrations/018_fix_nonresidential_denylist.sql  # Laajennettu ei-asuinrakennusten denylist (supermarket, library, stadium, jne.)
+  /migrations/022_sync_price_factors.sql           # Synkronoidut faktorit: uudet age factors, ei water dampening, size factor SQL:ssä
 
 /scripts
   /validation/
@@ -449,27 +450,28 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 
 Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihintoja algoritmimme tuottamiin arvioihin. Tarkkuuden ylläpitäminen edellyttää säännöllistä uudelleenvalidointia ja faktorien päivitystä.
 
-### Nykyinen tarkkuus (baseline 2026-03-21, recalibrated age factors + 6 factors)
-- **Mean Δ%:** -5% (aliarviointi), **Median Δ%:** -10%
-- **KT:** -6% (n=30), **RT:** -11% (n=28), **OKT:** +1% (n=29)
-- **Helsinki:** -7% (n=57), **Tampere:** 0% (n=27), **Turku:** -30% (n=3, vähän dataa)
-- **Mean |Δ%|:** 19%, **Std Dev:** 23%
+### Nykyinen tarkkuus (baseline 2026-04-01, recalibrated all factors + no water dampening)
+- **Mean Δ%:** -1% (lähes harhaton), **Median Δ%:** -5%
+- **KT:** -2% (n=30), **RT:** -6% (n=28), **OKT:** +4% (n=29)
+- **Helsinki:** -3% (n=57), **Tampere:** +4% (n=27), **Turku:** -24% (n=3, vähän dataa)
+- **Mean |Δ%|:** 18%, **Std Dev:** 23%
 - **Huom:** energy_factor = 1.0 kaikille (ei dataa), size_factor aktiivinen KT:lle (apartment_count 91%)
-- **Huom 2:** Etuovi = pyyntihinnat, toteutuneet ~5-10% alemmat → todellinen tarkkuus ~0% vs toteutuneet
+- **Huom 2:** Etuovi = pyyntihinnat, toteutuneet ~5-10% alemmat → todellinen tarkkuus ~+5% vs toteutuneet
+- **Huom 3:** Mean |Δ%| 18% johtuu pääosin puuttuvista neighborhood factoreista (67% validointilistingseistä ilman factoria). Alueilla joilla on factor, tarkkuus on ~12%.
 - Validointiraportti: `scripts/validation/price-validation-2026-03.md`
 - Raakadata: `scripts/validation/etuovi-raw-data.md`
 - Etuovi-ilmoitukset (1 134 kpl, 9 kaupunkia): `scripts/data-import/etuovi-listings.csv`
-- Neighborhood factors: 221 kpl (58 high, 58 medium, 105 low), avg 1.13
+- Neighborhood factors: 468 kpl (68 high, 86 medium, 177 low + 137 vanhaa), avg 1.06
 
 ### Kolme paikkaa joissa faktorit elävät (pidä synkassa!)
 
 | Sijainti | Käyttö | Muokkaa kun |
 |----------|--------|-------------|
 | `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
-| `supabase/migrations/016_recalibrated_age_factors.sql` | Tietokanta (`compute_building_price()` RPC) — uudelleenkalibroidut ikäkertoimet, korvaa 015:n age factorit | Age factor muuttuu |
-| `supabase/migrations/017_recalibrated_water_factors.sql` | Tietokanta (`compute_building_price()` RPC) — 7-tasoinen vesistökerroin (max 1.35), korvaa 016:n water factorit | Water factor muuttuu |
-| `supabase/migrations/015_energy_size_factors.sql` | Tietokanta — energy/size faktorit + sarakkeet + match_ryhti_energy_apartment_batch RPC (korvattu 016:lla age factorien osalta) | Energy/size muuttuu |
-| `supabase/migrations/008_validated_price_factors.sql` | Tietokanta (vanha `compute_building_price()`) — age/water/floor faktorit | Korvattu 015:llä |
+| `supabase/migrations/022_sync_price_factors.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**: recalibrated age, no water dampening, size factor params. Korvaa 019:n. | Mikä tahansa faktori muuttuu |
+| `supabase/migrations/016_recalibrated_age_factors.sql` | Korvattu 022:lla | - |
+| `supabase/migrations/017_recalibrated_water_factors.sql` | Korvattu 022:lla | - |
+| `supabase/migrations/015_energy_size_factors.sql` | Tietokanta — energy/size sarakkeet + match_ryhti_energy_apartment_batch RPC | Energy/size sarakkeet muuttuvat |
 | `supabase/migrations/009_neighborhood_factors.sql` | Tietokanta — neighborhood factor lookup + `_etuovi_staging` + `neighborhood_factors` taulut | Neighborhood factor -logiikka muuttuu |
 | `supabase/migrations/011_premium_dampening.sql` | Tietokanta — premium dampening + municipality median fallback | Dampening-logiikka muuttuu |
 | `supabase/migrations/012_fix_neighborhood_factor_cascade.sql` | Tietokanta — poistettu municipality median nbhd-faktorista | Neighborhood factor -kaskadi muuttuu |
@@ -574,17 +576,17 @@ estimated_price = base_price × age_factor × energy_factor × water_factor × f
 **Base price** = StatFin €/m² (postinumero + vuosi + talotyyppi)
 - Omakotitalo fallback: ei omaa StatFin-dataa → rivitalo × OKT_FALLBACK.fromRivitalo (1.10) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.90)
 
-**Age factor** (U-käyrä, recalibrated 2026-03-21):
+**Age factor** (U-käyrä, recalibrated 2026-04-01):
 ```
-≤0v: 1.45   (uudistuotanto)      ≤50v: 0.84 (70-luvun elementit)
-≤5v: 1.33   (hyvin uusi)         ≤60v: 0.80 (laakso — halvin)
-≤10v: 1.22  (tuore)              ≤70v: 0.80 (sodanjälkeinen elpyminen)
-≤20v: 1.10  (moderni)            ≤80v: 0.85 (1940-50-luku)
-≤30v: 0.97  (kypsyvä)            ≤100v: 0.90 (sotaa edeltävä)
-≤40v: 0.90  (ikääntyvä)          >100v: 0.92 (historiallinen, remontoitu)
+≤0v: 1.55   (uudistuotanto)      ≤50v: 0.86 (70-luvun elementit)
+≤5v: 1.47   (hyvin uusi)         ≤60v: 0.82 (laakso — halvin)
+≤10v: 1.32  (tuore)              ≤70v: 0.80 (sodanjälkeinen elpyminen)
+≤20v: 1.18  (moderni)            ≤80v: 0.85 (1940-50-luku)
+≤30v: 1.00  (kypsyvä)            ≤100v: 0.88 (sotaa edeltävä)
+≤40v: 0.90  (ikääntyvä)          >100v: 0.88 (historiallinen)
 ```
-Uudisrakentamisen faktorit nostettu 2026-03 kalibroinnissa: StatFin-perushinnat yhdistävät
-uudet+vanhat kaupat → uudispreemio laimenee. Puolittainen korjaus (half-correction) ylisopeuttamisen välttämiseksi.
+Uudisrakentamisen faktorit nostettu 2026-04 kalibroinnissa (60% korjaus): StatFin-perushinnat yhdistävät
+uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) laskettu alas +9% yliarviointikorjauksen vuoksi.
 
 **Energy factor** (energialuokka A-G, Aalto-yliopiston tutkimus):
 - A: 1.08, B: 1.05, C: 1.02, D: 1.00 (baseline), E: 0.97, F: 0.94, G: 0.90, null: 1.00
@@ -619,12 +621,12 @@ uudet+vanhat kaupat → uudispreemio laimenee. Puolittainen korjaus (half-correc
 - Tyypillinen vaihteluväli: 0.70 (lähiöt) – 1.50 (premium-alueet)
 
 **Premium dampening** (vanhoille rakennuksille):
-- Kun `age_factor < 0.85` (rakennettu ennen ~1986), premium-faktoreiden (neighborhood, water > 1.0) vaikutusta vaimennetaan
+- Kun `age_factor < 0.85` (rakennettu ennen ~1986), neighborhood-faktorin (> 1.0) vaikutusta vaimennetaan
 - `age_factor 0.85` → ei vaimennusta, `age_factor 0.70` → 50% vaimennus
 - Kaava: `dampened = 1.0 + (raw - 1.0) * (1.0 - dampening)` missä `dampening = 0.5 * min(1.0, (0.85 - age_factor) / 0.15)`
 - Discount-faktorit (< 1.0) eivät vaimene — vanhat rakennukset halvemmilla alueilla pitävät täyden alennuksen
-- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `011_premium_dampening.sql`
-- Vaimennetaan: water, neighborhood (sijaintipremiumit). EI vaimenneta: energy, size, floor (rakennuksen sisäiset)
+- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `022_sync_price_factors.sql`
+- Vaimennetaan: neighborhood (markkina-sentimentti). EI vaimenneta: water (pysyvä fyysinen ominaisuus), energy, size, floor (rakennuksen sisäiset)
 
 **Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää
 

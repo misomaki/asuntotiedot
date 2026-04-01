@@ -387,9 +387,13 @@ async function main() {
     const energyFactor = 1.0
     const waterFactor = 1.0
     const sizeFactor = 1.0
-    const floorCount = parseFloorCount(listing.floors)
+    let floorCount = parseFloorCount(listing.floors)
     const ptMap: Record<string, 'kerrostalo' | 'rivitalo' | 'omakotitalo'> = {
       KT: 'kerrostalo', RT: 'rivitalo', OKT: 'omakotitalo', PT: 'rivitalo',
+    }
+    // Most Finnish rivitalos are 1-story — assume 1 floor when floor data is missing
+    if (floorCount === null && (listing.type === 'RT' || listing.type === 'PT')) {
+      floorCount = 1
     }
     const floorFactor = computeFloorFactor(floorCount, ptMap[listing.type])
 
@@ -671,6 +675,96 @@ _(To be filled based on analysis results)_
   console.log(`  Helsinki: n=${helsinkiStats.count}, mean=${helsinkiStats.mean}%, median=${helsinkiStats.median}%`)
   console.log(`  Tampere: n=${tampereStats.count}, mean=${tampereStats.mean}%, median=${tampereStats.median}%`)
   console.log(`  Turku: n=${turkuStats.count}, mean=${turkuStats.mean}%, median=${turkuStats.median}%`)
+
+  // ─── Staging-based validation (larger dataset) ─────────────────────────
+  console.log('\n═══ STAGING VALIDATION (Etuovi CSV) ═══')
+
+  const { data: stagingListings, error: stagingErr } = await supabase
+    .from('_etuovi_staging')
+    .select('id, area_id, city, neighborhood, property_type, construction_year, asking_price_per_sqm')
+    .not('area_id', 'is', null)
+    .not('asking_price_per_sqm', 'is', null)
+    .gt('construction_year', 1800)
+
+  if (stagingErr || !stagingListings?.length) {
+    console.log('No staging data available for expanded validation')
+  } else {
+    // Validate each staging listing
+    const stagingResults: { city: string; type: string; delta: number }[] = []
+
+    for (const sl of stagingListings) {
+      const pt = sl.property_type || 'kerrostalo'
+      const ptShort = pt === 'kerrostalo' ? 'KT' : pt === 'rivitalo' ? 'RT' : 'OKT'
+
+      // Look up base price
+      let basePrice: number | null = null
+      if (pt === 'omakotitalo') {
+        const { data: okt } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', 'omakotitalo').order('year', { ascending: false }).limit(1)
+        if (okt?.length) basePrice = Number(okt[0].price_per_sqm_median ?? okt[0].price_per_sqm_avg)
+        if (!basePrice) {
+          const { data: rt } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', 'rivitalo').order('year', { ascending: false }).limit(1)
+          if (rt?.length) basePrice = Number(rt[0].price_per_sqm_median ?? rt[0].price_per_sqm_avg) * 1.10
+        }
+        if (!basePrice) {
+          const { data: kt } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', 'kerrostalo').order('year', { ascending: false }).limit(1)
+          if (kt?.length) basePrice = Number(kt[0].price_per_sqm_median ?? kt[0].price_per_sqm_avg) * 0.90
+        }
+      } else {
+        const { data: prices } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', pt).order('year', { ascending: false }).limit(1)
+        if (prices?.length) basePrice = Number(prices[0].price_per_sqm_median ?? prices[0].price_per_sqm_avg)
+      }
+
+      if (!basePrice) continue
+
+      const ageFactor = computeAgeFactor(sl.construction_year, REFERENCE_YEAR)
+      const rawNbhd = await fetchNeighborhoodFactor(sl.area_id, pt)
+      const neighborhoodFactor = dampenPremium(rawNbhd, ageFactor)
+
+      const estimate = Math.round(basePrice * ageFactor * neighborhoodFactor)
+      const delta = Math.round(((estimate - sl.asking_price_per_sqm) / sl.asking_price_per_sqm) * 100)
+
+      stagingResults.push({ city: sl.city, type: ptShort, delta })
+    }
+
+    if (stagingResults.length > 0) {
+      const sDeltas = stagingResults.map(r => r.delta)
+      const sMean = sDeltas.reduce((a,b) => a+b, 0) / sDeltas.length
+      const sAbsDeltas = sDeltas.map(Math.abs)
+      const sMeanAbs = sAbsDeltas.reduce((a,b) => a+b, 0) / sAbsDeltas.length
+      const sSorted = [...sDeltas].sort((a,b) => a-b)
+      const sMedian = sSorted[Math.floor(sSorted.length/2)]
+      const sStd = Math.sqrt(sDeltas.reduce((s,d) => s + (d-sMean)**2, 0) / sDeltas.length)
+
+      console.log(`Total: ${stagingResults.length}`)
+      console.log(`Mean Δ%: ${Math.round(sMean)}%`)
+      console.log(`Median Δ%: ${sMedian}%`)
+      console.log(`Mean |Δ%|: ${Math.round(sMeanAbs)}%`)
+      console.log(`Std Dev: ${Math.round(sStd)}%`)
+
+      // By type
+      console.log('\nBy type:')
+      for (const t of ['KT', 'RT', 'OKT']) {
+        const items = stagingResults.filter(r => r.type === t)
+        if (!items.length) continue
+        const ds = items.map(r => r.delta)
+        const mean = Math.round(ds.reduce((a,b) => a+b,0)/ds.length)
+        const absM = Math.round(ds.map(Math.abs).reduce((a,b) => a+b,0)/ds.length)
+        console.log(`  ${t}: n=${items.length}, mean=${mean}%, mean|Δ|=${absM}%`)
+      }
+
+      // By city
+      console.log('\nBy city:')
+      const cities = [...new Set(stagingResults.map(r => r.city))].sort()
+      for (const c of cities) {
+        const items = stagingResults.filter(r => r.city === c)
+        if (!items.length) continue
+        const ds = items.map(r => r.delta)
+        const mean = Math.round(ds.reduce((a,b) => a+b,0)/ds.length)
+        const absM = Math.round(ds.map(Math.abs).reduce((a,b) => a+b,0)/ds.length)
+        console.log(`  ${c}: n=${items.length}, mean=${mean}%, mean|Δ|=${absM}%`)
+      }
+    }
+  }
 }
 
 main().catch(console.error)

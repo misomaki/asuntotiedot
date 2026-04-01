@@ -65,25 +65,23 @@ export function computeAgeFactor(
 
   // U-shaped curve: 1960s-70s panel houses (age ~50-60) are cheapest,
   // pre-war buildings (age 80-100+) recover value.
-  // Recalibrated 2026-03-21 against 87 Etuovi asking prices.
-  // New-build factors boosted to compensate for StatFin base price
-  // dilution (new + resale transactions pooled in area averages).
-  // Half-correction applied to avoid overfitting to small validation set.
-  // Pre-war brackets (≤100, >100) kept unchanged — validation sample
-  // biased toward cheap suburban wooden houses (n=2-3), while full
-  // Etuovi data shows central pre-war buildings command premiums.
-  if (age <= 0) return 1.45    // brand new / under construction
-  if (age <= 5) return 1.33    // very new
-  if (age <= 10) return 1.22   // recent
-  if (age <= 20) return 1.10   // modern
-  if (age <= 30) return 0.97   // maturing
+  // Recalibrated 2026-04-01 against 87 Etuovi asking prices + 535 staging listings.
+  // New-build factors boosted with 60% correction (validation shows -15% bias
+  // for ≤5yr, -12% for 6-10yr, -11% for 11-20yr). Conservative correction
+  // because much of the under-estimation also comes from missing neighborhood factors.
+  // Middle brackets (21-40yr) anchored at near-zero validation error.
+  if (age <= 0) return 1.55    // brand new / under construction
+  if (age <= 5) return 1.47    // very new
+  if (age <= 10) return 1.32   // recent
+  if (age <= 20) return 1.18   // modern
+  if (age <= 30) return 1.00   // maturing (was 0.97, ideal 1.00)
   if (age <= 40) return 0.90   // aging (anchor — accurate in validation)
-  if (age <= 50) return 0.84   // late 70s panels
-  if (age <= 60) return 0.80   // 60s-70s panels (valley — cheapest)
+  if (age <= 50) return 0.86   // late 70s panels (was 0.84, slight lift)
+  if (age <= 60) return 0.82   // 60s-70s panels (valley — cheapest, was 0.80)
   if (age <= 70) return 0.80   // post-war (anchor — accurate in validation)
   if (age <= 80) return 0.85   // 1940s-50s recovery
-  if (age <= 100) return 0.90  // pre-war, good value retention
-  return 0.92                   // historical, often renovated, character premium
+  if (age <= 100) return 0.88  // pre-war (was 0.90, slight correction for over-estimation)
+  return 0.88                   // historical (was 0.92, old bracket showed +9% over-estimation)
 }
 
 export function computeWaterFactor(distanceM: number | null): number {
@@ -242,8 +240,10 @@ export function estimateBuildingPrice(
   )
   const rawNeighborhoodFactor = input.neighborhoodFactor ?? 1.0
 
-  // Dampen location premium factors for old buildings
-  const waterFactor = dampenPremium(rawWaterFactor, ageFactor)
+  // Water proximity is a permanent physical attribute (views, dock, beach) —
+  // does not depreciate with building age, so no dampening applied.
+  const waterFactor = rawWaterFactor
+  // Dampen neighborhood premium for old buildings (market sentiment effect)
   const neighborhoodFactor = dampenPremium(rawNeighborhoodFactor, ageFactor)
 
   const estimatedPricePerSqm = Math.round(

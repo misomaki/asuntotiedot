@@ -101,6 +101,22 @@ function normalizeCity(city: string): string {
   return parts[parts.length - 1] || city
 }
 
+// Etuovi neighborhood → database area name aliases
+const NEIGHBORHOOD_ALIASES: Record<string, string> = {
+  keskusta: 'keskus',
+  alppiharju: 'alppila',
+  hietalahti: 'punavuori',
+  kluuvi: 'kruununhaka',
+  tammela: 'tampere keskus',
+  härmälänranta: 'härmälä',
+  'ranta-tampella': 'tampere keskus',
+  tampella: 'tampere keskus',
+  toppilansaari: 'toppila',
+  aviapolis: 'aviapoliksen',
+  asemantausta: 'lahti keskus',
+  niemenranta: 'niemi',
+}
+
 /** Find best matching area_id for a listing */
 function findAreaId(
   listing: CsvListing,
@@ -111,28 +127,33 @@ function findAreaId(
 
   if (!nbhd) return null
 
-  // Strategy 1: Exact name match within city
-  for (const area of areas) {
-    if (area.municipality.toLowerCase() !== city.toLowerCase()) continue
-    const areaName = area.name.toLowerCase()
+  // Try original name, then alias
+  const candidates = [nbhd]
+  if (NEIGHBORHOOD_ALIASES[nbhd]) candidates.push(NEIGHBORHOOD_ALIASES[nbhd])
 
-    // Exact match
-    if (areaName === nbhd) return area.id
+  for (const candidate of candidates) {
+    // Strategy 1: Exact name match within city
+    for (const area of areas) {
+      if (area.municipality.toLowerCase() !== city.toLowerCase()) continue
+      const areaName = area.name.toLowerCase()
 
-    // Area name contains neighborhood (e.g., area "Kallio" matches "Kallio")
-    if (areaName.includes(nbhd) || nbhd.includes(areaName)) return area.id
-  }
+      // Exact match
+      if (areaName === candidate) return area.id
 
-  // Strategy 2: Fuzzy match — neighborhood is part of area name
-  for (const area of areas) {
-    if (area.municipality.toLowerCase() !== city.toLowerCase()) continue
-    const areaName = area.name.toLowerCase()
+      // Area name contains neighborhood or vice versa
+      if (areaName.includes(candidate) || candidate.includes(areaName)) return area.id
+    }
 
-    // First word match (e.g., "Pikku Huopalahti" → "Pikku")
-    const nbhdFirst = nbhd.split(/[\s-]/)[0]
-    const areaFirst = areaName.split(/[\s-]/)[0]
-    if (nbhdFirst.length >= 4 && (areaName.startsWith(nbhdFirst) || nbhdFirst === areaFirst)) {
-      return area.id
+    // Strategy 2: Fuzzy match — first word
+    for (const area of areas) {
+      if (area.municipality.toLowerCase() !== city.toLowerCase()) continue
+      const areaName = area.name.toLowerCase()
+
+      const candidateFirst = candidate.split(/[\s-]/)[0]
+      const areaFirst = areaName.split(/[\s-]/)[0]
+      if (candidateFirst.length >= 4 && (areaName.startsWith(candidateFirst) || candidateFirst === areaFirst)) {
+        return area.id
+      }
     }
   }
 
