@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
+import { useAuth } from '@/app/contexts/AuthContext'
+import { useMarketplaceSignals } from '@/app/hooks/useMarketplaceSignals'
 import { cn } from '@/app/lib/utils'
 import { formatNumber, getBuildingTypeLabel, formatPriceRange } from '@/app/lib/formatters'
 import { computePriceRange } from '@/app/lib/priceEstimation'
@@ -25,6 +27,8 @@ import {
   Heart,
   Baby,
   LandPlot,
+  HandCoins,
+  Eye,
 } from 'lucide-react'
 import type { BuildingWithPrice } from '@/app/types'
 
@@ -321,10 +325,123 @@ export function BuildingPanel() {
       {/* ── Nearby services (Lähipalvelut) ── */}
       <NearbyServices building={building} />
 
+      {/* ── Marketplace signals ── */}
+      <MarketplaceSignals buildingId={selectedBuilding!} />
+
       {/* ── Disclaimer ── */}
       <p className="text-xs text-muted-foreground/70 leading-snug">
         Arvio perustuu Tilastokeskuksen tilastohintoihin ja rakennuksen ominaisuuksiin. Suuntaa-antava.
       </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Marketplace signals section
+// ---------------------------------------------------------------------------
+
+function MarketplaceSignals({ buildingId }: { buildingId: string }) {
+  const { user } = useAuth()
+  const {
+    signals,
+    hasMyInterest,
+    hasMySellIntent,
+    toggleInterest,
+    toggleSellIntent,
+  } = useMarketplaceSignals(buildingId)
+  const [toggling, setToggling] = useState<'interest' | 'sell' | null>(null)
+
+  async function handleToggleInterest() {
+    setToggling('interest')
+    await toggleInterest()
+    setToggling(null)
+  }
+
+  async function handleToggleSellIntent() {
+    setToggling('sell')
+    await toggleSellIntent()
+    setToggling(null)
+  }
+
+  const interestCount = signals?.interest_count ?? 0
+  const hasSeller = signals?.has_sell_intent ?? false
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-muted-foreground"><HandCoins size={14} /></span>
+        <h3 className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Markkinapaikka</h3>
+      </div>
+
+      {/* Signal counts */}
+      {(interestCount > 0 || hasSeller) && (
+        <div className="flex flex-wrap gap-2">
+          {interestCount > 0 && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs text-blue-700">
+              <Eye size={12} />
+              {interestCount} kiinnostunut{interestCount !== 1 ? 'ta' : ''}
+            </span>
+          )}
+          {hasSeller && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-xs text-green-700">
+              <HandCoins size={12} />
+              Myynti-ilmoitus
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {user ? (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleToggleInterest}
+            disabled={toggling !== null}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-1.5',
+              'px-3 py-2 rounded-lg text-xs font-medium',
+              'border-2 transition-all duration-150',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              hasMyInterest
+                ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-50'
+                : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300 hover:bg-blue-50/50',
+            )}
+          >
+            <Eye size={14} />
+            {hasMyInterest ? 'Kiinnostus merkitty' : 'Olen kiinnostunut'}
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleSellIntent}
+            disabled={toggling !== null}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-1.5',
+              'px-3 py-2 rounded-lg text-xs font-medium',
+              'border-2 transition-all duration-150',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              hasMySellIntent
+                ? 'bg-green-100 border-green-300 text-green-800 hover:bg-green-50'
+                : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-green-300 hover:bg-green-50/50',
+            )}
+          >
+            <HandCoins size={14} />
+            {hasMySellIntent ? 'Ilmoitus aktiivinen' : 'Myyn tätä'}
+          </button>
+        </div>
+      ) : (
+        <a
+          href="/login"
+          className={cn(
+            'flex items-center justify-center gap-1.5',
+            'w-full px-3 py-2 rounded-lg text-xs font-medium',
+            'bg-white border-2 border-[#1a1a1a]/15 text-muted-foreground',
+            'hover:border-[#1a1a1a]/30 hover:text-foreground transition-colors',
+          )}
+        >
+          Kirjaudu ilmoittaaksesi kiinnostuksesi
+        </a>
+      )}
     </div>
   )
 }

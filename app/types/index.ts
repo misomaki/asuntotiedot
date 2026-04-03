@@ -180,3 +180,51 @@ export interface BuildingFeatureProperties {
   address: string | null
   estimated_price_per_sqm: number | null
 }
+
+// ── Marketplace signals (Phase 1) ──
+
+/** Aggregate signal counts for a building (public, no user details) */
+export interface BuildingSignals {
+  interest_count: number
+  sell_intent_count: number
+  has_sell_intent: boolean
+}
+
+/** A buyer's interest signal on a specific building */
+export interface BuildingInterest {
+  id: string
+  user_id: string
+  building_id: string
+  max_price_per_sqm: number | null
+  note: string | null
+  created_at: string
+  expires_at: string
+}
+
+/** A seller's intent signal on a specific building */
+export interface BuildingSellIntent {
+  id: string
+  user_id: string
+  building_id: string
+  asking_price_per_sqm: number | null
+  property_type: string | null
+  note: string | null
+  created_at: string
+  expires_at: string
+}
+
+/** User's own signals (for /omat-ilmoitukset page) */
+export interface UserSignalWithBuilding {
+  id: string
+  building_id: string
+  address: string | null
+  area_name: string | null
+  area_code: string | null
+  estimated_price_per_sqm: number | null
+  created_at: string
+  expires_at: string
+  type: 'interest' | 'sell_intent'
+  max_price_per_sqm?: number | null
+  asking_price_per_sqm?: number | null
+  note: string | null
+}
