@@ -7,6 +7,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Capacitor WebView: prevent rubber-banding and ensure map handles all gestures */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area insets for notch/Dynamic Island/navigation bar */
+.safe-area-top { padding-top: env(safe-area-inset-top); }
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
 /* ============================================
    CSS Custom Properties – Neliöt
    Neobrutalist design: thick borders, hard shadows, playful pastels

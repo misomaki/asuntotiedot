@@ -38,5 +38,10 @@ next-env.d.ts
 # supabase temp
 supabase/.temp/
 
+# capacitor native build artifacts
+android/app/build/
+android/.gradle/
+ios/App/Pods/
+
 # claude code
 .claude/
