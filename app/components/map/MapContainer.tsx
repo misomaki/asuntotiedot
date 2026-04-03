@@ -31,7 +31,7 @@ const MAP_STYLE =
 const BUILDING_ZOOM_THRESHOLD = 13
 
 /** Cache-bust version — increment after recomputing building prices */
-const TILE_VERSION = 'v4'
+const TILE_VERSION = 'v5'
 
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {

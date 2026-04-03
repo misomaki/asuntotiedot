@@ -224,7 +224,8 @@ export function computeTonttiFactor(
 export function inferPropertyType(
   buildingType: string | null,
   floorCount: number | null,
-  ryhtiMainPurpose?: string | null
+  ryhtiMainPurpose?: string | null,
+  apartmentCount?: number | null
 ): 'kerrostalo' | 'rivitalo' | 'omakotitalo' {
   // 1. Ryhti main_purpose — authoritative building registry
   if (ryhtiMainPurpose) {
@@ -234,7 +235,15 @@ export function inferPropertyType(
   }
 
   // 2. Explicit OSM building types
-  if (buildingType === 'apartments') return 'kerrostalo'
+  if (buildingType === 'apartments') {
+    // Low-rise 'apartments' with few units are rivitalo (row houses tagged as apartments in OSM).
+    // Data: 57% of 2-floor 'apartments' have ≤7 apts (classic RT: 2-3 per floor).
+    if (floorCount !== null && floorCount <= 2) {
+      if (apartmentCount != null && apartmentCount > 7) return 'kerrostalo'
+      return 'rivitalo'
+    }
+    return 'kerrostalo'
+  }
   if (buildingType === 'terrace' || buildingType === 'semidetached_house') return 'rivitalo'
   if (buildingType === 'detached' || buildingType === 'house') return 'omakotitalo'
 

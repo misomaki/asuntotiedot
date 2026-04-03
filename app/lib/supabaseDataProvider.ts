@@ -380,7 +380,8 @@ export class SupabaseDataProvider implements DataProvider {
     const propertyType = inferPropertyType(
       building.building_type,
       building.floor_count,
-      building.ryhti_main_purpose
+      building.ryhti_main_purpose,
+      building.apartment_count
     )
 
     // Fetch area info, base price, and neighborhood factor in parallel
