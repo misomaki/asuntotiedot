@@ -91,6 +91,11 @@ export function computeAgeFactor(
 export function computeWaterFactor(distanceM: number | null): number {
   if (distanceM === null) return 1.0
 
+  // Distance 0 means the building centroid is INSIDE the water polygon —
+  // this is a data artifact from simplified coastlines (~15K buildings affected).
+  // Real waterfront buildings have centroid 5-20m from water edge.
+  if (distanceM === 0) return 1.0
+
   // Recalibrated 2026-03-21: Finnish waterfront properties command
   // 25-40% premiums. Original 1.15 max was too conservative.
   // Only lakes >1ha and sea count (ponds/rivers filtered in migration 013).

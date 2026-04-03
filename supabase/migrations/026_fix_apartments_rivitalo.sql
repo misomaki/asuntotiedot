@@ -212,8 +212,9 @@ BEGIN
 
   -- ========================================================
   -- Water proximity factor (recalibrated 2026-03-21)
+  -- Distance 0 = centroid inside water polygon (data artifact) → no premium
   -- ========================================================
-  IF p_distance_to_water IS NULL THEN
+  IF p_distance_to_water IS NULL OR p_distance_to_water = 0 THEN
     v_water_factor := 1.0;
   ELSE
     v_water_factor := CASE
