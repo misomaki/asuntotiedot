@@ -45,6 +45,9 @@ export async function GET() {
       .select(`
         id,
         building_id,
+        room_count,
+        min_sqm,
+        max_sqm,
         max_price_per_sqm,
         note,
         created_at,
@@ -91,6 +94,9 @@ export async function GET() {
       created_at: row.created_at,
       expires_at: row.expires_at,
       type: 'interest',
+      room_count: row.room_count,
+      min_sqm: row.min_sqm,
+      max_sqm: row.max_sqm,
       max_price_per_sqm: row.max_price_per_sqm,
       note: row.note,
     })

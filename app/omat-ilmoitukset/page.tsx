@@ -222,6 +222,22 @@ function SignalCard({
             <span> &middot; {formatNumber(Math.round(signal.estimated_price_per_sqm))} €/m²</span>
           )}
         </p>
+        {/* Interest preferences (room count + sqm) */}
+        {signal.type === 'interest' && (signal.room_count || signal.min_sqm != null || signal.max_sqm != null) && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {signal.room_count && <span>{signal.room_count === '5+' ? '5+' : signal.room_count}h</span>}
+            {signal.room_count && (signal.min_sqm != null || signal.max_sqm != null) && ' · '}
+            {signal.min_sqm != null && signal.max_sqm != null && (
+              <span>{signal.min_sqm}–{signal.max_sqm} m²</span>
+            )}
+            {signal.min_sqm != null && signal.max_sqm == null && (
+              <span>&gt; {signal.min_sqm} m²</span>
+            )}
+            {signal.min_sqm == null && signal.max_sqm != null && (
+              <span>&lt; {signal.max_sqm} m²</span>
+            )}
+          </p>
+        )}
         {signal.note && (
           <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-2">{signal.note}</p>
         )}

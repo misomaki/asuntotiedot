@@ -190,11 +190,17 @@ export interface BuildingSignals {
   has_sell_intent: boolean
 }
 
+/** Room count options for buyer interest */
+export type RoomCount = '1' | '2' | '3' | '4' | '5+'
+
 /** A buyer's interest signal on a specific building */
 export interface BuildingInterest {
   id: string
   user_id: string
   building_id: string
+  room_count: RoomCount | null
+  min_sqm: number | null
+  max_sqm: number | null
   max_price_per_sqm: number | null
   note: string | null
   created_at: string
@@ -224,6 +230,9 @@ export interface UserSignalWithBuilding {
   created_at: string
   expires_at: string
   type: 'interest' | 'sell_intent'
+  room_count?: RoomCount | null
+  min_sqm?: number | null
+  max_sqm?: number | null
   max_price_per_sqm?: number | null
   asking_price_per_sqm?: number | null
   note: string | null

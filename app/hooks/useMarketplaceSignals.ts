@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/app/contexts/AuthContext'
-import type { BuildingSignals } from '@/app/types'
+import type { BuildingSignals, RoomCount } from '@/app/types'
+
+/** Buyer interest preferences */
+export interface InterestPreferences {
+  room_count?: RoomCount
+  min_sqm?: number
+  max_sqm?: number
+}
 
 interface UseMarketplaceSignalsResult {
   signals: BuildingSignals | null
@@ -11,8 +18,10 @@ interface UseMarketplaceSignalsResult {
   hasMyInterest: boolean
   /** Whether the current user has a sell intent */
   hasMySellIntent: boolean
-  /** Toggle interest on/off */
-  toggleInterest: () => Promise<void>
+  /** Submit interest with preferences (or remove if already set) */
+  submitInterest: (prefs: InterestPreferences) => Promise<void>
+  /** Remove existing interest */
+  removeInterest: () => Promise<void>
   /** Toggle sell intent on/off */
   toggleSellIntent: () => Promise<void>
   /** Refresh signal counts */
@@ -66,20 +75,27 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
       })
   }, [buildingId, user, refreshKey])
 
-  const toggleInterest = useCallback(async () => {
+  const submitInterest = useCallback(async (prefs: InterestPreferences) => {
     if (!buildingId || !user) return
 
-    if (hasMyInterest) {
-      await fetch(`/api/marketplace/interest?buildingId=${buildingId}`, { method: 'DELETE' })
-    } else {
-      await fetch('/api/marketplace/interest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ building_id: buildingId }),
-      })
-    }
+    await fetch('/api/marketplace/interest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        building_id: buildingId,
+        room_count: prefs.room_count ?? null,
+        min_sqm: prefs.min_sqm ?? null,
+        max_sqm: prefs.max_sqm ?? null,
+      }),
+    })
     refresh()
-  }, [buildingId, user, hasMyInterest, refresh])
+  }, [buildingId, user, refresh])
+
+  const removeInterest = useCallback(async () => {
+    if (!buildingId || !user) return
+    await fetch(`/api/marketplace/interest?buildingId=${buildingId}`, { method: 'DELETE' })
+    refresh()
+  }, [buildingId, user, refresh])
 
   const toggleSellIntent = useCallback(async () => {
     if (!buildingId || !user) return
@@ -101,7 +117,8 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
     isLoading,
     hasMyInterest,
     hasMySellIntent,
-    toggleInterest,
+    submitInterest,
+    removeInterest,
     toggleSellIntent,
     refresh,
   }

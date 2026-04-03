@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS building_interests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   building_id UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,
+  room_count TEXT,                     -- '1' | '2' | '3' | '4' | '5+' | null
+  min_sqm NUMERIC,                    -- minimum square meters (optional)
+  max_sqm NUMERIC,                    -- maximum square meters (optional)
   max_price_per_sqm NUMERIC,          -- optional: buyer's max budget
   note TEXT,                           -- optional: short note (max 280 chars)
   created_at TIMESTAMPTZ DEFAULT NOW(),

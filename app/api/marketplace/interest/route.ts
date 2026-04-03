@@ -42,14 +42,28 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { building_id, max_price_per_sqm, note } = body as {
+  const { building_id, room_count, min_sqm, max_sqm, max_price_per_sqm, note } = body as {
     building_id: string
+    room_count?: string
+    min_sqm?: number
+    max_sqm?: number
     max_price_per_sqm?: number
     note?: string
   }
 
   if (!building_id) {
     return NextResponse.json({ error: 'Missing building_id' }, { status: 400 })
+  }
+
+  // Validate room_count
+  const validRoomCounts = ['1', '2', '3', '4', '5+']
+  if (room_count && !validRoomCounts.includes(room_count)) {
+    return NextResponse.json({ error: 'Invalid room_count' }, { status: 400 })
+  }
+
+  // Validate sqm range
+  if (min_sqm != null && max_sqm != null && min_sqm > max_sqm) {
+    return NextResponse.json({ error: 'min_sqm cannot exceed max_sqm' }, { status: 400 })
   }
 
   // Validate note length
@@ -63,6 +77,9 @@ export async function POST(request: NextRequest) {
       {
         user_id: user.id,
         building_id,
+        room_count: room_count ?? null,
+        min_sqm: min_sqm ?? null,
+        max_sqm: max_sqm ?? null,
         max_price_per_sqm: max_price_per_sqm ?? null,
         note: note ?? null,
       },
