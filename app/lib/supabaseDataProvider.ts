@@ -23,6 +23,7 @@ import {
   computeWaterFactor,
   computeFloorFactor,
   computeSizeFactor,
+  computeTonttiFactor,
   dampenPremium,
   inferPropertyType,
   OKT_FALLBACK,
@@ -366,7 +367,7 @@ export class SupabaseDataProvider implements DataProvider {
          footprint_area_sqm, address, estimated_price_per_sqm,
          min_distance_to_water_m, area_id,
          energy_class, apartment_count,
-         ryhti_main_purpose, is_residential,
+         ryhti_main_purpose, is_residential, is_leased_plot,
          min_distance_to_school_m, min_distance_to_kindergarten_m,
          min_distance_to_grocery_m, min_distance_to_transit_m,
          min_distance_to_park_m, min_distance_to_health_m`
@@ -429,6 +430,7 @@ export class SupabaseDataProvider implements DataProvider {
     // Apply premium dampening to match the SQL-stored estimated_price_per_sqm
     const dampenedWaterFactor = dampenPremium(waterFactor, ageFactor)
     const dampenedNeighborhoodFactor = dampenPremium(neighborhoodFactor, ageFactor)
+    const tonttiFactor = computeTonttiFactor(building.is_leased_plot, propertyType)
 
     return {
       id: building.id,
@@ -454,8 +456,10 @@ export class SupabaseDataProvider implements DataProvider {
       floor_factor: floorFactor,
       size_factor: sizeFactor,
       neighborhood_factor: dampenedNeighborhoodFactor,
+      tontti_factor: tonttiFactor,
       ryhti_main_purpose: building.ryhti_main_purpose ?? null,
       is_residential: building.is_residential ?? null,
+      is_leased_plot: building.is_leased_plot ?? null,
       min_distance_to_school_m: building.min_distance_to_school_m != null ? Number(building.min_distance_to_school_m) : null,
       min_distance_to_kindergarten_m: building.min_distance_to_kindergarten_m != null ? Number(building.min_distance_to_kindergarten_m) : null,
       min_distance_to_grocery_m: building.min_distance_to_grocery_m != null ? Number(building.min_distance_to_grocery_m) : null,

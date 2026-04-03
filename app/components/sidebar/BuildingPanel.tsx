@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { cn } from '@/app/lib/utils'
-import { formatNumber, getBuildingTypeLabel } from '@/app/lib/formatters'
+import { formatNumber, getBuildingTypeLabel, formatPriceRange } from '@/app/lib/formatters'
+import { computePriceRange } from '@/app/lib/priceEstimation'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { CompactAttribute } from '@/app/components/sidebar/CompactAttribute'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -23,6 +24,7 @@ import {
   TreePine,
   Heart,
   Baby,
+  LandPlot,
 } from 'lucide-react'
 import type { BuildingWithPrice } from '@/app/types'
 
@@ -105,6 +107,13 @@ export function BuildingPanel() {
   const price = building.estimated_price_per_sqm
   const hasPrice = price !== null && price > 0
   const hasFactors = hasPrice && building.base_price !== null
+  const priceRange = hasPrice
+    ? computePriceRange(price!, {
+        neighborhoodFactor: building.neighborhood_factor,
+        hasConstructionYear: building.construction_year !== null,
+        hasEnergyClass: building.energy_class !== null,
+      })
+    : null
 
   // Resolve building type label
   const typeLabel = building.ryhti_main_purpose
@@ -144,8 +153,11 @@ export function BuildingPanel() {
           <div className="px-4 pt-3 pb-2.5">
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Hinta-arvio</div>
             <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
-              <AnimatedNumber value={price!} fromZero duration={500} />
-              <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
+              {formatPriceRange(priceRange!.low, priceRange!.high)}
+            </div>
+            <div className="text-sm text-muted-foreground mt-0.5">
+              Keskiarvo <AnimatedNumber value={price!} fromZero duration={500} />
+              <span className="ml-1">€/m²</span>
             </div>
           </div>
         ) : (
@@ -233,6 +245,14 @@ export function BuildingPanel() {
                   neutral={building.neighborhood_factor === 1}
                   positive={building.neighborhood_factor > 1}
                 />
+                {building.tontti_factor !== 1 && (
+                  <FactorRow
+                    label="Tonttikerroin"
+                    value={formatFactor(building.tontti_factor)}
+                    neutral={false}
+                    positive={false}
+                  />
+                )}
 
               </div>
             )}
@@ -286,6 +306,14 @@ export function BuildingPanel() {
             label="Asuntoja"
             value={building.apartment_count.toString()}
             delay={6}
+          />
+        )}
+        {building.is_leased_plot !== null && (
+          <CompactAttribute
+            icon={<LandPlot size={14} />}
+            label="Tontti"
+            value={building.is_leased_plot ? 'Vuokratontti' : 'Oma tontti'}
+            delay={7}
           />
         )}
       </div>
@@ -354,6 +382,7 @@ const FACTOR_TOOLTIPS: Record<string, string> = {
   'Kokokerroin': 'Rakennuksen pohja-alan vaikutus hintaan.',
   'Vesikerroin': 'Vesistön läheisyyden vaikutus. Alle 200 m järvestä tai merestä nostaa hintaa.',
   'Naapurustokerroin': 'Alueen hintatason poikkeama perushinnasta, laskettu toteutuneiden kauppahintojen perusteella.',
+  'Tonttikerroin': 'Vuokratontti (kaupungin omistama maa) alentaa asunnon hintaa, koska ostaja maksaa tonttivuokraa.',
 }
 
 function FactorRow({

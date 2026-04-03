@@ -8,6 +8,7 @@
  * 4. Floor count
  * 5. Building size (apartment count / total area)
  * 6. Neighborhood correction (market-calibrated)
+ * 7. Plot ownership type (vuokratontti discount)
  *
  * Location premium factors (water, neighborhood) are dampened for old buildings.
  */
@@ -15,8 +16,8 @@
 /** Omakotitalo fallback multipliers when no direct StatFin OKT data exists.
  *  Validated 2026-03: OKT prices are typically above RT in same area. */
 export const OKT_FALLBACK = {
-  fromRivitalo: 1.10,
-  fromKerrostalo: 0.90,
+  fromRivitalo: 1.00,
+  fromKerrostalo: 0.75,
 } as const
 
 export type PropertyType = 'kerrostalo' | 'rivitalo' | 'omakotitalo'
@@ -42,6 +43,8 @@ export interface PriceEstimationInput {
   apartmentCount?: number | null
   /** Building footprint area in m² (null if unknown) */
   footprintAreaSqm?: number | null
+  /** Whether building sits on a municipality-owned leased plot (vuokratontti) */
+  isLeasedPlot?: boolean | null
 }
 
 export interface PriceEstimationResult {
@@ -53,6 +56,7 @@ export interface PriceEstimationResult {
   floorFactor: number
   sizeFactor: number
   neighborhoodFactor: number
+  tonttiFactor: number
 }
 
 export function computeAgeFactor(
@@ -189,6 +193,26 @@ export function dampenPremium(factor: number, ageFactor: number): number {
 }
 
 /**
+ * Leased plot (vuokratontti) discount factor.
+ * Buildings on municipality-owned leased land sell for less because
+ * buyers must pay ongoing ground rent. Applied to KT and RT only —
+ * OKT excluded pending validation data.
+ * Value 0.92 = conservative estimate based on Finnish market research
+ * (5-15% discount range, using lower bound). Recalibrate when we have
+ * Etuovi detail page data with holdingType field.
+ */
+export const TONTTI_FACTOR_LEASED = 0.92
+
+export function computeTonttiFactor(
+  isLeasedPlot: boolean | null | undefined,
+  propertyType: PropertyType | undefined
+): number {
+  if (!isLeasedPlot) return 1.0
+  if (propertyType === 'omakotitalo') return 1.0
+  return TONTTI_FACTOR_LEASED
+}
+
+/**
  * Map building metadata to Finnish property type.
  *
  * Priority:
@@ -245,9 +269,11 @@ export function estimateBuildingPrice(
   const waterFactor = rawWaterFactor
   // Dampen neighborhood premium for old buildings (market sentiment effect)
   const neighborhoodFactor = dampenPremium(rawNeighborhoodFactor, ageFactor)
+  // Leased plot discount (vuokratontti)
+  const tonttiFactor = computeTonttiFactor(input.isLeasedPlot, input.propertyType)
 
   const estimatedPricePerSqm = Math.round(
-    input.basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor
+    input.basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor * tonttiFactor
   )
 
   return {
@@ -259,5 +285,61 @@ export function estimateBuildingPrice(
     floorFactor,
     sizeFactor,
     neighborhoodFactor,
+    tonttiFactor,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Confidence-adaptive price range
+// ---------------------------------------------------------------------------
+
+const roundTo50 = (v: number) => Math.round(v / 50) * 50
+
+export interface PriceRange {
+  /** Lower bound, rounded to nearest 50 */
+  low: number
+  /** Upper bound, rounded to nearest 50 */
+  high: number
+  /** Margin percentage, e.g. 0.12 for ±12% */
+  marginPct: number
+}
+
+/**
+ * Compute a confidence-adaptive price range around a point estimate.
+ *
+ * Base margin: ±20% (worst case — no metadata).
+ * Narrowing:
+ *   - Has neighborhood factor (≠ 1.0): −8pp → ±12%
+ *   - Has construction year:           −2pp
+ *   - Has energy class:                −1pp
+ * Minimum margin: ±8%.
+ * Bounds rounded to nearest 50 for clean display.
+ */
+export function computePriceRange(
+  price: number,
+  opts?: {
+    neighborhoodFactor?: number
+    hasConstructionYear?: boolean
+    hasEnergyClass?: boolean
+  }
+): PriceRange {
+  let margin = 0.20
+
+  if (opts?.neighborhoodFactor != null && opts.neighborhoodFactor !== 1.0) {
+    margin -= 0.08
+  }
+  if (opts?.hasConstructionYear) {
+    margin -= 0.02
+  }
+  if (opts?.hasEnergyClass) {
+    margin -= 0.01
+  }
+
+  margin = Math.max(0.08, margin)
+
+  return {
+    low: roundTo50(price * (1 - margin)),
+    high: roundTo50(price * (1 + margin)),
+    marginPct: margin,
   }
 }

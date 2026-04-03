@@ -46,19 +46,31 @@ interface AreaPrice {
 async function main() {
   console.log('=== Neighborhood Factor Computation ===\n')
 
-  // 1. Fetch all listings with area_id
-  const { data: listings, error: listErr } = await supabase
-    .from('_etuovi_staging')
-    .select('id, postal_code, property_type, construction_year, asking_price_per_sqm, area_id')
-    .not('area_id', 'is', null)
-    .not('asking_price_per_sqm', 'is', null)
+  // 1. Fetch all listings with area_id (paginated to avoid 1000-row limit)
+  let listings: EtuoviListing[] = []
+  {
+    const PAGE = 1000
+    let offset = 0
+    while (true) {
+      const { data: page, error: pageErr } = await supabase
+        .from('_etuovi_staging')
+        .select('id, postal_code, property_type, construction_year, asking_price_per_sqm, area_id')
+        .not('area_id', 'is', null)
+        .not('asking_price_per_sqm', 'is', null)
+        .range(offset, offset + PAGE - 1)
 
-  if (listErr) {
-    console.error('Failed to fetch listings:', listErr.message)
-    process.exit(1)
+      if (pageErr) {
+        console.error('Failed to fetch listings:', pageErr.message)
+        process.exit(1)
+      }
+      if (!page || page.length === 0) break
+      listings = listings.concat(page as EtuoviListing[])
+      if (page.length < PAGE) break
+      offset += PAGE
+    }
   }
 
-  if (!listings || listings.length === 0) {
+  if (listings.length === 0) {
     console.log('No listings found in _etuovi_staging. Populate the table first.')
     return
   }

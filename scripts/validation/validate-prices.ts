@@ -676,54 +676,175 @@ _(To be filled based on analysis results)_
   console.log(`  Tampere: n=${tampereStats.count}, mean=${tampereStats.mean}%, median=${tampereStats.median}%`)
   console.log(`  Turku: n=${turkuStats.count}, mean=${turkuStats.mean}%, median=${turkuStats.median}%`)
 
-  // ─── Staging-based validation (larger dataset) ─────────────────────────
-  console.log('\n═══ STAGING VALIDATION (Etuovi CSV) ═══')
+  // ─── Staging-based validation with 70/30 holdout split ──────────────────
+  console.log('\n═══ STAGING VALIDATION (70/30 holdout split) ═══')
 
-  const { data: stagingListings, error: stagingErr } = await supabase
-    .from('_etuovi_staging')
-    .select('id, area_id, city, neighborhood, property_type, construction_year, asking_price_per_sqm')
-    .not('area_id', 'is', null)
-    .not('asking_price_per_sqm', 'is', null)
-    .gt('construction_year', 1800)
+  // Paginate staging listings to avoid Supabase 1000-row default limit
+  let stagingListings: { id: string; area_id: string; city: string; neighborhood: string; property_type: string; construction_year: number; asking_price_per_sqm: number }[] = []
+  {
+    const PG = 1000
+    let off = 0
+    while (true) {
+      const { data: pg, error: pgErr } = await supabase
+        .from('_etuovi_staging')
+        .select('id, area_id, city, neighborhood, property_type, construction_year, asking_price_per_sqm')
+        .not('area_id', 'is', null)
+        .not('asking_price_per_sqm', 'is', null)
+        .gt('construction_year', 1800)
+        .gte('asking_price_per_sqm', 1200)
+        .range(off, off + PG - 1)
+      if (pgErr || !pg || pg.length === 0) break
+      stagingListings = stagingListings.concat(pg as typeof stagingListings)
+      if (pg.length < PG) break
+      off += PG
+    }
+  }
 
-  if (stagingErr || !stagingListings?.length) {
+  if (!stagingListings.length) {
     console.log('No staging data available for expanded validation')
   } else {
-    // Validate each staging listing
-    const stagingResults: { city: string; type: string; delta: number }[] = []
+    // Deterministic hash for reproducible split (simple string hash)
+    function hashId(id: string): number {
+      let hash = 0
+      for (let i = 0; i < id.length; i++) {
+        hash = ((hash << 5) - hash) + id.charCodeAt(i)
+        hash |= 0 // Convert to 32-bit integer
+      }
+      return Math.abs(hash)
+    }
 
-    for (const sl of stagingListings) {
+    // Split: 70% train (for computing factors), 30% test (for validation)
+    const trainSet = stagingListings.filter(sl => hashId(sl.id) % 100 < 70)
+    const testSet = stagingListings.filter(sl => hashId(sl.id) % 100 >= 70)
+
+    console.log(`Total staging listings: ${stagingListings.length}`)
+    console.log(`Train set (70%): ${trainSet.length}`)
+    console.log(`Test set (30%): ${testSet.length}`)
+
+    // ─── Compute neighborhood factors from train set only ───────────────
+    // Fetch all base prices (paginated to avoid 1000-row limit)
+    let priceRows: { area_id: string; property_type: string; price_per_sqm_avg: number; price_per_sqm_median: number | null; year: number }[] = []
+    const PAGE_SIZE = 1000
+    let from = 0
+    while (true) {
+      const { data: page } = await supabase
+        .from('price_estimates')
+        .select('area_id, property_type, price_per_sqm_avg, price_per_sqm_median, year')
+        .not('price_per_sqm_avg', 'is', null)
+        .order('year', { ascending: false })
+        .range(from, from + PAGE_SIZE - 1)
+      if (!page || page.length === 0) break
+      priceRows = priceRows.concat(page)
+      if (page.length < PAGE_SIZE) break
+      from += PAGE_SIZE
+    }
+
+    // Build lookup: area_id+type → latest price
+    const priceMap = new Map<string, number>()
+    for (const row of priceRows) {
+      const key = `${row.area_id}:${row.property_type}`
+      if (!priceMap.has(key)) {
+        priceMap.set(key, Number(row.price_per_sqm_median ?? row.price_per_sqm_avg))
+      }
+    }
+
+    // Compute factors from train set (same logic as 09-compute-neighborhood-factors.ts)
+    type FactorGroup = { askingPrices: number[]; estimatedPrices: number[] }
+    const groups = new Map<string, FactorGroup>()
+
+    for (const sl of trainSet) {
+      if (!sl.construction_year || sl.construction_year === 0) continue
       const pt = sl.property_type || 'kerrostalo'
-      const ptShort = pt === 'kerrostalo' ? 'KT' : pt === 'rivitalo' ? 'RT' : 'OKT'
 
-      // Look up base price
-      let basePrice: number | null = null
+      let basePrice: number | undefined
       if (pt === 'omakotitalo') {
-        const { data: okt } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', 'omakotitalo').order('year', { ascending: false }).limit(1)
-        if (okt?.length) basePrice = Number(okt[0].price_per_sqm_median ?? okt[0].price_per_sqm_avg)
+        basePrice = priceMap.get(`${sl.area_id}:omakotitalo`)
         if (!basePrice) {
-          const { data: rt } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', 'rivitalo').order('year', { ascending: false }).limit(1)
-          if (rt?.length) basePrice = Number(rt[0].price_per_sqm_median ?? rt[0].price_per_sqm_avg) * 1.10
+          const rtPrice = priceMap.get(`${sl.area_id}:rivitalo`)
+          if (rtPrice) basePrice = rtPrice * OKT_FALLBACK.fromRivitalo
         }
         if (!basePrice) {
-          const { data: kt } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', 'kerrostalo').order('year', { ascending: false }).limit(1)
-          if (kt?.length) basePrice = Number(kt[0].price_per_sqm_median ?? kt[0].price_per_sqm_avg) * 0.90
+          const ktPrice = priceMap.get(`${sl.area_id}:kerrostalo`)
+          if (ktPrice) basePrice = ktPrice * OKT_FALLBACK.fromKerrostalo
         }
       } else {
-        const { data: prices } = await supabase.from('price_estimates').select('price_per_sqm_median, price_per_sqm_avg').eq('area_id', sl.area_id).eq('property_type', pt).order('year', { ascending: false }).limit(1)
-        if (prices?.length) basePrice = Number(prices[0].price_per_sqm_median ?? prices[0].price_per_sqm_avg)
+        basePrice = priceMap.get(`${sl.area_id}:${pt}`)
       }
-
       if (!basePrice) continue
 
       const ageFactor = computeAgeFactor(sl.construction_year, REFERENCE_YEAR)
-      const rawNbhd = await fetchNeighborhoodFactor(sl.area_id, pt)
+      const estimated = basePrice * ageFactor
+
+      // Group by area_id + property_type
+      const groupKey = `${sl.area_id}:${pt}`
+      let group = groups.get(groupKey)
+      if (!group) { group = { askingPrices: [], estimatedPrices: [] }; groups.set(groupKey, group) }
+      group.askingPrices.push(sl.asking_price_per_sqm)
+      group.estimatedPrices.push(estimated)
+
+      // Also add to 'all' group for this area
+      const allKey = `${sl.area_id}:all`
+      let allGroup = groups.get(allKey)
+      if (!allGroup) { allGroup = { askingPrices: [], estimatedPrices: [] }; groups.set(allKey, allGroup) }
+      allGroup.askingPrices.push(sl.asking_price_per_sqm)
+      allGroup.estimatedPrices.push(estimated)
+    }
+
+    // Compute train-set factors
+    const trainFactors = new Map<string, number>()
+    const FACTOR_MIN = 0.70, FACTOR_MAX = 1.50
+    for (const [key, group] of groups.entries()) {
+      const n = group.askingPrices.length
+      if (n < 3) continue // minimum sample
+      const avgAsking = group.askingPrices.reduce((a, b) => a + b, 0) / n
+      const avgEstimated = group.estimatedPrices.reduce((a, b) => a + b, 0) / n
+      if (avgEstimated === 0) continue
+      const factor = Math.max(FACTOR_MIN, Math.min(FACTOR_MAX, avgAsking / avgEstimated))
+      trainFactors.set(key, Math.round(factor * 100) / 100)
+    }
+
+    console.log(`Train-derived factors: ${trainFactors.size} (min 3 samples)`)
+
+    // Lookup function using train-set factors (same cascade as production)
+    function lookupTrainFactor(areaId: string, propertyType: string): number {
+      const exact = trainFactors.get(`${areaId}:${propertyType}`)
+      if (exact !== undefined) return exact
+      const all = trainFactors.get(`${areaId}:all`)
+      if (all !== undefined) return all
+      return 1.0
+    }
+
+    // ─── Validate on test set ───────────────────────────────────────────
+    const stagingResults: { city: string; type: string; delta: number; hasNbhd: boolean; neighborhood: string; asking: number; estimate: number; ageFactor: number; nbhdFactor: number; year: number }[] = []
+
+    for (const sl of testSet) {
+      const pt = sl.property_type || 'kerrostalo'
+      const ptShort = pt === 'kerrostalo' ? 'KT' : pt === 'rivitalo' ? 'RT' : 'OKT'
+
+      let basePrice: number | undefined
+      if (pt === 'omakotitalo') {
+        basePrice = priceMap.get(`${sl.area_id}:omakotitalo`)
+        if (!basePrice) {
+          const rtPrice = priceMap.get(`${sl.area_id}:rivitalo`)
+          if (rtPrice) basePrice = rtPrice * OKT_FALLBACK.fromRivitalo
+        }
+        if (!basePrice) {
+          const ktPrice = priceMap.get(`${sl.area_id}:kerrostalo`)
+          if (ktPrice) basePrice = ktPrice * OKT_FALLBACK.fromKerrostalo
+        }
+      } else {
+        basePrice = priceMap.get(`${sl.area_id}:${pt}`)
+      }
+      if (!basePrice) continue
+
+      const ageFactor = computeAgeFactor(sl.construction_year, REFERENCE_YEAR)
+      const rawNbhd = lookupTrainFactor(sl.area_id, pt)
       const neighborhoodFactor = dampenPremium(rawNbhd, ageFactor)
 
       const estimate = Math.round(basePrice * ageFactor * neighborhoodFactor)
       const delta = Math.round(((estimate - sl.asking_price_per_sqm) / sl.asking_price_per_sqm) * 100)
 
-      stagingResults.push({ city: sl.city, type: ptShort, delta })
+      stagingResults.push({ city: sl.city, type: ptShort, delta, hasNbhd: rawNbhd !== 1.0, neighborhood: sl.neighborhood, asking: sl.asking_price_per_sqm, estimate, ageFactor, nbhdFactor: neighborhoodFactor, year: sl.construction_year })
     }
 
     if (stagingResults.length > 0) {
@@ -735,11 +856,55 @@ _(To be filled based on analysis results)_
       const sMedian = sSorted[Math.floor(sSorted.length/2)]
       const sStd = Math.sqrt(sDeltas.reduce((s,d) => s + (d-sMean)**2, 0) / sDeltas.length)
 
-      console.log(`Total: ${stagingResults.length}`)
+      console.log(`\nHoldout results (${stagingResults.length} listings):`)
       console.log(`Mean Δ%: ${Math.round(sMean)}%`)
       console.log(`Median Δ%: ${sMedian}%`)
       console.log(`Mean |Δ%|: ${Math.round(sMeanAbs)}%`)
       console.log(`Std Dev: ${Math.round(sStd)}%`)
+
+      // Distribution buckets
+      const buckets = [
+        { label: '≤-50%', test: (d: number) => d <= -50 },
+        { label: '-50 to -30%', test: (d: number) => d > -50 && d <= -30 },
+        { label: '-30 to -10%', test: (d: number) => d > -30 && d <= -10 },
+        { label: '-10 to +10%', test: (d: number) => d > -10 && d <= 10 },
+        { label: '+10 to +30%', test: (d: number) => d > 10 && d <= 30 },
+        { label: '+30 to +50%', test: (d: number) => d > 30 && d <= 50 },
+        { label: '>+50%', test: (d: number) => d > 50 },
+      ]
+      console.log('\nDistribution:')
+      for (const b of buckets) {
+        const n = stagingResults.filter(r => b.test(r.delta)).length
+        const bar = '█'.repeat(Math.round(n / stagingResults.length * 40))
+        console.log(`  ${b.label.padEnd(14)} ${String(n).padStart(3)} (${String(Math.round(n/stagingResults.length*100)).padStart(2)}%) ${bar}`)
+      }
+
+      // Top 5 outliers
+      const sortedStaging = [...stagingResults].sort((a,b) => b.delta - a.delta)
+      console.log('\nTop 5 over-estimations:')
+      for (const r of sortedStaging.slice(0, 5)) {
+        console.log(`  +${r.delta}% | ${r.city} ${r.neighborhood} | ${r.type} ${r.year} | asking=${r.asking} est=${r.estimate} | age=${r.ageFactor} nbhd=${r.nbhdFactor.toFixed(2)}`)
+      }
+      console.log('\nTop 5 under-estimations:')
+      for (const r of sortedStaging.slice(-5).reverse()) {
+        console.log(`  ${r.delta}% | ${r.city} ${r.neighborhood} | ${r.type} ${r.year} | asking=${r.asking} est=${r.estimate} | age=${r.ageFactor} nbhd=${r.nbhdFactor.toFixed(2)}`)
+      }
+
+      // With vs without neighborhood factor
+      const withNbhd = stagingResults.filter(r => r.hasNbhd)
+      const withoutNbhd = stagingResults.filter(r => !r.hasNbhd)
+      if (withNbhd.length > 0) {
+        const ds = withNbhd.map(r => r.delta)
+        const mean = Math.round(ds.reduce((a,b) => a+b,0)/ds.length)
+        const absM = Math.round(ds.map(Math.abs).reduce((a,b) => a+b,0)/ds.length)
+        console.log(`  With nbhd factor: n=${withNbhd.length}, mean=${mean}%, mean|Δ|=${absM}%`)
+      }
+      if (withoutNbhd.length > 0) {
+        const ds = withoutNbhd.map(r => r.delta)
+        const mean = Math.round(ds.reduce((a,b) => a+b,0)/ds.length)
+        const absM = Math.round(ds.map(Math.abs).reduce((a,b) => a+b,0)/ds.length)
+        console.log(`  Without nbhd factor: n=${withoutNbhd.length}, mean=${mean}%, mean|Δ|=${absM}%`)
+      }
 
       // By type
       console.log('\nBy type:')

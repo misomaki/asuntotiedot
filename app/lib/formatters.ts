@@ -18,6 +18,11 @@ export function formatPricePerSqm(value: number | null): string {
   return `${fiFormatter.format(Math.round(value))} €/m²`
 }
 
+/** Format price range with en-dash: "3 800 – 4 650 €/m²" */
+export function formatPriceRange(low: number, high: number): string {
+  return `${fiFormatter.format(low)}\u2009–\u2009${fiFormatter.format(high)} €/m²`
+}
+
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)} %`
 }

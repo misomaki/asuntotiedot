@@ -103,7 +103,6 @@ function normalizeCity(city: string): string {
 
 // Etuovi neighborhood → database area name aliases
 const NEIGHBORHOOD_ALIASES: Record<string, string> = {
-  keskusta: 'keskus',
   alppiharju: 'alppila',
   hietalahti: 'punavuori',
   kluuvi: 'kruununhaka',
@@ -115,6 +114,20 @@ const NEIGHBORHOOD_ALIASES: Record<string, string> = {
   aviapolis: 'aviapoliksen',
   asemantausta: 'lahti keskus',
   niemenranta: 'niemi',
+}
+
+// City-specific keskusta aliases (generic 'keskusta' → 'keskus' caused Oulu Keskusta
+// to match Oulunsalo Keskus instead of Oulu Keskus via substring matching)
+const CITY_KESKUSTA_ALIASES: Record<string, string> = {
+  helsinki: 'helsinki keskus',
+  tampere: 'tampere keskus',
+  turku: 'turku keskus',
+  oulu: 'oulu keskus',
+  espoo: 'espoo keskus',
+  vantaa: 'tikkurila',
+  jyväskylä: 'jyväskylän keskus',
+  kuopio: 'kuopio keskus',
+  lahti: 'lahti keskus',
 }
 
 /** Find best matching area_id for a listing */
@@ -130,6 +143,11 @@ function findAreaId(
   // Try original name, then alias
   const candidates = [nbhd]
   if (NEIGHBORHOOD_ALIASES[nbhd]) candidates.push(NEIGHBORHOOD_ALIASES[nbhd])
+  // City-specific keskusta alias (avoids cross-city substring collisions)
+  if (nbhd === 'keskusta') {
+    const cityKey = city.toLowerCase()
+    if (CITY_KESKUSTA_ALIASES[cityKey]) candidates.push(CITY_KESKUSTA_ALIASES[cityKey])
+  }
 
   for (const candidate of candidates) {
     // Strategy 1: Exact name match within city
@@ -168,10 +186,11 @@ async function main() {
   const listings = parseCsv(csvPath)
   console.log(`Parsed ${listings.length} listings from CSV`)
 
-  // Filter out likely bad data (very low pricePerSqm suggests monthly payment, not sale price)
-  const validListings = listings.filter(l => l.pricePerSqm >= 500)
+  // Filter out likely bad data (very low pricePerSqm suggests monthly rent, Hitas, or partial ownership)
+  // Real Finnish sale prices: KT ≥1,200, RT ≥1,500, OKT ≥1,000 €/m². Using 1,200 as safe floor.
+  const validListings = listings.filter(l => l.pricePerSqm >= 1200)
   const filtered = listings.length - validListings.length
-  console.log(`Filtered ${filtered} listings with pricePerSqm < 500 (likely non-sale prices)`)
+  console.log(`Filtered ${filtered} listings with pricePerSqm < 1200 (likely non-sale prices)`)
   console.log(`Valid listings: ${validListings.length}`)
 
   // 2. Fetch all areas

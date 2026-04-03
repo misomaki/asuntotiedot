@@ -17,7 +17,8 @@ import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
 import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression, getQuantileScale } from '@/app/lib/colorScales'
-import { formatPricePerSqm, getBuildingTypeLabel } from '@/app/lib/formatters'
+import { formatPricePerSqm, formatPriceRange, getBuildingTypeLabel } from '@/app/lib/formatters'
+import { computePriceRange } from '@/app/lib/priceEstimation'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
 import MapTooltip from './MapTooltip'
@@ -883,10 +884,16 @@ function BuildingTooltip({
 
   const price = hasValidPrice ? props.price : null
   const priceColor = price !== null ? getColorForPrice(price) : null
-  const priceStr =
-    price !== null
-      ? formatPricePerSqm(price)
-      : 'Ei hinta-arviota'
+  // MVT tiles lack neighborhood_factor → tooltip range is wider than BuildingPanel.
+  // This is intentional: panel fetches full data and narrows the range further.
+  const priceRange = price !== null
+    ? computePriceRange(price, {
+        hasConstructionYear: !!props.construction_year,
+      })
+    : null
+  const priceStr = priceRange
+    ? formatPriceRange(priceRange.low, priceRange.high)
+    : 'Ei hinta-arviota'
 
   const details: string[] = []
   if (props.address) details.push(props.address)

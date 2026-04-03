@@ -158,8 +158,10 @@ export interface BuildingWithPrice {
   floor_factor: number
   size_factor: number
   neighborhood_factor: number
+  tontti_factor: number
   ryhti_main_purpose: string | null
   is_residential: boolean | null
+  is_leased_plot: boolean | null
   // Amenity distances (meters)
   min_distance_to_school_m: number | null
   min_distance_to_kindergarten_m: number | null
