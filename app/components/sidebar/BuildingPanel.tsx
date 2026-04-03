@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
+import { useAuth } from '@/app/contexts/AuthContext'
+import { useMarketplaceSignals } from '@/app/hooks/useMarketplaceSignals'
 import { cn } from '@/app/lib/utils'
 import { formatNumber, getBuildingTypeLabel, formatPriceRange } from '@/app/lib/formatters'
 import { computePriceRange } from '@/app/lib/priceEstimation'
@@ -25,6 +27,8 @@ import {
   Heart,
   Baby,
   LandPlot,
+  HandCoins,
+  Eye,
 } from 'lucide-react'
 import type { BuildingWithPrice } from '@/app/types'
 
@@ -321,10 +325,241 @@ export function BuildingPanel() {
       {/* ── Nearby services (Lähipalvelut) ── */}
       <NearbyServices building={building} />
 
+      {/* ── Marketplace signals ── */}
+      <MarketplaceSignals buildingId={selectedBuilding!} />
+
       {/* ── Disclaimer ── */}
       <p className="text-xs text-muted-foreground/70 leading-snug">
         Arvio perustuu Tilastokeskuksen tilastohintoihin ja rakennuksen ominaisuuksiin. Suuntaa-antava.
       </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Marketplace signals section
+// ---------------------------------------------------------------------------
+
+const ROOM_OPTIONS = [
+  { value: '1', label: '1h' },
+  { value: '2', label: '2h' },
+  { value: '3', label: '3h' },
+  { value: '4', label: '4h' },
+  { value: '5+', label: '5h+' },
+] as const
+
+const SQM_PRESETS = [
+  { label: '< 40 m²', min: undefined, max: 40 },
+  { label: '40–60 m²', min: 40, max: 60 },
+  { label: '60–80 m²', min: 60, max: 80 },
+  { label: '80–100 m²', min: 80, max: 100 },
+  { label: '100–150 m²', min: 100, max: 150 },
+  { label: '> 150 m²', min: 150, max: undefined },
+] as const
+
+function MarketplaceSignals({ buildingId }: { buildingId: string }) {
+  const { user } = useAuth()
+  const {
+    signals,
+    hasMyInterest,
+    hasMySellIntent,
+    submitInterest,
+    removeInterest,
+    toggleSellIntent,
+  } = useMarketplaceSignals(buildingId)
+  const [toggling, setToggling] = useState<'interest' | 'sell' | null>(null)
+  const [showInterestForm, setShowInterestForm] = useState(false)
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
+  const [selectedSqmIdx, setSelectedSqmIdx] = useState<number | null>(null)
+
+  async function handleSubmitInterest() {
+    setToggling('interest')
+    const sqmPreset = selectedSqmIdx != null ? SQM_PRESETS[selectedSqmIdx] : null
+    await submitInterest({
+      room_count: (selectedRoom as '1' | '2' | '3' | '4' | '5+') ?? undefined,
+      min_sqm: sqmPreset?.min,
+      max_sqm: sqmPreset?.max,
+    })
+    setShowInterestForm(false)
+    setToggling(null)
+  }
+
+  async function handleRemoveInterest() {
+    setToggling('interest')
+    await removeInterest()
+    setShowInterestForm(false)
+    setToggling(null)
+  }
+
+  async function handleToggleSellIntent() {
+    setToggling('sell')
+    await toggleSellIntent()
+    setToggling(null)
+  }
+
+  const interestCount = signals?.interest_count ?? 0
+  const hasSeller = signals?.has_sell_intent ?? false
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-muted-foreground"><HandCoins size={14} /></span>
+        <h3 className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Markkinapaikka</h3>
+      </div>
+
+      {/* Signal counts */}
+      {(interestCount > 0 || hasSeller) && (
+        <div className="flex flex-wrap gap-2">
+          {interestCount > 0 && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs text-blue-700">
+              <Eye size={12} />
+              {interestCount} kiinnostunut{interestCount !== 1 ? 'ta' : ''}
+            </span>
+          )}
+          {hasSeller && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-xs text-green-700">
+              <HandCoins size={12} />
+              Myynti-ilmoitus
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {user ? (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (hasMyInterest) {
+                  handleRemoveInterest()
+                } else {
+                  setShowInterestForm(prev => !prev)
+                }
+              }}
+              disabled={toggling !== null}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5',
+                'px-3 py-2 rounded-lg text-xs font-medium',
+                'border-2 transition-all duration-150',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                hasMyInterest
+                  ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-50'
+                  : showInterestForm
+                    ? 'bg-blue-50 border-blue-300 text-blue-800'
+                    : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300 hover:bg-blue-50/50',
+              )}
+            >
+              <Eye size={14} />
+              {hasMyInterest ? 'Poista kiinnostus' : 'Olen kiinnostunut'}
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleSellIntent}
+              disabled={toggling !== null}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5',
+                'px-3 py-2 rounded-lg text-xs font-medium',
+                'border-2 transition-all duration-150',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                hasMySellIntent
+                  ? 'bg-green-100 border-green-300 text-green-800 hover:bg-green-50'
+                  : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-green-300 hover:bg-green-50/50',
+              )}
+            >
+              <HandCoins size={14} />
+              {hasMySellIntent ? 'Ilmoitus aktiivinen' : 'Myyn tätä'}
+            </button>
+          </div>
+
+          {/* Interest form — room count + sqm range */}
+          {showInterestForm && !hasMyInterest && (
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50/30 p-3 space-y-3 animate-fade-in">
+              {/* Room count */}
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  Huoneluku
+                </label>
+                <div className="flex gap-1.5">
+                  {ROOM_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setSelectedRoom(
+                        selectedRoom === opt.value ? null : opt.value
+                      )}
+                      className={cn(
+                        'flex-1 py-1.5 rounded-lg text-xs font-medium',
+                        'border transition-all duration-100',
+                        selectedRoom === opt.value
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300',
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Square meter range */}
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  Pinta-ala
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {SQM_PRESETS.map((preset, idx) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setSelectedSqmIdx(
+                        selectedSqmIdx === idx ? null : idx
+                      )}
+                      className={cn(
+                        'py-1.5 rounded-lg text-xs font-medium',
+                        'border transition-all duration-100',
+                        selectedSqmIdx === idx
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300',
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="button"
+                onClick={handleSubmitInterest}
+                disabled={toggling === 'interest'}
+                className={cn(
+                  'w-full py-2 rounded-lg text-xs font-bold',
+                  'bg-blue-600 text-white border-2 border-blue-700',
+                  'hover:bg-blue-700 transition-colors',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+              >
+                {toggling === 'interest' ? 'Tallennetaan...' : 'Tallenna kiinnostus'}
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <a
+          href="/login"
+          className={cn(
+            'flex items-center justify-center gap-1.5',
+            'w-full px-3 py-2 rounded-lg text-xs font-medium',
+            'bg-white border-2 border-[#1a1a1a]/15 text-muted-foreground',
+            'hover:border-[#1a1a1a]/30 hover:text-foreground transition-colors',
+          )}
+        >
+          Kirjaudu ilmoittaaksesi kiinnostuksesi
+        </a>
+      )}
     </div>
   )
 }
