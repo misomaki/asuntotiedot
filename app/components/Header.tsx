@@ -47,48 +47,6 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
 
 const YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] as const
 
-/** Shared search result item with query highlighting */
-function SearchResultItem({
-  area,
-  compact,
-  index,
-  query,
-  onSelect,
-}: {
-  area: SearchableArea
-  compact: boolean
-  index?: number
-  query?: string
-  onSelect: (area: SearchableArea) => void
-}) {
-  const q = query ?? ''
-  return (
-    <button
-      key={area.areaCode}
-      type="button"
-      onClick={() => onSelect(area)}
-      className={cn(
-        'w-full px-3 text-left',
-        'flex items-center gap-2',
-        compact ? 'py-2 text-xs' : 'py-3 text-sm',
-        'text-[#1a1a1a]',
-        'hover:bg-pink-baby transition-colors',
-        'focus-visible:outline-none focus-visible:bg-pink-baby',
-        compact && 'animate-slide-up',
-      )}
-      style={compact && index !== undefined ? { animationDelay: `${index * 30}ms`, animationFillMode: 'both' } : undefined}
-    >
-      <span className={cn('font-mono text-[#999] flex-shrink-0', !compact && 'text-sm')} data-number>
-        <HighlightMatch text={area.areaCode} query={q} />
-      </span>
-      <span className="truncate"><HighlightMatch text={area.name} query={q} /></span>
-      <span className={cn('text-[#999] ml-auto flex-shrink-0', !compact && 'text-sm')}>
-        <HighlightMatch text={area.municipality} query={q} />
-      </span>
-    </button>
-  )
-}
-
 /** Shared "no results" empty state */
 function SearchNoResults({ compact }: { compact: boolean }) {
   return (
@@ -134,8 +92,10 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+  const resultsContainerRef = useRef<HTMLDivElement>(null)
 
   // Fetch GeoJSON features for client-side search filtering
   const { geojson } = useMapData(filters.year, filters.propertyType)
@@ -356,23 +316,52 @@ export function Header() {
     return addressResults
   }, [addressResults, addressResultsQuery, currentQuery])
 
-  // Handle search on Enter key
+  // Build a flat list of all results for unified keyboard navigation
+  type ResultItem =
+    | { type: 'city'; city: CityConfig }
+    | { type: 'area'; area: SearchableArea }
+    | { type: 'address'; address: GeocodingResult }
+
+  const allResults: ResultItem[] = useMemo(() => {
+    const items: ResultItem[] = []
+    for (const city of cityResults) items.push({ type: 'city', city })
+    for (const area of searchResults) items.push({ type: 'area', area })
+    for (const addr of filteredAddressResults) items.push({ type: 'address', address: addr })
+    return items
+  }, [cityResults, searchResults, filteredAddressResults])
+
+  // Reset activeIndex when results change
+  useEffect(() => {
+    setActiveIndex(0)
+  }, [allResults.length, searchQuery])
+
+  // Select the result at a given index
+  const selectResultAt = useCallback((index: number) => {
+    const item = allResults[index]
+    if (!item) return
+    if (item.type === 'city') handleSelectCity(item.city)
+    else if (item.type === 'area') handleSelectArea(item.area)
+    else handleSelectAddress(item.address)
+  }, [allResults, handleSelectCity, handleSelectArea, handleSelectAddress])
+
+  // Handle keyboard navigation in search results
   const handleSearchKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        if (cityResults.length > 0) {
-          handleSelectCity(cityResults[0])
-        } else if (searchResults.length > 0) {
-          handleSelectArea(searchResults[0])
-        } else if (filteredAddressResults.length > 0) {
-          handleSelectAddress(filteredAddressResults[0])
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setActiveIndex((prev) => Math.min(prev + 1, allResults.length - 1))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setActiveIndex((prev) => Math.max(prev - 1, 0))
+      } else if (e.key === 'Enter') {
+        if (allResults.length > 0) {
+          selectResultAt(activeIndex)
         }
-      }
-      if (e.key === 'Escape') {
+      } else if (e.key === 'Escape') {
         closeSearch()
       }
     },
-    [cityResults, searchResults, filteredAddressResults, handleSelectCity, handleSelectArea, handleSelectAddress, closeSearch]
+    [allResults, activeIndex, selectResultAt, closeSearch]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -396,6 +385,13 @@ export function Header() {
     document.addEventListener('pointerdown', handleClickOutside)
     return () => document.removeEventListener('pointerdown', handleClickOutside)
   }, [])
+
+  // Scroll active result into view
+  useEffect(() => {
+    if (!resultsContainerRef.current) return
+    const el = resultsContainerRef.current.querySelector('[data-active="true"]')
+    if (el) el.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex])
 
   const showSearchDropdown =
     isSearchFocused && searchQuery.trim().length > 0
@@ -504,87 +500,152 @@ export function Header() {
                 {/* Search results dropdown */}
                 {showSearchDropdown && (
                   <div
+                    ref={resultsContainerRef}
                     className={cn(
                       'absolute top-full left-0 right-0 mt-1.5 z-50',
                       'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
-                      'shadow-hard overflow-hidden',
+                      'shadow-hard overflow-hidden max-h-[360px] overflow-y-auto',
                       !isDesktop && 'animate-fade-in'
                     )}
+                    role="listbox"
                   >
                     {showNoResults ? (
                       <SearchNoResults compact={isDesktop} />
                     ) : (
                       <>
-                        {cityResults.map((city, i) => (
-                          <button
-                            key={city.name}
-                            type="button"
-                            onClick={() => handleSelectCity(city)}
-                            className={cn(
-                              'w-full px-3 text-left',
-                              'flex items-center gap-2',
-                              isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
-                              'text-[#1a1a1a]',
-                              'hover:bg-pink-baby transition-colors',
-                              'focus-visible:outline-none focus-visible:bg-pink-baby',
-                              isDesktop && 'animate-slide-up',
-                            )}
-                            style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
-                          >
-                            <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
-                            <span className="font-medium"><HighlightMatch text={city.name} query={searchQuery.trim()} /></span>
-                            <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
-                              Kaupunki
-                            </span>
-                          </button>
-                        ))}
-                        {cityResults.length > 0 && searchResults.length > 0 && (
-                          <div className="border-t border-[#e5e5e5]" />
-                        )}
-                        {searchResults.map((area, i) => (
-                          <SearchResultItem
-                            key={area.areaCode}
-                            area={area}
-                            compact={isDesktop}
-                            index={isDesktop ? i + cityResults.length : undefined}
-                            query={searchQuery.trim()}
-                            onSelect={handleSelectArea}
-                          />
-                        ))}
-                        {(cityResults.length > 0 || searchResults.length > 0) && filteredAddressResults.length > 0 && (
-                          <div className="border-t border-[#e5e5e5]" />
-                        )}
-                        {filteredAddressResults.map((result, i) => (
-                          <button
-                            key={`${result.latitude}-${result.longitude}-${i}`}
-                            type="button"
-                            onClick={() => handleSelectAddress(result)}
-                            className={cn(
-                              'w-full px-3 text-left',
-                              'flex items-center gap-2',
-                              isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
-                              'text-[#1a1a1a]',
-                              'hover:bg-pink-baby transition-colors',
-                              'focus-visible:outline-none focus-visible:bg-pink-baby',
-                              isDesktop && 'animate-slide-up',
-                            )}
-                            style={isDesktop ? { animationDelay: `${(i + cityResults.length + searchResults.length) * 30}ms`, animationFillMode: 'both' } : undefined}
-                          >
-                            <Navigation size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
-                            <span className="truncate">{result.shortLabel}</span>
-                            <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
-                              Osoite
-                            </span>
-                          </button>
-                        ))}
-                        {isAddressLoading && !hasAnyResults && (
-                          <div className={cn(
-                            'px-3 py-3 text-muted-foreground text-center',
-                            isDesktop ? 'text-xs' : 'text-sm',
-                          )}>
-                            Haetaan osoitteita...
-                          </div>
-                        )}
+                        {(() => {
+                          let idx = 0
+                          const q = searchQuery.trim()
+                          const nodes: React.ReactNode[] = []
+
+                          // City results
+                          cityResults.forEach((city, i) => {
+                            const globalIdx = idx++
+                            const isActive = globalIdx === activeIndex
+                            nodes.push(
+                              <button
+                                key={`city-${city.name}`}
+                                type="button"
+                                data-active={isActive}
+                                onClick={() => handleSelectCity(city)}
+                                onPointerEnter={() => setActiveIndex(globalIdx)}
+                                role="option"
+                                aria-selected={isActive}
+                                className={cn(
+                                  'w-full px-3 text-left',
+                                  'flex items-center gap-2',
+                                  isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                                  'text-[#1a1a1a]',
+                                  'transition-colors',
+                                  isActive ? 'bg-pink-baby' : 'hover:bg-pink-baby/50',
+                                  'focus-visible:outline-none',
+                                  isDesktop && 'animate-slide-up',
+                                )}
+                                style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
+                              >
+                                <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                                <span className="font-medium"><HighlightMatch text={city.name} query={q} /></span>
+                                <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                                  Kaupunki
+                                </span>
+                              </button>
+                            )
+                          })
+
+                          // Divider between cities and areas
+                          if (cityResults.length > 0 && searchResults.length > 0) {
+                            nodes.push(<div key="div-city-area" className="border-t border-[#e5e5e5]" />)
+                          }
+
+                          // Area results
+                          searchResults.forEach((area, i) => {
+                            const globalIdx = idx++
+                            const isActive = globalIdx === activeIndex
+                            nodes.push(
+                              <button
+                                key={`area-${area.areaCode}`}
+                                type="button"
+                                data-active={isActive}
+                                onClick={() => handleSelectArea(area)}
+                                onPointerEnter={() => setActiveIndex(globalIdx)}
+                                role="option"
+                                aria-selected={isActive}
+                                className={cn(
+                                  'w-full px-3 text-left',
+                                  'flex items-center gap-2',
+                                  isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                                  'text-[#1a1a1a]',
+                                  'transition-colors',
+                                  isActive ? 'bg-pink-baby' : 'hover:bg-pink-baby/50',
+                                  'focus-visible:outline-none',
+                                  isDesktop && 'animate-slide-up',
+                                )}
+                                style={isDesktop ? { animationDelay: `${(i + cityResults.length) * 30}ms`, animationFillMode: 'both' } : undefined}
+                              >
+                                <span className={cn('font-mono text-[#999] flex-shrink-0', !isDesktop && 'text-sm')} data-number>
+                                  <HighlightMatch text={area.areaCode} query={q} />
+                                </span>
+                                <span className="truncate"><HighlightMatch text={area.name} query={q} /></span>
+                                <span className={cn('text-[#999] ml-auto flex-shrink-0', !isDesktop && 'text-sm')}>
+                                  <HighlightMatch text={area.municipality} query={q} />
+                                </span>
+                              </button>
+                            )
+                          })
+
+                          // Divider before addresses
+                          if ((cityResults.length > 0 || searchResults.length > 0) && filteredAddressResults.length > 0) {
+                            nodes.push(<div key="div-addr" className="border-t border-[#e5e5e5]" />)
+                          }
+
+                          // Address results
+                          filteredAddressResults.forEach((result, i) => {
+                            const globalIdx = idx++
+                            const isActive = globalIdx === activeIndex
+                            nodes.push(
+                              <button
+                                key={`addr-${result.latitude}-${result.longitude}-${i}`}
+                                type="button"
+                                data-active={isActive}
+                                onClick={() => handleSelectAddress(result)}
+                                onPointerEnter={() => setActiveIndex(globalIdx)}
+                                role="option"
+                                aria-selected={isActive}
+                                className={cn(
+                                  'w-full px-3 text-left',
+                                  'flex items-center gap-2',
+                                  isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+                                  'text-[#1a1a1a]',
+                                  'transition-colors',
+                                  isActive ? 'bg-pink-baby' : 'hover:bg-pink-baby/50',
+                                  'focus-visible:outline-none',
+                                  isDesktop && 'animate-slide-up',
+                                )}
+                                style={isDesktop ? { animationDelay: `${(i + cityResults.length + searchResults.length) * 30}ms`, animationFillMode: 'both' } : undefined}
+                              >
+                                <Navigation size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                                <span className="truncate">{result.shortLabel}</span>
+                                <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                                  Osoite
+                                </span>
+                              </button>
+                            )
+                          })
+
+                          // Loading indicator
+                          if (isAddressLoading && !hasAnyResults) {
+                            nodes.push(
+                              <div key="loading" className={cn(
+                                'px-3 py-3 text-muted-foreground text-center',
+                                isDesktop ? 'text-xs' : 'text-sm',
+                              )}>
+                                Haetaan osoitteita...
+                              </div>
+                            )
+                          }
+
+                          return nodes
+                        })()}
                       </>
                     )}
                   </div>
