@@ -17,7 +17,7 @@ import { useMapData } from '@/app/hooks/useMapData'
 // useBuildingData hook removed — buildings now served as vector tiles
 // managed natively by MapLibre (no React-level data fetching needed)
 import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PRICE_COLORS, BUILDING_OUTLINE_COLORS, getDynamicScale, getDynamicColorExpression, getQuantileScale } from '@/app/lib/colorScales'
-import { formatPricePerSqm, formatPriceRange, getBuildingTypeLabel } from '@/app/lib/formatters'
+import { formatPriceRange, getBuildingTypeLabel } from '@/app/lib/formatters'
 import { computePriceRange } from '@/app/lib/priceEstimation'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
 import MapLegend from './MapLegend'
