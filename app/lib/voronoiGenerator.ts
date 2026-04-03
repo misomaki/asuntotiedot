@@ -115,8 +115,7 @@ const MAX_TOTAL_CELLS = 60000
 function idwInterpolate(
   lng: number,
   lat: number,
-  anchors: Array<{ lng: number; lat: number; price: number }>,
-  power = 2
+  anchors: Array<{ lng: number; lat: number; price: number }>
 ): number {
   let numerator = 0
   let denominator = 0
@@ -124,7 +123,7 @@ function idwInterpolate(
   for (const a of anchors) {
     const dist = Math.hypot(lng - a.lng, lat - a.lat)
     if (dist < 0.0001) return a.price
-    const w = 1 / Math.pow(dist, power)
+    const w = 1 / (dist * dist * dist)
     numerator += w * a.price
     denominator += w
   }
@@ -378,15 +377,20 @@ export function generateVoronoiGeoJSON(
     }
   }
 
+  // Pre-compute anchor price arrays per cluster (avoids re-allocating per cell)
+  const clusterPriceCache = new Map<ClusterConfig, Array<{ lng: number; lat: number; price: number }>>()
+  for (const cluster of clusters) {
+    clusterPriceCache.set(
+      cluster,
+      cluster.anchors.map((a) => ({ lng: a.center[0], lat: a.center[1], price: a.price }))
+    )
+  }
+
   return {
     type: 'FeatureCollection',
     features: allCells.map(({ cell, cluster }) => {
       const anchor = cluster.anchors[cell.nearestAnchorIdx]
-      const anchorPrices = cluster.anchors.map((a) => ({
-        lng: a.center[0],
-        lat: a.center[1],
-        price: a.price,
-      }))
+      const anchorPrices = clusterPriceCache.get(cluster)!
 
       const price = idwInterpolate(
         cell.centerLng,

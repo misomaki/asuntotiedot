@@ -150,7 +150,7 @@ export function Sidebar() {
               'overflow-y-auto',
               isDesktop
                 ? 'max-h-[calc(100vh-8rem)] p-5'
-                : 'max-h-[calc(100vh-5rem)] p-4',
+                : 'max-h-[calc(100vh-6rem)] p-4',
             )}
           >
             <BuildingPanel />

@@ -335,8 +335,10 @@ export function BuildingPanel() {
 
 function formatDistance(meters: number | null): string | null {
   if (meters == null) return null
-  if (meters < 1000) return `${Math.round(meters)} m`
-  return `${(meters / 1000).toFixed(1)} km`
+  if (meters < 50) return '< 50 m'
+  if (meters <= 950) return `${Math.round(meters / 50) * 50} m`
+  if (meters < 10000) return `${(Math.round(meters / 100) / 10).toFixed(1)} km`
+  return `${Math.round(meters / 1000)} km`
 }
 
 function NearbyServices({ building }: { building: BuildingWithPrice }) {
