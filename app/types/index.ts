@@ -158,6 +158,7 @@ export interface BuildingWithPrice {
   floor_factor: number
   size_factor: number
   neighborhood_factor: number
+  neighborhood_factor_confidence: 'high' | 'medium' | 'low' | 'default'
   tontti_factor: number
   ryhti_main_purpose: string | null
   is_residential: boolean | null

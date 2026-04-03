@@ -31,7 +31,7 @@ const MAP_STYLE =
 const BUILDING_ZOOM_THRESHOLD = 13
 
 /** Cache-bust version — increment after recomputing building prices */
-const TILE_VERSION = 'v5'
+const TILE_VERSION = 'v6'
 
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {
@@ -884,11 +884,12 @@ function BuildingTooltip({
 
   const price = hasValidPrice ? props.price : null
   const priceColor = price !== null ? getColorForPrice(price) : null
-  // MVT tiles lack neighborhood_factor → tooltip range is wider than BuildingPanel.
-  // This is intentional: panel fetches full data and narrows the range further.
+  // MVT tiles lack neighborhood_factor + apartment_count → tooltip range is wider
+  // than BuildingPanel. This is intentional: panel fetches full data and narrows further.
   const priceRange = price !== null
     ? computePriceRange(price, {
         hasConstructionYear: !!props.construction_year,
+        hasFloorCount: !!props.floor_count,
       })
     : null
   const priceStr = priceRange

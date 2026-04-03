@@ -252,9 +252,11 @@ export function inferPropertyType(
   if (buildingType === 'terrace' || buildingType === 'semidetached_house') return 'rivitalo'
   if (buildingType === 'detached' || buildingType === 'house') return 'omakotitalo'
 
-  // 3. Floor count heuristic
+  // 3. Floor count + apartment count heuristic
   if (floorCount !== null && floorCount >= 3) return 'kerrostalo'
   if (floorCount === 2) return 'rivitalo'
+  // 1-floor with multiple apartments → rivitalo (e.g. single-story row houses)
+  if (floorCount === 1 && apartmentCount != null && apartmentCount >= 3) return 'rivitalo'
 
   // 4. Default — most Finnish buildings without metadata are small houses
   return 'omakotitalo'
@@ -309,51 +311,78 @@ export function estimateBuildingPrice(
 
 const roundTo50 = (v: number) => Math.round(v / 50) * 50
 
+export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'default'
+
 export interface PriceRange {
   /** Lower bound, rounded to nearest 50 */
   low: number
   /** Upper bound, rounded to nearest 50 */
   high: number
-  /** Margin percentage, e.g. 0.12 for ±12% */
+  /** Margin percentage, e.g. 0.07 for ±7% */
   marginPct: number
+  /** Overall confidence level for UI display */
+  confidence: ConfidenceLevel
 }
 
 /**
  * Compute a confidence-adaptive price range around a point estimate.
  *
- * Base margin: ±20% (worst case — no metadata).
- * Narrowing:
- *   - Has neighborhood factor (≠ 1.0): −8pp → ±12%
- *   - Has construction year:           −2pp
- *   - Has energy class:                −1pp
- * Minimum margin: ±8%.
+ * Base margin: ±15% (worst case — no metadata).
+ * Narrowing signals:
+ *   - Neighborhood factor (≠ 1.0):       −3pp (medium), −5pp (high, ≥5 samples)
+ *   - Construction year known:            −2pp
+ *   - Property type = rivitalo:           −1pp (RT has tighter StdDev in validation)
+ *   - Floor count known:                  −1pp
+ *   - Size factor data (apt count/area):  −1pp
+ *   - Energy class known:                 −1pp
+ * Minimum margin: ±5%.
  * Bounds rounded to nearest 50 for clean display.
+ *
+ * Confidence label derived from margin:
+ *   ≤7% → high, ≤10% → medium, ≤13% → low, >13% → default
  */
 export function computePriceRange(
   price: number,
   opts?: {
     neighborhoodFactor?: number
+    neighborhoodFactorConfidence?: ConfidenceLevel
     hasConstructionYear?: boolean
     hasEnergyClass?: boolean
+    propertyType?: PropertyType
+    hasFloorCount?: boolean
+    hasSizeFactor?: boolean
   }
 ): PriceRange {
-  let margin = 0.20
+  let margin = 0.15
 
+  // Neighborhood factor — tiered by confidence
   if (opts?.neighborhoodFactor != null && opts.neighborhoodFactor !== 1.0) {
-    margin -= 0.08
-  }
-  if (opts?.hasConstructionYear) {
-    margin -= 0.02
-  }
-  if (opts?.hasEnergyClass) {
-    margin -= 0.01
+    if (opts.neighborhoodFactorConfidence === 'high') {
+      margin -= 0.05
+    } else {
+      margin -= 0.03
+    }
   }
 
-  margin = Math.max(0.08, margin)
+  if (opts?.hasConstructionYear) margin -= 0.02
+  if (opts?.propertyType === 'rivitalo') margin -= 0.01
+  if (opts?.hasFloorCount) margin -= 0.01
+  if (opts?.hasSizeFactor) margin -= 0.01
+  if (opts?.hasEnergyClass) margin -= 0.01
+
+  margin = Math.max(0.05, margin)
+
+  // Derive confidence label from final margin
+  let confidence: ConfidenceLevel
+  if (margin <= 0.07) confidence = 'high'
+  else if (margin <= 0.10) confidence = 'medium'
+  else if (margin <= 0.13) confidence = 'low'
+  else confidence = 'default'
 
   return {
     low: roundTo50(price * (1 - margin)),
     high: roundTo50(price * (1 + margin)),
     marginPct: margin,
+    confidence,
   }
 }

@@ -6,7 +6,8 @@ import { useAuth } from '@/app/contexts/AuthContext'
 import { useMarketplaceSignals } from '@/app/hooks/useMarketplaceSignals'
 import { cn } from '@/app/lib/utils'
 import { formatNumber, getBuildingTypeLabel, formatPriceRange } from '@/app/lib/formatters'
-import { computePriceRange } from '@/app/lib/priceEstimation'
+import { computePriceRange, inferPropertyType } from '@/app/lib/priceEstimation'
+import type { ConfidenceLevel } from '@/app/lib/priceEstimation'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { CompactAttribute } from '@/app/components/sidebar/CompactAttribute'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -111,11 +112,21 @@ export function BuildingPanel() {
   const price = building.estimated_price_per_sqm
   const hasPrice = price !== null && price > 0
   const hasFactors = hasPrice && building.base_price !== null
+  const propertyType = inferPropertyType(
+    building.building_type,
+    building.floor_count,
+    building.ryhti_main_purpose,
+    building.apartment_count
+  )
   const priceRange = hasPrice
     ? computePriceRange(price!, {
         neighborhoodFactor: building.neighborhood_factor,
+        neighborhoodFactorConfidence: building.neighborhood_factor_confidence,
         hasConstructionYear: building.construction_year !== null,
         hasEnergyClass: building.energy_class !== null,
+        propertyType,
+        hasFloorCount: building.floor_count !== null,
+        hasSizeFactor: building.apartment_count !== null || building.footprint_area_sqm !== null,
       })
     : null
 
@@ -159,9 +170,12 @@ export function BuildingPanel() {
             <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
               {formatPriceRange(priceRange!.low, priceRange!.high)}
             </div>
-            <div className="text-sm text-muted-foreground mt-0.5">
-              Keskiarvo <AnimatedNumber value={price!} fromZero duration={500} />
-              <span className="ml-1">€/m²</span>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="text-sm text-muted-foreground">
+                Keskiarvo <AnimatedNumber value={price!} fromZero duration={500} />
+                <span className="ml-1">€/m²</span>
+              </div>
+              <ConfidenceBadge level={priceRange!.confidence} />
             </div>
           </div>
         ) : (
@@ -779,6 +793,33 @@ const RYHTI_PURPOSE_PREFIX: Record<string, string> = {
   '07': 'Muu rakennus',
   '08': 'Uskonnollinen rakennus',
   '09': 'Urheilu-/kokoontumisrak.',
+}
+
+const CONFIDENCE_CONFIG: Record<ConfidenceLevel, { label: string; dots: number; color: string }> = {
+  high:    { label: 'Tarkka', dots: 3, color: 'text-mint' },
+  medium:  { label: 'Hyvä',  dots: 2, color: 'text-yellow-600' },
+  low:     { label: 'Suuntaa-antava', dots: 1, color: 'text-orange-500' },
+  default: { label: 'Karkea', dots: 1, color: 'text-muted-foreground' },
+}
+
+function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
+  const cfg = CONFIDENCE_CONFIG[level]
+  return (
+    <span className={cn('inline-flex items-center gap-1 text-[11px] font-medium', cfg.color)}>
+      <span className="flex gap-0.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className={cn(
+              'w-1.5 h-1.5 rounded-full',
+              i < cfg.dots ? 'bg-current' : 'bg-current/20'
+            )}
+          />
+        ))}
+      </span>
+      {cfg.label}
+    </span>
+  )
 }
 
 function getRyhtiPurposeLabel(code: string): string {

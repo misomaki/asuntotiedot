@@ -83,7 +83,7 @@ export async function GET() {
 
   // Map interests
   for (const row of interestsResult.data ?? []) {
-    const b = row.buildings as Record<string, unknown>
+    const b = row.buildings as unknown as Record<string, unknown>
     signals.push({
       id: row.id,
       building_id: row.building_id,
@@ -104,7 +104,7 @@ export async function GET() {
 
   // Map sell intents
   for (const row of sellIntentsResult.data ?? []) {
-    const b = row.buildings as Record<string, unknown>
+    const b = row.buildings as unknown as Record<string, unknown>
     signals.push({
       id: row.id,
       building_id: row.building_id,
