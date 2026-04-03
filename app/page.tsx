@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic'
 import { Header } from '@/app/components/Header'
 import { Sidebar } from '@/app/components/sidebar/Sidebar'
+import { SearchResultsPanel } from '@/app/components/sidebar/SearchResultsPanel'
 
 const MapContainer = dynamic(
   () => import('@/app/components/map/MapContainer'),
@@ -30,6 +31,7 @@ export default function Home() {
       <MapContainer />
       <Header />
       <Sidebar />
+      <SearchResultsPanel />
 
       {/* Data attribution — above MapLibre's built-in attribution */}
       <div className="absolute bottom-7 right-1 md:bottom-1 md:right-1 z-10 text-[9px] md:text-[10px] text-muted-foreground/60 pointer-events-none select-none max-w-[60vw] md:max-w-none text-right">

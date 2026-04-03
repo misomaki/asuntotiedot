@@ -6,6 +6,7 @@ import { PostHogProvider } from "posthog-js/react";
 import { ThemeProvider } from "next-themes";
 import { MapProvider } from "../contexts/MapContext";
 import { AuthProvider } from "../contexts/AuthContext";
+import { AISearchProvider } from "../contexts/AISearchContext";
 import PostHogPageView from "./PostHogPageView";
 import type { ReactNode } from "react";
 
@@ -31,7 +32,9 @@ export function Providers({ children }: ProvidersProps) {
       <PostHogPageView />
       <ThemeProvider defaultTheme="dark" forcedTheme="dark" attribute="class">
         <AuthProvider>
-          <MapProvider>{children}</MapProvider>
+          <AISearchProvider>
+            <MapProvider>{children}</MapProvider>
+          </AISearchProvider>
         </AuthProvider>
       </ThemeProvider>
     </PostHogProvider>

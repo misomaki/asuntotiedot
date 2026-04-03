@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { Search, X, ChevronDown, MapPin, Navigation } from 'lucide-react'
+import { Search, X, ChevronDown, MapPin, Navigation, Sparkles } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
+import { useAISearch } from '@/app/contexts/AISearchContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
 import { LogoMark } from '@/app/components/brand/LogoMark'
@@ -123,6 +124,8 @@ export function Header() {
     viewport: { zoom: currentZoom },
     flyTo,
   } = useMapContext()
+
+  const { search: aiSearch, isActive: isAISearchActive, isLoading: isAILoading } = useAISearch()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -368,11 +371,20 @@ export function Header() {
           handleSelectAddress(filteredAddressResults[0])
         }
       }
+      // If no standard results but query looks like natural language, trigger AI search
+      if (e.key === 'Enter' && !cityResults.length && !searchResults.length && !filteredAddressResults.length) {
+        const q = searchQuery.trim()
+        if (q.length >= 5 && q.includes(' ')) {
+          closeSearch()
+          aiSearch(q)
+          return
+        }
+      }
       if (e.key === 'Escape') {
         closeSearch()
       }
     },
-    [cityResults, searchResults, filteredAddressResults, handleSelectCity, handleSelectArea, handleSelectAddress, closeSearch]
+    [cityResults, searchResults, filteredAddressResults, handleSelectCity, handleSelectArea, handleSelectAddress, closeSearch, searchQuery, aiSearch]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -585,6 +597,40 @@ export function Header() {
                             Haetaan osoitteita...
                           </div>
                         )}
+                      </>
+                    )}
+                    {/* AI search option — show when query looks like natural language */}
+                    {searchQuery.trim().length >= 5 && searchQuery.trim().includes(' ') && (
+                      <>
+                        <div className="border-t border-[#e5e5e5]" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const q = searchQuery.trim()
+                            closeSearch()
+                            aiSearch(q)
+                          }}
+                          disabled={isAILoading}
+                          className={cn(
+                            'w-full px-3 text-left',
+                            'flex items-center gap-2',
+                            isDesktop ? 'py-2.5 text-xs' : 'py-3 text-sm',
+                            'text-[#1a1a1a]',
+                            'hover:bg-yellow/20 transition-colors',
+                            'focus-visible:outline-none focus-visible:bg-yellow/20',
+                            'disabled:opacity-50',
+                          )}
+                        >
+                          <Sparkles size={isDesktop ? 13 : 15} className="text-yellow flex-shrink-0" />
+                          <span className="flex-1">
+                            <span className="font-medium">Hae tekoälyllä</span>
+                            <span className="text-[#999] ml-1.5 truncate">
+                              &quot;{searchQuery.trim().length > 30
+                                ? searchQuery.trim().slice(0, 30) + '...'
+                                : searchQuery.trim()}&quot;
+                            </span>
+                          </span>
+                        </button>
                       </>
                     )}
                   </div>
