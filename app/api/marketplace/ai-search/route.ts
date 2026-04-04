@@ -93,9 +93,11 @@ TÄRKEÄÄ aluehaussa:
 - Huomioi myös osittaiset osumat: "Töölö" matchaa sekä "Etu-Töölö" että "Taka-Töölö"
 
 Sanastovinkit:
-- "yksiö" = room_count "1", "kaksio" = "2", "kolmio" = "3", "neliö" (huoneet) = "4"
-- "kerrostalo"/"kerros" = property_type "kerrostalo"
-- "rivari"/"rivitalo" = "rivitalo", "omakotitalo"/"OKT" = "omakotitalo"
+- "yksiö"/"yksiöt" = room_count "1", "kaksio"/"kaksiot" = "2", "kolmio"/"kolmiot" = "3", "neliö"/"neliöt" (huoneet) = "4"
+- "kerrostalo"/"kerrostalot"/"kerros" = property_type "kerrostalo"
+- "rivitalo"/"rivitalot"/"rivari"/"rivarit" = property_type "rivitalo" (EI omakotitalo!)
+- "omakotitalo"/"omakotitalot"/"OKT" = property_type "omakotitalo"
+- TÄRKEÄÄ: "rivitalo" ja "omakotitalo" ovat ERI talotyyppejä. Älä sekoita niitä. Käytä TÄSMÄLLEEN käyttäjän pyytämää talotyyppiä.
 - "uusi"/"uudiskohde" = min_construction_year 2015
 - "vanha" = max_construction_year 1980
 - "lähellä metroa/ratikkaa/bussia" = max_distance_to_transit_m 500
