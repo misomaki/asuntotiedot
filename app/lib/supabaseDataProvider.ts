@@ -381,7 +381,8 @@ export class SupabaseDataProvider implements DataProvider {
       building.building_type,
       building.floor_count,
       building.ryhti_main_purpose,
-      building.apartment_count
+      building.apartment_count,
+      building.footprint_area_sqm ? Number(building.footprint_area_sqm) : null
     )
 
     // Fetch area info, base price, and neighborhood factor in parallel

@@ -223,14 +223,16 @@ export function computeTonttiFactor(
  * Priority:
  * 1. Ryhti main_purpose (authoritative, ~85% coverage)
  * 2. Explicit OSM building types
- * 3. Floor count heuristic
- * 4. Default: omakotitalo
+ * 3. Floor count + apartment count heuristic
+ * 4. Footprint size heuristic (large buildings → rivitalo)
+ * 5. Default: omakotitalo
  */
 export function inferPropertyType(
   buildingType: string | null,
   floorCount: number | null,
   ryhtiMainPurpose?: string | null,
-  apartmentCount?: number | null
+  apartmentCount?: number | null,
+  footprintAreaSqm?: number | null
 ): 'kerrostalo' | 'rivitalo' | 'omakotitalo' {
   // 1. Ryhti main_purpose — authoritative building registry
   if (ryhtiMainPurpose) {
@@ -258,7 +260,13 @@ export function inferPropertyType(
   // 1-floor with multiple apartments → rivitalo (e.g. single-story row houses)
   if (floorCount === 1 && apartmentCount != null && apartmentCount >= 3) return 'rivitalo'
 
-  // 4. Default — most Finnish buildings without metadata are small houses
+  // 4. Footprint heuristic — large buildings without metadata are rivitalo, not OKT.
+  // A typical Finnish omakotitalo has footprint < 200m². Buildings ≥ 300m² are
+  // almost certainly row houses or apartment buildings even without Ryhti/OSM data.
+  // Prevents misclassification when apartment_count is null (no Ryhti match).
+  if (footprintAreaSqm != null && footprintAreaSqm >= 300) return 'rivitalo'
+
+  // 5. Default — most Finnish buildings without metadata are small houses
   return 'omakotitalo'
 }
 

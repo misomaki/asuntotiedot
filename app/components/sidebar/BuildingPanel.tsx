@@ -116,7 +116,8 @@ export function BuildingPanel() {
     building.building_type,
     building.floor_count,
     building.ryhti_main_purpose,
-    building.apartment_count
+    building.apartment_count,
+    building.footprint_area_sqm
   )
   const priceRange = hasPrice
     ? computePriceRange(price!, {
