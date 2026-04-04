@@ -3,16 +3,70 @@
  *
  * Parses a natural language property search query into structured filters
  * using Claude Haiku. Returns filters + human-readable chips.
+ *
+ * Fetches all area names from the database so the AI can map any
+ * Finnish neighborhood name to its postal code(s).
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseAdmin } from '@/app/lib/supabaseClient'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 
-const SYSTEM_PROMPT = `Olet suomalainen asuntohaku-avustaja. Tehtäväsi on jäsentää luonnollisen kielen asuntohakukyselyt JSON-suodattimiksi.
+// Cache area list in memory (module scope) — refreshed on cold start
+let cachedAreaList: string | null = null
+let cacheTimestamp = 0
+const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
+
+/**
+ * Fetch all area names + codes from the database, grouped by name.
+ * Returns a compact string like: "Kallio:00530, Töölö:00100/00250, ..."
+ */
+async function getAreaList(): Promise<string> {
+  const now = Date.now()
+  if (cachedAreaList && now - cacheTimestamp < CACHE_TTL_MS) {
+    return cachedAreaList
+  }
+
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase
+    .from('areas')
+    .select('area_code, name, municipality')
+    .order('area_code')
+
+  if (error || !data) {
+    console.error('Failed to fetch areas for AI search:', error?.message)
+    return cachedAreaList ?? ''
+  }
+
+  // Group area codes by name+municipality for compact representation
+  // e.g. "Kallio (Helsinki):00530, Töölö (Helsinki):00100/00250"
+  const byName = new Map<string, string[]>()
+  for (const row of data) {
+    const name = row.name as string
+    const municipality = row.municipality as string
+    const code = row.area_code as string
+    const key = `${name} (${municipality})`
+    const codes = byName.get(key) ?? []
+    codes.push(code)
+    byName.set(key, codes)
+  }
+
+  const parts: string[] = []
+  for (const [name, codes] of byName) {
+    parts.push(`${name}:${codes.join('/')}`)
+  }
+
+  cachedAreaList = parts.join(', ')
+  cacheTimestamp = now
+  return cachedAreaList
+}
+
+function buildSystemPrompt(areaList: string): string {
+  return `Olet suomalainen asuntohaku-avustaja. Tehtäväsi on jäsentää luonnollisen kielen asuntohakukyselyt JSON-suodattimiksi.
 
 Käytettävissä olevat suodattimet:
-- municipality: kaupunki (esim. "Helsinki", "Tampere", "Turku", "Oulu", "Jyväskylä", "Kuopio", "Lahti")
+- municipality: kaupunki (esim. "Helsinki", "Tampere", "Turku", "Oulu", "Jyväskylä", "Kuopio", "Lahti", "Espoo", "Vantaa")
 - area_codes: postinumeroalueet (array, esim. ["00100", "00500"])
 - property_type: "kerrostalo" | "rivitalo" | "omakotitalo"
 - room_count: "1" | "2" | "3" | "4" | "5+"
@@ -28,13 +82,15 @@ Käytettävissä olevat suodattimet:
 - min_floor_count, max_floor_count: kerrosmäärä
 - sort_by: "price_asc" | "price_desc" | "year_desc" | "year_asc"
 
-Aluetuntemuksesi:
-- "Kallio" = 00530, "Töölö" = 00100/00250, "Kamppi" = 00100, "Sörnäinen" = 00500
-- "Kruununhaka" = 00170, "Punavuori" = 00120/00150, "Ullanlinna" = 00130/00140
-- "Vallila" = 00510, "Hermanni" = 00580, "Pasila" = 00520
-- "Myllypuro" = 00920, "Kontula" = 00940, "Vuosaari" = 00980/00990
-- "Hervanta" (Tampere) = 33720, "Kaleva" (Tampere) = 33540
-- Jos et tiedä postinumeroa, käytä municipality-kenttää
+Kaikki tunnetut alueet (nimi (kunta):postinumero):
+${areaList}
+
+TÄRKEÄÄ aluehaussa:
+- Kun käyttäjä mainitsee alueen/kaupunginosan nimen, etsi AINA vastaava postinumero yllä olevasta listasta ja käytä area_codes-suodatinta
+- Jos alueella on useita postinumeroita (esim. Töölö:00100/00250), lisää kaikki area_codes-listaan
+- Jos nimeä ei löydy listasta, käytä municipality-suodatinta
+- Käyttäjä voi kirjoittaa alueen nimen eri taivutusmuodoissa (esim. "Kalliossa" = "Kallio", "Pereellä" = "Pere", "Hervannassa" = "Hervanta")
+- Huomioi myös osittaiset osumat: "Töölö" matchaa sekä "Etu-Töölö" että "Taka-Töölö"
 
 Sanastovinkit:
 - "yksiö" = room_count "1", "kaksio" = "2", "kolmio" = "3", "neliö" (huoneet) = "4"
@@ -57,6 +113,7 @@ Vastaa VAIN JSON-muodossa:
 
 chips-kenttä sisältää ihmisluettavat kuvaukset jokaisesta aktiivisesta suodattimesta, esim:
 ["Kolmio", "Kallio", "< 5 000 €/m²", "Lähellä metroa"]`
+}
 
 export async function POST(request: NextRequest) {
   if (!ANTHROPIC_API_KEY) {
@@ -77,6 +134,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Fetch area names from DB (cached in memory for 1 hour)
+    const areaList = await getAreaList()
+    const systemPrompt = buildSystemPrompt(areaList)
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -87,7 +148,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: [{ role: 'user', content: query }],
       }),
     })
