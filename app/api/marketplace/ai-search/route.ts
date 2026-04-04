@@ -60,8 +60,9 @@ chips-kenttä sisältää ihmisluettavat kuvaukset jokaisesta aktiivisesta suoda
 
 export async function POST(request: NextRequest) {
   if (!ANTHROPIC_API_KEY) {
+    console.error('ANTHROPIC_API_KEY is not set in environment variables')
     return NextResponse.json(
-      { error: 'AI search not configured (missing ANTHROPIC_API_KEY)' },
+      { error: 'AI-haku ei ole käytettävissä (ANTHROPIC_API_KEY puuttuu)' },
       { status: 503 }
     )
   }
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
       const errText = await response.text()
       console.error('Anthropic API error:', response.status, errText)
       return NextResponse.json(
-        { error: 'AI parsing failed' },
+        { error: `Anthropic API error ${response.status}: ${errText.slice(0, 200)}` },
         { status: 502 }
       )
     }

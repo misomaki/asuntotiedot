@@ -69,7 +69,9 @@ export function AISearchProvider({ children }: { children: ReactNode }) {
       })
 
       if (!parseRes.ok) {
-        throw new Error('Haun analysointi epäonnistui')
+        const errBody = await parseRes.json().catch(() => ({})) as { error?: string }
+        console.error('AI search parse failed:', parseRes.status, errBody)
+        throw new Error(errBody.error || 'Haun analysointi epäonnistui')
       }
 
       const { filters, chips } = await parseRes.json() as {
