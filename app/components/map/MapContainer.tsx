@@ -89,7 +89,7 @@ export default function MapContainer() {
   } = useMapContext()
 
   // AI search state — for cluster dots and building glow
-  const { isActive: isAISearchActive, clusters: aiClusters, matchingBuildingIds } = useAISearch()
+  const { isActive: isAISearchActive, clusters: aiClusters } = useAISearch()
 
   // GeoJSON for AI search cluster dots
   const clusterGeojson = useMemo(() => {
