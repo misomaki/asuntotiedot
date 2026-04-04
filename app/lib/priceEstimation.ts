@@ -327,19 +327,21 @@ export interface PriceRange {
 /**
  * Compute a confidence-adaptive price range around a point estimate.
  *
- * Base margin: ±15% (worst case — no metadata).
+ * Base margin: ±10% (worst case — no metadata).
  * Narrowing signals:
- *   - Neighborhood factor (≠ 1.0):       −3pp (medium), −5pp (high, ≥5 samples)
- *   - Construction year known:            −2pp
- *   - Property type = rivitalo:           −1pp (RT has tighter StdDev in validation)
- *   - Floor count known:                  −1pp
- *   - Size factor data (apt count/area):  −1pp
- *   - Energy class known:                 −1pp
- * Minimum margin: ±5%.
+ *   - Neighborhood factor (high, ≥5 samples):  −3pp
+ *   - Neighborhood factor (medium, 3-4):        −2pp
+ *   - Construction year known:                   −1pp
+ *   - Floor count known:                         −0.5pp
+ *   - Size factor data (apt count/area):         −0.5pp
+ *   - Energy class known:                        −1pp
+ * Minimum margin: ±3%.
  * Bounds rounded to nearest 50 for clean display.
  *
+ * Target: ±200 €/m² at 4000 €/m² (5%) for well-characterized buildings.
+ *
  * Confidence label derived from margin:
- *   ≤7% → high, ≤10% → medium, ≤13% → low, >13% → default
+ *   ≤5% → high, ≤7% → medium, ≤9% → low, >9% → default
  */
 export function computePriceRange(
   price: number,
@@ -353,30 +355,29 @@ export function computePriceRange(
     hasSizeFactor?: boolean
   }
 ): PriceRange {
-  let margin = 0.15
+  let margin = 0.10
 
   // Neighborhood factor — tiered by confidence
   if (opts?.neighborhoodFactor != null && opts.neighborhoodFactor !== 1.0) {
     if (opts.neighborhoodFactorConfidence === 'high') {
-      margin -= 0.05
-    } else {
       margin -= 0.03
+    } else if (opts.neighborhoodFactorConfidence === 'medium') {
+      margin -= 0.02
     }
   }
 
-  if (opts?.hasConstructionYear) margin -= 0.02
-  if (opts?.propertyType === 'rivitalo') margin -= 0.01
-  if (opts?.hasFloorCount) margin -= 0.01
-  if (opts?.hasSizeFactor) margin -= 0.01
+  if (opts?.hasConstructionYear) margin -= 0.01
+  if (opts?.hasFloorCount) margin -= 0.005
+  if (opts?.hasSizeFactor) margin -= 0.005
   if (opts?.hasEnergyClass) margin -= 0.01
 
-  margin = Math.max(0.05, margin)
+  margin = Math.max(0.03, margin)
 
   // Derive confidence label from final margin
   let confidence: ConfidenceLevel
-  if (margin <= 0.07) confidence = 'high'
-  else if (margin <= 0.10) confidence = 'medium'
-  else if (margin <= 0.13) confidence = 'low'
+  if (margin <= 0.05) confidence = 'high'
+  else if (margin <= 0.07) confidence = 'medium'
+  else if (margin <= 0.09) confidence = 'low'
   else confidence = 'default'
 
   return {
