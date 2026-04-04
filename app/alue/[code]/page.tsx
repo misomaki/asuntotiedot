@@ -11,8 +11,7 @@ import {
 import type { AreaWithStats } from '@/app/types'
 import { MapPin, ArrowRight, Users, GraduationCap, Briefcase, Home, TrendingUp } from 'lucide-react'
 
-// ISR: revalidate every 24 hours
-export const revalidate = 86400
+export const dynamic = 'force-dynamic'
 
 // ---------------------------------------------------------------------------
 // Metadata
