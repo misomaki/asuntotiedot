@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 async function getAuthenticatedSupabase() {
   const cookieStore = await cookies()
   return createServerClient(

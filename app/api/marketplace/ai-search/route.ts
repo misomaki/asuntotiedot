@@ -115,6 +115,8 @@ chips-kenttä sisältää ihmisluettavat kuvaukset jokaisesta aktiivisesta suoda
 ["Kolmio", "Kallio", "< 5 000 €/m²", "Lähellä metroa"]`
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   if (!ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY is not set in environment variables')

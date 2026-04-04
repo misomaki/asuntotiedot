@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/app/lib/supabaseClient'
 import type { BuildingSignals } from '@/app/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   const buildingId = request.nextUrl.searchParams.get('buildingId')
 
