@@ -11,6 +11,7 @@ import type { Map as MaplibreMap } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useMapContext } from '@/app/contexts/MapContext'
+import { useAISearch } from '@/app/contexts/AISearchContext'
 import { trackBuildingClick, trackZoomLevel } from '@/app/lib/analytics'
 import { cn } from '@/app/lib/utils'
 import { useMapData } from '@/app/hooks/useMapData'
@@ -87,6 +88,26 @@ export default function MapContainer() {
     setFlyTo,
     flyTo,
   } = useMapContext()
+
+  // AI search state — for cluster dots and building glow
+  const { isActive: isAISearchActive, clusters: aiClusters, matchingBuildingIds } = useAISearch()
+
+  // GeoJSON for AI search cluster dots
+  const clusterGeojson = useMemo(() => {
+    if (!isAISearchActive || aiClusters.length === 0) return null
+    return {
+      type: 'FeatureCollection' as const,
+      features: aiClusters.map((c, i) => ({
+        type: 'Feature' as const,
+        id: i,
+        properties: { count: c.count, avg_price: c.avg_price },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [c.lng, c.lat],
+        },
+      })),
+    }
+  }, [isAISearchActive, aiClusters])
 
   // Fetch Voronoi GeoJSON based on current filters
   const { geojson, isLoading: dataLoading } = useMapData(
@@ -658,12 +679,21 @@ export default function MapContainer() {
             minzoom={13}
             paint={{
               'fill-color': buildingColorExpression,
-              'fill-opacity': [
-                'case',
-                ['==', ['get', 'is_residential'], 0],
-                0.35,
-                0.68,
-              ] as unknown as ExpressionSpecification,
+              'fill-opacity': isAISearchActive
+                ? ([
+                    'case',
+                    ['==', ['get', 'is_residential'], 0], 0.15,
+                    // Matching buildings stay full opacity, rest are dimmed
+                    // Since we can't pass a JS Set into a MapLibre expression,
+                    // we dim all buildings and overlay matches with the glow layer
+                    0.25,
+                  ] as unknown as ExpressionSpecification)
+                : ([
+                    'case',
+                    ['==', ['get', 'is_residential'], 0],
+                    0.35,
+                    0.68,
+                  ] as unknown as ExpressionSpecification),
             }}
           />
           {/* Subtle texture overlay — diagonal dot grain on buildings */}
@@ -687,12 +717,9 @@ export default function MapContainer() {
               'line-color': buildingOutlineColorExpression,
               'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1.2, 16, 2.0] as unknown as ExpressionSpecification,
               'line-blur': 0.4,
-              'line-opacity': [
-                'case',
-                ['==', ['get', 'is_residential'], 0],
-                0.35,
-                1,
-              ] as unknown as ExpressionSpecification,
+              'line-opacity': isAISearchActive
+                ? ([ 'case', ['==', ['get', 'is_residential'], 0], 0.15, 0.25 ] as unknown as ExpressionSpecification)
+                : ([ 'case', ['==', ['get', 'is_residential'], 0], 0.35, 1 ] as unknown as ExpressionSpecification),
             }}
           />
           {/* Hover highlight — brighter fill on hovered building */}
@@ -727,6 +754,44 @@ export default function MapContainer() {
             }}
           />
         </Source>
+
+        {/* AI Search: Cluster dots at low zoom (< building threshold) */}
+        {clusterGeojson && (
+          <Source id="ai-search-clusters" type="geojson" data={clusterGeojson}>
+            <Layer
+              id="ai-cluster-circles"
+              type="circle"
+              maxzoom={14}
+              paint={{
+                'circle-radius': [
+                  'interpolate', ['linear'], ['get', 'count'],
+                  1, 8,
+                  10, 16,
+                  50, 28,
+                  200, 40,
+                ] as unknown as ExpressionSpecification,
+                'circle-color': '#ffc900',
+                'circle-opacity': 0.7,
+                'circle-stroke-color': '#1a1a1a',
+                'circle-stroke-width': 1.5,
+              }}
+            />
+            <Layer
+              id="ai-cluster-count"
+              type="symbol"
+              maxzoom={14}
+              layout={{
+                'text-field': ['get', 'count'] as unknown as ExpressionSpecification,
+                'text-size': 12,
+                'text-font': ['Open Sans Bold'],
+                'text-allow-overlap': true,
+              }}
+              paint={{
+                'text-color': '#1a1a1a',
+              }}
+            />
+          </Source>
+        )}
       </Map>
 
       {/* Building hover tooltip */}

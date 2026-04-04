@@ -30,6 +30,8 @@ import {
   LandPlot,
   HandCoins,
   Eye,
+  Sparkles,
+  Loader2,
 } from 'lucide-react'
 import type { BuildingWithPrice } from '@/app/types'
 
@@ -387,36 +389,75 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
     hasMySellIntent,
     submitInterest,
     removeInterest,
-    toggleSellIntent,
+    submitSellIntent,
+    removeSellIntent,
+    generateSummary,
   } = useMarketplaceSignals(buildingId)
-  const [toggling, setToggling] = useState<'interest' | 'sell' | null>(null)
-  const [showInterestForm, setShowInterestForm] = useState(false)
+
+  // Form visibility
+  const [activeForm, setActiveForm] = useState<'interest' | 'sell' | null>(null)
+  // Interest form state
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
   const [selectedSqmIdx, setSelectedSqmIdx] = useState<number | null>(null)
+  // Sell form state
+  const [sellNote, setSellNote] = useState('')
+  // Shared state
+  const [interestNote, setInterestNote] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
 
+  // Submit interest: generate AI summary, then save
   async function handleSubmitInterest() {
-    setToggling('interest')
+    setIsSubmitting(true)
+    setIsGenerating(true)
+
     const sqmPreset = selectedSqmIdx != null ? SQM_PRESETS[selectedSqmIdx] : null
-    await submitInterest({
+    const prefs = {
       room_count: (selectedRoom as '1' | '2' | '3' | '4' | '5+') ?? undefined,
       min_sqm: sqmPreset?.min,
       max_sqm: sqmPreset?.max,
-    })
-    setShowInterestForm(false)
-    setToggling(null)
+    }
+
+    // Generate AI summary
+    const summary = await generateSummary('buyer', prefs)
+    setIsGenerating(false)
+    const note = interestNote || summary
+
+    await submitInterest({ ...prefs, note })
+    setActiveForm(null)
+    setSelectedRoom(null)
+    setSelectedSqmIdx(null)
+    setInterestNote('')
+    setIsSubmitting(false)
+  }
+
+  // Submit sell intent: generate AI summary, then save
+  async function handleSubmitSellIntent() {
+    setIsSubmitting(true)
+    setIsGenerating(true)
+
+    const summary = await generateSummary('seller')
+    setIsGenerating(false)
+    const note = sellNote || summary
+
+    await submitSellIntent({ note })
+    setActiveForm(null)
+    setSellNote('')
+    setIsSubmitting(false)
   }
 
   async function handleRemoveInterest() {
-    setToggling('interest')
+    setIsSubmitting(true)
     await removeInterest()
-    setShowInterestForm(false)
-    setToggling(null)
+    setActiveForm(null)
+    setIsSubmitting(false)
   }
 
-  async function handleToggleSellIntent() {
-    setToggling('sell')
-    await toggleSellIntent()
-    setToggling(null)
+  async function handleRemoveSellIntent() {
+    setIsSubmitting(true)
+    await removeSellIntent()
+    setActiveForm(null)
+    setIsSubmitting(false)
   }
 
   const interestCount = signals?.interest_count ?? 0
@@ -457,10 +498,10 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
                 if (hasMyInterest) {
                   handleRemoveInterest()
                 } else {
-                  setShowInterestForm(prev => !prev)
+                  setActiveForm(activeForm === 'interest' ? null : 'interest')
                 }
               }}
-              disabled={toggling !== null}
+              disabled={isSubmitting}
               className={cn(
                 'flex-1 flex items-center justify-center gap-1.5',
                 'px-3 py-2 rounded-lg text-xs font-medium',
@@ -468,7 +509,7 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 hasMyInterest
                   ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-50'
-                  : showInterestForm
+                  : activeForm === 'interest'
                     ? 'bg-blue-50 border-blue-300 text-blue-800'
                     : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300 hover:bg-blue-50/50',
               )}
@@ -478,8 +519,14 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
             </button>
             <button
               type="button"
-              onClick={handleToggleSellIntent}
-              disabled={toggling !== null}
+              onClick={() => {
+                if (hasMySellIntent) {
+                  handleRemoveSellIntent()
+                } else {
+                  setActiveForm(activeForm === 'sell' ? null : 'sell')
+                }
+              }}
+              disabled={isSubmitting}
               className={cn(
                 'flex-1 flex items-center justify-center gap-1.5',
                 'px-3 py-2 rounded-lg text-xs font-medium',
@@ -487,16 +534,18 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 hasMySellIntent
                   ? 'bg-green-100 border-green-300 text-green-800 hover:bg-green-50'
-                  : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-green-300 hover:bg-green-50/50',
+                  : activeForm === 'sell'
+                    ? 'bg-green-50 border-green-300 text-green-800'
+                    : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-green-300 hover:bg-green-50/50',
               )}
             >
               <HandCoins size={14} />
-              {hasMySellIntent ? 'Ilmoitus aktiivinen' : 'Myyn tätä'}
+              {hasMySellIntent ? 'Poista ilmoitus' : 'Myyn tätä'}
             </button>
           </div>
 
-          {/* Interest form — room count + sqm range */}
-          {showInterestForm && !hasMyInterest && (
+          {/* ── Interest form ── */}
+          {activeForm === 'interest' && !hasMyInterest && (
             <div className="rounded-xl border-2 border-blue-200 bg-blue-50/30 p-3 space-y-3 animate-fade-in">
               {/* Room count */}
               <div>
@@ -552,19 +601,103 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
                 </div>
               </div>
 
+              {/* Optional note override */}
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  Viesti <span className="text-muted-foreground font-normal">(valinnainen)</span>
+                </label>
+                <textarea
+                  value={interestNote}
+                  onChange={e => setInterestNote(e.target.value)}
+                  placeholder="Jätä tyhjäksi → tekoäly kirjoittaa viestin puolestasi"
+                  maxLength={280}
+                  rows={2}
+                  className={cn(
+                    'w-full px-2.5 py-2 rounded-lg text-xs',
+                    'border border-[#1a1a1a]/15 bg-white',
+                    'placeholder:text-muted-foreground/50',
+                    'focus:outline-none focus:border-blue-300',
+                    'resize-none',
+                  )}
+                />
+              </div>
+
               {/* Submit */}
               <button
                 type="button"
                 onClick={handleSubmitInterest}
-                disabled={toggling === 'interest'}
+                disabled={isSubmitting}
                 className={cn(
                   'w-full py-2 rounded-lg text-xs font-bold',
                   'bg-blue-600 text-white border-2 border-blue-700',
                   'hover:bg-blue-700 transition-colors',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'flex items-center justify-center gap-1.5',
                 )}
               >
-                {toggling === 'interest' ? 'Tallennetaan...' : 'Tallenna kiinnostus'}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    {isGenerating ? 'Tekoäly kirjoittaa...' : 'Tallennetaan...'}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={13} />
+                    Lähetä kiinnostus
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* ── Sell intent form ── */}
+          {activeForm === 'sell' && !hasMySellIntent && (
+            <div className="rounded-xl border-2 border-green-200 bg-green-50/30 p-3 space-y-3 animate-fade-in">
+              {/* Note */}
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  Ilmoitusteksti <span className="text-muted-foreground font-normal">(valinnainen)</span>
+                </label>
+                <textarea
+                  value={sellNote}
+                  onChange={e => setSellNote(e.target.value)}
+                  placeholder="Jätä tyhjäksi → tekoäly kirjoittaa ilmoituksen rakennuksen tietojen perusteella"
+                  maxLength={500}
+                  rows={3}
+                  className={cn(
+                    'w-full px-2.5 py-2 rounded-lg text-xs',
+                    'border border-[#1a1a1a]/15 bg-white',
+                    'placeholder:text-muted-foreground/50',
+                    'focus:outline-none focus:border-green-300',
+                    'resize-none',
+                  )}
+                />
+              </div>
+
+              {/* Submit */}
+              <button
+                type="button"
+                onClick={handleSubmitSellIntent}
+                disabled={isSubmitting}
+                className={cn(
+                  'w-full py-2 rounded-lg text-xs font-bold',
+                  'bg-green-600 text-white border-2 border-green-700',
+                  'hover:bg-green-700 transition-colors',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'flex items-center justify-center gap-1.5',
+                )}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    {isGenerating ? 'Tekoäly kirjoittaa ilmoitusta...' : 'Tallennetaan...'}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={13} />
+                    Julkaise myynti-ilmoitus
+                  </>
+                )}
               </button>
             </div>
           )}

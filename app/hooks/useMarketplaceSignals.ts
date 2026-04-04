@@ -9,21 +9,30 @@ export interface InterestPreferences {
   room_count?: RoomCount
   min_sqm?: number
   max_sqm?: number
+  note?: string
+}
+
+/** Seller listing options */
+export interface SellIntentOptions {
+  note?: string
+  asking_price_per_sqm?: number
 }
 
 interface UseMarketplaceSignalsResult {
   signals: BuildingSignals | null
   isLoading: boolean
-  /** Whether the current user has expressed interest */
   hasMyInterest: boolean
-  /** Whether the current user has a sell intent */
   hasMySellIntent: boolean
-  /** Submit interest with preferences (or remove if already set) */
+  /** Submit interest with preferences and optional note */
   submitInterest: (prefs: InterestPreferences) => Promise<void>
   /** Remove existing interest */
   removeInterest: () => Promise<void>
-  /** Toggle sell intent on/off */
-  toggleSellIntent: () => Promise<void>
+  /** Submit sell intent with note */
+  submitSellIntent: (opts: SellIntentOptions) => Promise<void>
+  /** Remove existing sell intent */
+  removeSellIntent: () => Promise<void>
+  /** Generate AI summary for seller or buyer */
+  generateSummary: (type: 'seller' | 'buyer', preferences?: InterestPreferences) => Promise<string>
   /** Refresh signal counts */
   refresh: () => void
 }
@@ -86,6 +95,7 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
         room_count: prefs.room_count ?? null,
         min_sqm: prefs.min_sqm ?? null,
         max_sqm: prefs.max_sqm ?? null,
+        note: prefs.note ?? null,
       }),
     })
     refresh()
@@ -97,20 +107,55 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
     refresh()
   }, [buildingId, user, refresh])
 
-  const toggleSellIntent = useCallback(async () => {
+  const submitSellIntent = useCallback(async (opts: SellIntentOptions) => {
     if (!buildingId || !user) return
 
-    if (hasMySellIntent) {
-      await fetch(`/api/marketplace/sell-intent?buildingId=${buildingId}`, { method: 'DELETE' })
-    } else {
-      await fetch('/api/marketplace/sell-intent', {
+    await fetch('/api/marketplace/sell-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        building_id: buildingId,
+        note: opts.note ?? null,
+        asking_price_per_sqm: opts.asking_price_per_sqm ?? null,
+      }),
+    })
+    refresh()
+  }, [buildingId, user, refresh])
+
+  const removeSellIntent = useCallback(async () => {
+    if (!buildingId || !user) return
+    await fetch(`/api/marketplace/sell-intent?buildingId=${buildingId}`, { method: 'DELETE' })
+    refresh()
+  }, [buildingId, user, refresh])
+
+  const generateSummary = useCallback(async (
+    type: 'seller' | 'buyer',
+    preferences?: InterestPreferences
+  ): Promise<string> => {
+    if (!buildingId) return ''
+
+    try {
+      const res = await fetch('/api/marketplace/generate-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ building_id: buildingId }),
+        body: JSON.stringify({
+          building_id: buildingId,
+          type,
+          preferences: preferences ? {
+            room_count: preferences.room_count,
+            min_sqm: preferences.min_sqm,
+            max_sqm: preferences.max_sqm,
+          } : undefined,
+        }),
       })
+
+      if (!res.ok) return ''
+      const { summary } = await res.json() as { summary: string }
+      return summary
+    } catch {
+      return ''
     }
-    refresh()
-  }, [buildingId, user, hasMySellIntent, refresh])
+  }, [buildingId])
 
   return {
     signals,
@@ -119,7 +164,9 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
     hasMySellIntent,
     submitInterest,
     removeInterest,
-    toggleSellIntent,
+    submitSellIntent,
+    removeSellIntent,
+    generateSummary,
     refresh,
   }
 }

@@ -220,6 +220,59 @@ export interface BuildingSellIntent {
   expires_at: string
 }
 
+// ── AI Property Search ──
+
+/** Structured filters parsed from natural language query */
+export interface AISearchFilters {
+  area_codes?: string[]
+  municipality?: string
+  property_type?: PropertyType
+  room_count?: string
+  min_sqm?: number
+  max_sqm?: number
+  max_price_per_sqm?: number
+  min_price_per_sqm?: number
+  min_construction_year?: number
+  max_construction_year?: number
+  max_distance_to_transit_m?: number
+  max_distance_to_school_m?: number
+  max_distance_to_kindergarten_m?: number
+  max_distance_to_grocery_m?: number
+  max_distance_to_park_m?: number
+  max_distance_to_water_m?: number
+  max_floor_count?: number
+  min_floor_count?: number
+  sort_by?: 'price_asc' | 'price_desc' | 'year_desc' | 'year_asc'
+}
+
+/** A building result from AI search */
+export interface AISearchResult {
+  id: string
+  address: string | null
+  area_code: string
+  area_name: string
+  municipality: string
+  estimated_price_per_sqm: number | null
+  construction_year: number | null
+  floor_count: number | null
+  apartment_count: number | null
+  footprint_area_sqm: number | null
+  lat: number
+  lng: number
+}
+
+/** Response from the search endpoint */
+export interface AISearchResponse {
+  total: number
+  buildings: AISearchResult[]
+  clusters: Array<{
+    lat: number
+    lng: number
+    count: number
+    avg_price: number
+  }>
+}
+
 /** User's own signals (for /omat-ilmoitukset page) */
 export interface UserSignalWithBuilding {
   id: string
