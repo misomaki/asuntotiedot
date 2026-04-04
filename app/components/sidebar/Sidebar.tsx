@@ -127,32 +127,19 @@ export function Sidebar() {
     return <StatsPanel data={data} isLoading={isLoading} year={filters.year} />
   }
 
-  // ---- Floating building card (both mobile and desktop) ----
-  const buildingCard = (
+  // ---- Floating building card (desktop only) ----
+  const desktopBuildingCard = (
     <AnimatePresence>
-      {hasSelectedBuilding && (isDesktop || !isOpen) && (
+      {hasSelectedBuilding && isDesktop && (
         <motion.div
           key="building-card"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 20, opacity: 0 }}
           transition={{ type: 'spring', damping: 26, stiffness: 340 }}
-          className={cn(
-            'fixed z-40',
-            isDesktop
-              ? 'bottom-6 left-4 w-[22rem]'
-              : 'bottom-3 left-3 right-3',
-          )}
+          className="fixed z-40 bottom-6 left-4 w-[22rem]"
         >
-          <div
-            className={cn(
-              'bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm',
-              'overflow-y-auto',
-              isDesktop
-                ? 'max-h-[calc(100vh-8rem)] p-5'
-                : 'max-h-[calc(100vh-6rem)] p-4',
-            )}
-          >
+          <div className="bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-y-auto max-h-[calc(100vh-8rem)] p-5">
             <BuildingPanel />
           </div>
         </motion.div>
@@ -160,10 +147,12 @@ export function Sidebar() {
     </AnimatePresence>
   )
 
-  // ---- Mobile: bottom sheet (for area stats only) ----
+  // ---- Mobile: bottom sheet for BOTH area stats and building panel ----
   if (!isDesktop) {
+    const isBuildingSheetOpen = hasSelectedBuilding && !isOpen
     return (
       <>
+        {/* Area stats sheet */}
         <Sheet
           open={isOpen}
           onClose={handleClose}
@@ -174,7 +163,18 @@ export function Sidebar() {
             {renderContent()}
           </div>
         </Sheet>
-        {buildingCard}
+
+        {/* Building panel sheet — same backdrop+blur treatment as area stats */}
+        <Sheet
+          open={isBuildingSheetOpen}
+          onClose={() => setSelectedBuilding(null)}
+          side="bottom"
+          className="max-h-[85vh]"
+        >
+          <div className="pb-4 px-1">
+            <BuildingPanel />
+          </div>
+        </Sheet>
       </>
     )
   }
@@ -226,7 +226,7 @@ export function Sidebar() {
           </motion.aside>
         )}
       </AnimatePresence>
-      {buildingCard}
+      {desktopBuildingCard}
     </>
   )
 }

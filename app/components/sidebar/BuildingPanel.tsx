@@ -166,16 +166,17 @@ export function BuildingPanel() {
       <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] shadow-hard-sm overflow-hidden">
         {/* Price headline */}
         {hasPrice ? (
-          <div className="px-4 pt-3 pb-2.5">
+          <div className="px-4 pt-3 pb-3">
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Hinta-arvio</div>
             <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
               {formatPriceRange(priceRange!.low, priceRange!.high)}
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="text-sm text-muted-foreground">
-                Keskiarvo <AnimatedNumber value={price!} fromZero duration={500} />
-                <span className="ml-1">€/m²</span>
-              </div>
+            <div className="text-sm text-muted-foreground mt-0.5">
+              Keskiarvo <AnimatedNumber value={price!} fromZero duration={500} />
+              <span className="ml-1">€/m²</span>
+            </div>
+            {/* Confidence indicator — visually distinct row */}
+            <div className="mt-2.5 pt-2 border-t border-[#1a1a1a]/10">
               <ConfidenceBadge level={priceRange!.confidence} />
             </div>
           </div>
@@ -592,6 +593,8 @@ function formatDistance(meters: number | null): string | null {
 }
 
 function NearbyServices({ building }: { building: BuildingWithPrice }) {
+  const [isOpen, setIsOpen] = useState(false)
+
   const services = [
     { icon: <GraduationCap size={14} />, label: 'Koulu', distance: building.min_distance_to_school_m },
     { icon: <Baby size={14} />, label: 'Päiväkoti', distance: building.min_distance_to_kindergarten_m },
@@ -605,23 +608,40 @@ function NearbyServices({ building }: { building: BuildingWithPrice }) {
   if (services.length === 0) return null
 
   return (
-    <>
-      <div className="flex items-center gap-2 pt-1">
-        <span className="text-muted-foreground"><Info size={14} /></span>
-        <h3 className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Lähipalvelut</h3>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {services.map((s) => (
-          <CompactAttribute
-            key={s.label}
-            icon={s.icon}
-            label={s.label}
-            value={formatDistance(s.distance)!}
-            delay={0}
-          />
-        ))}
-      </div>
-    </>
+    <div className="rounded-xl border-2 border-[#1a1a1a]/10 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className={cn(
+          'w-full flex items-center justify-between',
+          'px-3 py-2.5 cursor-pointer',
+          'text-muted-foreground hover:text-foreground',
+          'hover:bg-muted/30 transition-colors',
+        )}
+      >
+        <div className="flex items-center gap-2">
+          <Info size={14} />
+          <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Lähipalvelut</span>
+        </div>
+        <ChevronDown
+          size={14}
+          className={cn('transition-transform duration-200', isOpen && 'rotate-180')}
+        />
+      </button>
+      {isOpen && (
+        <div className="px-3 pb-3 pt-0.5 grid grid-cols-2 gap-2 animate-fade-in">
+          {services.map((s) => (
+            <CompactAttribute
+              key={s.label}
+              icon={s.icon}
+              label={s.label}
+              value={formatDistance(s.distance)!}
+              delay={0}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

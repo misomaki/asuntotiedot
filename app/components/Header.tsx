@@ -653,8 +653,8 @@ export function Header() {
               </div>
             )}
 
-            {/* Year selector */}
-            <div ref={yearContainerRef} className="relative flex-shrink-0">
+            {/* Year selector — desktop only; mobile defaults to latest year */}
+            <div ref={yearContainerRef} className="relative flex-shrink-0 hidden md:block">
               <button
                 type="button"
                 onClick={() => setIsYearOpen((prev) => !prev)}
