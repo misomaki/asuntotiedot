@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { MapPin } from 'lucide-react'
 
-export const revalidate = 86400 // 24h ISR
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Alueet – Neliöt',
