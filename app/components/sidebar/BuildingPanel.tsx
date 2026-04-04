@@ -5,7 +5,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { useMarketplaceSignals } from '@/app/hooks/useMarketplaceSignals'
 import { cn } from '@/app/lib/utils'
-import { formatNumber, getBuildingTypeLabel, formatPriceRange } from '@/app/lib/formatters'
+import { formatNumber, formatPriceRange } from '@/app/lib/formatters'
 import { computePriceRange, inferPropertyType } from '@/app/lib/priceEstimation'
 import type { ConfidenceLevel } from '@/app/lib/priceEstimation'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
@@ -42,7 +42,7 @@ import type { BuildingWithPrice } from '@/app/types'
  *   3. Attribute grid: type, year, floors, water, footprint, energy, apartments
  *   4. Disclaimer
  */
-export function BuildingPanel() {
+export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
   const {
     selectedBuilding,
     setSelectedBuilding,
@@ -131,12 +131,16 @@ export function BuildingPanel() {
       })
     : null
 
-  // Resolve building type label
+  // Resolve building type label — use inferred propertyType as primary,
+  // with Ryhti subcategory labels (e.g. "Paritalo", "Senioritalo") when available
+  const PROPERTY_TYPE_LABELS: Record<string, string> = {
+    kerrostalo: 'Kerrostalo',
+    rivitalo: 'Rivitalo',
+    omakotitalo: 'Omakotitalo',
+  }
   const typeLabel = building.ryhti_main_purpose
     ? getRyhtiPurposeLabel(building.ryhti_main_purpose)
-    : building.building_type
-      ? getBuildingTypeLabel(building.building_type)
-      : null
+    : PROPERTY_TYPE_LABELS[propertyType] ?? null
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -152,14 +156,16 @@ export function BuildingPanel() {
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleClose}
-          className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          aria-label="Sulje"
-        >
-          <X size={16} />
-        </button>
+        {!hideClose && (
+          <button
+            type="button"
+            onClick={handleClose}
+            className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-label="Sulje"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* ── Unified price card ── */}
