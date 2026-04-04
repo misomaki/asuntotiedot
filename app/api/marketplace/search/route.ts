@@ -12,6 +12,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/app/lib/supabaseClient'
 import type { AISearchFilters, AISearchResult } from '@/app/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { filters, limit = 200, offset = 0 } = await request.json() as {

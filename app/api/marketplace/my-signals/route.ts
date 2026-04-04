@@ -10,6 +10,8 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { UserSignalWithBuilding } from '@/app/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const cookieStore = await cookies()
   const supabase = createServerClient(

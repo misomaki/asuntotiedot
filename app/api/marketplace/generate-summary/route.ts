@@ -28,6 +28,8 @@ Säännöt:
 - Mainitse mikä rakennuksessa kiinnostaa (sijainti, ikä, palvelut)
 - Palauta VAIN hakuviesti, ei JSON:ia tai muuta muotoilua`
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   if (!ANTHROPIC_API_KEY) {
     return NextResponse.json(
