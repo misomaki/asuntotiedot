@@ -87,7 +87,9 @@ export function AISearchProvider({ children }: { children: ReactNode }) {
       })
 
       if (!searchRes.ok) {
-        throw new Error('Rakennushaku epäonnistui')
+        const errBody = await searchRes.json().catch(() => ({})) as { error?: string }
+        console.error('Building search failed:', searchRes.status, errBody)
+        throw new Error(errBody.error || 'Rakennushaku epäonnistui')
       }
 
       const { total, buildings, clusters } = await searchRes.json() as {

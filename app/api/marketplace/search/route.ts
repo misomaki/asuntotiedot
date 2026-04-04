@@ -10,6 +10,7 @@ import { getSupabaseAdmin } from '@/app/lib/supabaseClient'
 import type { AISearchFilters, AISearchResult } from '@/app/types'
 
 export async function POST(request: NextRequest) {
+  try {
   const { filters, limit = 200, offset = 0 } = await request.json() as {
     filters: AISearchFilters
     limit?: number
@@ -121,8 +122,11 @@ export async function POST(request: NextRequest) {
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Building search error:', error)
-    return NextResponse.json({ error: 'Search failed' }, { status: 500 })
+    console.error('Building search error:', error.message, error.details, error.hint)
+    return NextResponse.json(
+      { error: `Search failed: ${error.message}` },
+      { status: 500 }
+    )
   }
 
   const total = count ?? 0
@@ -192,4 +196,11 @@ export async function POST(request: NextRequest) {
     { total, buildings, clusters },
     { headers: { 'Cache-Control': 'private, s-maxage=60' } }
   )
+  } catch (err) {
+    console.error('Search route error:', err)
+    return NextResponse.json(
+      { error: `Search error: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 }
+    )
+  }
 }
