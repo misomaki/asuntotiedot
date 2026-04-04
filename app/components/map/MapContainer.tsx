@@ -32,7 +32,7 @@ const MAP_STYLE =
 const BUILDING_ZOOM_THRESHOLD = 13
 
 /** Cache-bust version — increment after recomputing building prices */
-const TILE_VERSION = 'v5'
+const TILE_VERSION = 'v9'
 
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {
@@ -83,13 +83,14 @@ export default function MapContainer() {
     setIsLoading,
     isSidebarOpen,
     setIsSidebarOpen,
+    selectedBuilding,
     setSelectedBuilding,
     setFlyTo,
     flyTo,
   } = useMapContext()
 
   // AI search state — for cluster dots and building glow
-  const { isActive: isAISearchActive, clusters: aiClusters, matchingBuildingIds } = useAISearch()
+  const { isActive: isAISearchActive, clusters: aiClusters } = useAISearch()
 
   // GeoJSON for AI search cluster dots
   const clusterGeojson = useMemo(() => {
@@ -812,6 +813,10 @@ export default function MapContainer() {
         />
       )}
 
+      {/* ── Mobile bottom-right controls: locate + legend stacked ──
+           Both hidden when a sheet is open (building or area panel).
+           Desktop: independent absolute positioning. */}
+
       {/* Locate me button — bottom-right, above legend */}
       <button
         type="button"
@@ -833,13 +838,15 @@ export default function MapContainer() {
           )
         }}
         className={cn(
-          'absolute z-40 right-3 md:right-6',
-          'bottom-[15rem] md:bottom-[4.5rem]',
+          'absolute z-20 right-3 md:right-6',
+          'bottom-24 md:bottom-[4.5rem]',
           'neo-press h-10 w-10 md:h-9 md:w-9',
           'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary shadow-hard-sm',
           'flex items-center justify-center',
-          'text-[#1a1a1a] hover:bg-pink-baby transition-colors',
+          'text-[#1a1a1a] hover:bg-pink-baby transition-all duration-200',
           isLocating && 'animate-pulse',
+          // Hide on mobile when any sheet is open
+          (isSidebarOpen || selectedBuilding) && 'md:opacity-100 max-md:opacity-0 max-md:pointer-events-none',
         )}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -852,16 +859,23 @@ export default function MapContainer() {
       </button>
 
       {/* Legend — switches between municipality and building scale based on zoom.
-          Hidden on mobile when sidebar sheet is open (to avoid overlap). */}
+          Hidden on mobile when any sheet is open. */}
       <MapLegend
         municipalityScale={municipalityScale}
         zoom={viewport.zoom}
-        hiddenOnMobile={isSidebarOpen && (!!selectedArea || isCompareMode)}
+        hiddenOnMobile={(isSidebarOpen && (!!selectedArea || isCompareMode)) || !!selectedBuilding}
       />
 
-      {/* Zoom hint — center of screen on mobile, bottom on desktop */}
+      {/* ── Center indicators: zoom hint, loading, compare mode ──
+           Positioned at vertical center on mobile, bottom on desktop.
+           Hidden on mobile when any panel is open (they'd be behind the sheet). */}
+
+      {/* Zoom hint */}
       <div
-        className="absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 pointer-events-none"
+        className={cn(
+          'absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-20 transition-all duration-500 pointer-events-none',
+          (isSidebarOpen || selectedBuilding) && 'max-md:hidden',
+        )}
         style={{ opacity: showZoomHint ? 1 : 0, transform: `translateX(-50%) translateY(${showZoomHint ? '0' : '8px'})` }}
       >
         <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-muted-foreground font-body shadow-hard-sm flex items-center gap-2">
@@ -871,9 +885,12 @@ export default function MapContainer() {
         </div>
       </div>
 
-      {/* Building tile loading indicator — center on mobile, bottom on desktop */}
+      {/* Building tile loading indicator */}
       <div
-        className="absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className={cn(
+          'absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-20 transition-all duration-300 pointer-events-none',
+          (isSidebarOpen || selectedBuilding) && 'max-md:hidden',
+        )}
         style={{ opacity: showBuildings && buildingsLoading && !dataLoading ? 1 : 0 }}
       >
         <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
@@ -883,9 +900,12 @@ export default function MapContainer() {
         </div>
       </div>
 
-      {/* Compare mode indicator — center on mobile, bottom on desktop */}
+      {/* Compare mode indicator */}
       {isCompareMode && !selectedArea && comparedArea && (
-        <div className="absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in">
+        <div className={cn(
+          'absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-fade-in',
+          (isSidebarOpen || selectedBuilding) && 'max-md:hidden',
+        )}>
           <div className="bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
             <div className="h-3 w-3 rounded-full bg-pink animate-pulse" />
             Valitse toinen alue vertailuun
@@ -893,9 +913,12 @@ export default function MapContainer() {
         </div>
       )}
 
-      {/* Loading indicator — center on mobile, bottom on desktop */}
+      {/* Loading indicator */}
       <div
-        className="absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none"
+        className={cn(
+          'absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-20 transition-all duration-300 pointer-events-none',
+          (isSidebarOpen || selectedBuilding) && 'max-md:hidden',
+        )}
         style={{ opacity: dataLoading ? 1 : 0 }}
       >
         <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
@@ -949,11 +972,12 @@ function BuildingTooltip({
 
   const price = hasValidPrice ? props.price : null
   const priceColor = price !== null ? getColorForPrice(price) : null
-  // MVT tiles lack neighborhood_factor → tooltip range is wider than BuildingPanel.
-  // This is intentional: panel fetches full data and narrows the range further.
+  // MVT tiles lack neighborhood_factor + apartment_count → tooltip range is wider
+  // than BuildingPanel. This is intentional: panel fetches full data and narrows further.
   const priceRange = price !== null
     ? computePriceRange(price, {
         hasConstructionYear: !!props.construction_year,
+        hasFloorCount: !!props.floor_count,
       })
     : null
   const priceStr = priceRange

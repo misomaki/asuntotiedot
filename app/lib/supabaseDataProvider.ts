@@ -381,7 +381,8 @@ export class SupabaseDataProvider implements DataProvider {
       building.building_type,
       building.floor_count,
       building.ryhti_main_purpose,
-      building.apartment_count
+      building.apartment_count,
+      building.footprint_area_sqm ? Number(building.footprint_area_sqm) : null
     )
 
     // Fetch area info, base price, and neighborhood factor in parallel
@@ -389,9 +390,10 @@ export class SupabaseDataProvider implements DataProvider {
     let areaName = ''
     let basePrice: number | null = null
     let neighborhoodFactor = 1.0
+    let neighborhoodFactorConfidence: 'high' | 'medium' | 'low' | 'default' = 'default'
 
     if (building.area_id) {
-      const [areaResult, basePriceResult, nbhdFactor] = await Promise.all([
+      const [areaResult, basePriceResult, nbhdResult] = await Promise.all([
         this.supabase
           .from('areas')
           .select('area_code, name')
@@ -406,7 +408,8 @@ export class SupabaseDataProvider implements DataProvider {
         areaName = areaResult.data.name
       }
       basePrice = basePriceResult
-      neighborhoodFactor = nbhdFactor
+      neighborhoodFactor = nbhdResult.factor
+      neighborhoodFactorConfidence = nbhdResult.confidence
     }
 
     // Compute the factors for the breakdown
@@ -457,6 +460,7 @@ export class SupabaseDataProvider implements DataProvider {
       floor_factor: floorFactor,
       size_factor: sizeFactor,
       neighborhood_factor: dampenedNeighborhoodFactor,
+      neighborhood_factor_confidence: neighborhoodFactorConfidence,
       tontti_factor: tonttiFactor,
       ryhti_main_purpose: building.ryhti_main_purpose ?? null,
       is_residential: building.is_residential ?? null,
@@ -524,23 +528,33 @@ export class SupabaseDataProvider implements DataProvider {
   private async lookupNeighborhoodFactor(
     areaId: string,
     propertyType: string
-  ): Promise<number> {
+  ): Promise<{ factor: number; confidence: 'high' | 'medium' | 'low' | 'default' }> {
     const { data } = await this.supabase
       .from('neighborhood_factors')
-      .select('factor, property_type')
+      .select('factor, property_type, sample_count, confidence')
       .eq('area_id', areaId)
       .in('property_type', [propertyType, 'all'])
       .gte('sample_count', 3)
 
-    if (!data?.length) return 1.0
+    if (!data?.length) return { factor: 1.0, confidence: 'default' }
 
     const exact = data.find((r) => r.property_type === propertyType)
-    if (exact?.factor) return Number(exact.factor)
+    if (exact?.factor) {
+      return {
+        factor: Number(exact.factor),
+        confidence: (exact.confidence as 'high' | 'medium' | 'low') ?? 'medium',
+      }
+    }
 
     const universal = data.find((r) => r.property_type === 'all')
-    if (universal?.factor) return Number(universal.factor)
+    if (universal?.factor) {
+      return {
+        factor: Number(universal.factor),
+        confidence: (universal.confidence as 'high' | 'medium' | 'low') ?? 'medium',
+      }
+    }
 
-    return 1.0
+    return { factor: 1.0, confidence: 'default' }
   }
 
   private async fetchLatestPrice(

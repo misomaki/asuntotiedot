@@ -523,40 +523,42 @@ export function StatsPanel({ data, isLoading, year }: StatsPanelProps) {
       {/* ── Unified price card ── */}
       <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] shadow-hard-sm overflow-hidden">
         {primaryPriceValue ? (
-          <div className="px-4 pt-3 pb-2.5">
+          <div className="px-4 pt-3 pb-3">
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Keskihinta</div>
-            <div className="flex items-baseline gap-2 mt-0.5">
-              <div className="text-2xl font-bold text-foreground tabular-nums">
-                <AnimatedNumber value={primaryPriceValue} />
-                <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
-              </div>
-              {prevYearPrice != null && primaryPriceValue !== prevYearPrice && (() => {
-                const diff = primaryPriceValue - prevYearPrice
-                const pct = ((diff / prevYearPrice) * 100)
-                const isUp = diff > 0
-                return (
+            <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
+              <AnimatedNumber value={primaryPriceValue} />
+              <span className="text-sm font-normal text-muted-foreground ml-1.5">€/m²</span>
+            </div>
+            {/* Year-over-year change — own row for breathing room */}
+            {prevYearPrice != null && (
+              <div className="mt-2 pt-2 border-t border-[#1a1a1a]/10">
+                {primaryPriceValue !== prevYearPrice ? (() => {
+                  const diff = primaryPriceValue - prevYearPrice
+                  const pct = ((diff / prevYearPrice) * 100)
+                  const isUp = diff > 0
+                  return (
+                    <span
+                      className={cn(
+                        'inline-flex items-center gap-1 text-xs font-mono font-medium tabular-nums rounded-full px-2 py-0.5',
+                        isUp ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50',
+                      )}
+                      title={`${year - 1}: ${formatNumber(prevYearPrice)} €/m²`}
+                    >
+                      {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                      {isUp ? '+' : ''}{pct.toFixed(1)}% vs {year - 1}
+                    </span>
+                  )
+                })() : (
                   <span
-                    className={cn(
-                      'inline-flex items-center gap-0.5 text-[11px] font-mono font-medium tabular-nums rounded-full px-1.5 py-0.5',
-                      isUp ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50',
-                    )}
+                    className="inline-flex items-center gap-1 text-xs font-mono font-medium tabular-nums rounded-full px-2 py-0.5 text-[#999] bg-[#f0efed]"
                     title={`${year - 1}: ${formatNumber(prevYearPrice)} €/m²`}
                   >
-                    {isUp ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
-                    {isUp ? '+' : ''}{pct.toFixed(1)}%
+                    <Minus size={12} />
+                    0% vs {year - 1}
                   </span>
-                )
-              })()}
-              {prevYearPrice != null && primaryPriceValue === prevYearPrice && (
-                <span
-                  className="inline-flex items-center gap-0.5 text-[11px] font-mono font-medium tabular-nums rounded-full px-1.5 py-0.5 text-[#999] bg-[#f0efed]"
-                  title={`${year - 1}: ${formatNumber(prevYearPrice)} €/m²`}
-                >
-                  <Minus size={11} />
-                  0%
-                </span>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="px-4 py-3">
@@ -695,8 +697,10 @@ export function StatsPanel({ data, isLoading, year }: StatsPanelProps) {
         <WalkScoreCircle score={data.walkScore} />
       )}
 
-      {/* ── Trend chart ── */}
-      <TrendChart areaCode={data.area_code} />
+      {/* ── Trend chart — visually separated section ── */}
+      <div className="pt-2 mt-2 border-t-2 border-[#1a1a1a]/10">
+        <TrendChart areaCode={data.area_code} />
+      </div>
     </div>
   )
 }

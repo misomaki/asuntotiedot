@@ -75,6 +75,13 @@ BEGIN
       v_property_type := 'kerrostalo';
     ELSIF p_floor_count = 2 THEN
       v_property_type := 'rivitalo';
+    ELSIF p_floor_count = 1 AND p_apartment_count IS NOT NULL AND p_apartment_count >= 3 THEN
+      -- 1-floor with multiple apartments → rivitalo (single-story row houses)
+      v_property_type := 'rivitalo';
+    ELSIF p_footprint_area_sqm IS NOT NULL AND p_footprint_area_sqm >= 300 THEN
+      -- Large footprint without metadata → rivitalo, not OKT.
+      -- Typical OKT < 200m². Buildings ≥ 300m² are row houses / apartments.
+      v_property_type := 'rivitalo';
     ELSE
       v_property_type := 'omakotitalo';
     END IF;

@@ -55,7 +55,7 @@ export default function MapLegend({ municipalityScale, zoom = 12, hiddenOnMobile
 
   return (
     <div className={cn(
-      'absolute bottom-20 right-3 md:bottom-6 md:right-6 z-40 transition-opacity duration-200',
+      'absolute bottom-4 right-3 md:bottom-6 md:right-6 z-20 transition-opacity duration-200',
       hiddenOnMobile && 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'
     )}>
       <div className="neo-lift bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">

@@ -5,8 +5,9 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { useMarketplaceSignals } from '@/app/hooks/useMarketplaceSignals'
 import { cn } from '@/app/lib/utils'
-import { formatNumber, getBuildingTypeLabel, formatPriceRange } from '@/app/lib/formatters'
-import { computePriceRange } from '@/app/lib/priceEstimation'
+import { formatNumber, formatPriceRange } from '@/app/lib/formatters'
+import { computePriceRange, inferPropertyType } from '@/app/lib/priceEstimation'
+import type { ConfidenceLevel } from '@/app/lib/priceEstimation'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { CompactAttribute } from '@/app/components/sidebar/CompactAttribute'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -43,7 +44,7 @@ import type { BuildingWithPrice } from '@/app/types'
  *   3. Attribute grid: type, year, floors, water, footprint, energy, apartments
  *   4. Disclaimer
  */
-export function BuildingPanel() {
+export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
   const {
     selectedBuilding,
     setSelectedBuilding,
@@ -113,20 +114,35 @@ export function BuildingPanel() {
   const price = building.estimated_price_per_sqm
   const hasPrice = price !== null && price > 0
   const hasFactors = hasPrice && building.base_price !== null
+  const propertyType = inferPropertyType(
+    building.building_type,
+    building.floor_count,
+    building.ryhti_main_purpose,
+    building.apartment_count,
+    building.footprint_area_sqm
+  )
   const priceRange = hasPrice
     ? computePriceRange(price!, {
         neighborhoodFactor: building.neighborhood_factor,
+        neighborhoodFactorConfidence: building.neighborhood_factor_confidence,
         hasConstructionYear: building.construction_year !== null,
         hasEnergyClass: building.energy_class !== null,
+        propertyType,
+        hasFloorCount: building.floor_count !== null,
+        hasSizeFactor: building.apartment_count !== null || building.footprint_area_sqm !== null,
       })
     : null
 
-  // Resolve building type label
+  // Resolve building type label — use inferred propertyType as primary,
+  // with Ryhti subcategory labels (e.g. "Paritalo", "Senioritalo") when available
+  const PROPERTY_TYPE_LABELS: Record<string, string> = {
+    kerrostalo: 'Kerrostalo',
+    rivitalo: 'Rivitalo',
+    omakotitalo: 'Omakotitalo',
+  }
   const typeLabel = building.ryhti_main_purpose
     ? getRyhtiPurposeLabel(building.ryhti_main_purpose)
-    : building.building_type
-      ? getBuildingTypeLabel(building.building_type)
-      : null
+    : PROPERTY_TYPE_LABELS[propertyType] ?? null
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -142,21 +158,23 @@ export function BuildingPanel() {
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleClose}
-          className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          aria-label="Sulje"
-        >
-          <X size={16} />
-        </button>
+        {!hideClose && (
+          <button
+            type="button"
+            onClick={handleClose}
+            className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-label="Sulje"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* ── Unified price card ── */}
       <div className="rounded-xl bg-pink-pale border-2 border-[#1a1a1a] shadow-hard-sm overflow-hidden">
         {/* Price headline */}
         {hasPrice ? (
-          <div className="px-4 pt-3 pb-2.5">
+          <div className="px-4 pt-3 pb-3">
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Hinta-arvio</div>
             <div className="text-2xl font-bold text-foreground tabular-nums mt-0.5">
               {formatPriceRange(priceRange!.low, priceRange!.high)}
@@ -164,6 +182,10 @@ export function BuildingPanel() {
             <div className="text-sm text-muted-foreground mt-0.5">
               Keskiarvo <AnimatedNumber value={price!} fromZero duration={500} />
               <span className="ml-1">€/m²</span>
+            </div>
+            {/* Confidence indicator — visually distinct row */}
+            <div className="mt-2.5 pt-2 border-t border-[#1a1a1a]/10">
+              <ConfidenceBadge level={priceRange!.confidence} />
             </div>
           </div>
         ) : (
@@ -710,6 +732,8 @@ function formatDistance(meters: number | null): string | null {
 }
 
 function NearbyServices({ building }: { building: BuildingWithPrice }) {
+  const [isOpen, setIsOpen] = useState(false)
+
   const services = [
     { icon: <GraduationCap size={14} />, label: 'Koulu', distance: building.min_distance_to_school_m },
     { icon: <Baby size={14} />, label: 'Päiväkoti', distance: building.min_distance_to_kindergarten_m },
@@ -723,23 +747,40 @@ function NearbyServices({ building }: { building: BuildingWithPrice }) {
   if (services.length === 0) return null
 
   return (
-    <>
-      <div className="flex items-center gap-2 pt-1">
-        <span className="text-muted-foreground"><Info size={14} /></span>
-        <h3 className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Lähipalvelut</h3>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {services.map((s) => (
-          <CompactAttribute
-            key={s.label}
-            icon={s.icon}
-            label={s.label}
-            value={formatDistance(s.distance)!}
-            delay={0}
-          />
-        ))}
-      </div>
-    </>
+    <div className="rounded-xl border-2 border-[#1a1a1a]/10 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className={cn(
+          'w-full flex items-center justify-between',
+          'px-3 py-2.5 cursor-pointer',
+          'text-muted-foreground hover:text-foreground',
+          'hover:bg-muted/30 transition-colors',
+        )}
+      >
+        <div className="flex items-center gap-2">
+          <Info size={14} />
+          <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Lähipalvelut</span>
+        </div>
+        <ChevronDown
+          size={14}
+          className={cn('transition-transform duration-200', isOpen && 'rotate-180')}
+        />
+      </button>
+      {isOpen && (
+        <div className="px-3 pb-3 pt-0.5 grid grid-cols-2 gap-2 animate-fade-in">
+          {services.map((s) => (
+            <CompactAttribute
+              key={s.label}
+              icon={s.icon}
+              label={s.label}
+              value={formatDistance(s.distance)!}
+              delay={0}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -912,6 +953,33 @@ const RYHTI_PURPOSE_PREFIX: Record<string, string> = {
   '07': 'Muu rakennus',
   '08': 'Uskonnollinen rakennus',
   '09': 'Urheilu-/kokoontumisrak.',
+}
+
+const CONFIDENCE_CONFIG: Record<ConfidenceLevel, { label: string; dots: number; color: string }> = {
+  high:    { label: 'Tarkka', dots: 3, color: 'text-mint' },
+  medium:  { label: 'Hyvä',  dots: 2, color: 'text-yellow-600' },
+  low:     { label: 'Suuntaa-antava', dots: 1, color: 'text-orange-500' },
+  default: { label: 'Karkea', dots: 1, color: 'text-muted-foreground' },
+}
+
+function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
+  const cfg = CONFIDENCE_CONFIG[level]
+  return (
+    <span className={cn('inline-flex items-center gap-1 text-[11px] font-medium', cfg.color)}>
+      <span className="flex gap-0.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className={cn(
+              'w-1.5 h-1.5 rounded-full',
+              i < cfg.dots ? 'bg-current' : 'bg-current/20'
+            )}
+          />
+        ))}
+      </span>
+      {cfg.label}
+    </span>
+  )
 }
 
 function getRyhtiPurposeLabel(code: string): string {

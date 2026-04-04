@@ -11,8 +11,6 @@ import { Sheet } from '@/app/components/ui/sheet'
 import {
   X,
   Sparkles,
-  MapPin,
-  ChevronDown,
   Building2,
   Loader2,
 } from 'lucide-react'
