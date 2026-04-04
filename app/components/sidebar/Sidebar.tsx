@@ -172,7 +172,7 @@ export function Sidebar() {
           className="max-h-[85vh]"
         >
           <div className="pb-4 px-1">
-            <BuildingPanel />
+            <BuildingPanel hideClose />
           </div>
         </Sheet>
       </>

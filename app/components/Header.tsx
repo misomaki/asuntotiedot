@@ -100,19 +100,24 @@ export function Header() {
   // Fetch GeoJSON features for client-side search filtering
   const { geojson } = useMapData(filters.year, filters.propertyType)
 
-  // Extract searchable areas from GeoJSON features
+  // Extract searchable areas from GeoJSON features (deduplicated by area_code)
   const searchableAreas: SearchableArea[] = useMemo(() => {
     if (!geojson?.features) return []
-    return geojson.features
-      .filter((feature) => feature.properties != null)
-      .map((feature) => {
-        const props = feature.properties as Record<string, string>
-        return {
-          areaCode: props['area_code'] ?? '',
-          name: props['name'] ?? '',
-          municipality: props['municipality'] ?? '',
-        }
+    const seen = new Set<string>()
+    const areas: SearchableArea[] = []
+    for (const feature of geojson.features) {
+      if (!feature.properties) continue
+      const props = feature.properties as Record<string, string>
+      const code = props['area_code'] ?? ''
+      if (!code || seen.has(code)) continue
+      seen.add(code)
+      areas.push({
+        areaCode: code,
+        name: props['name'] ?? '',
+        municipality: props['municipality'] ?? '',
       })
+    }
+    return areas
   }, [geojson])
 
   // Filter cities based on search query
@@ -139,18 +144,22 @@ export function Header() {
 
       let score = -1 // -1 means no match
 
-      if (code.startsWith(query)) {
-        score = 0 // Postal code prefix — best match
+      if (code === query) {
+        score = 0 // Exact postal code match
+      } else if (code.startsWith(query)) {
+        score = 1 // Postal code prefix
+      } else if (name.toLowerCase() === query) {
+        score = 2 // Exact name match
       } else if (name.startsWith(query)) {
-        score = 1 // Name starts with query
+        score = 3 // Name starts with query
       } else if (name.includes(query)) {
-        score = 2 // Name contains query
+        score = 4 // Name contains query
       } else if (code.includes(query)) {
-        score = 3 // Postal code contains query
+        score = 5 // Postal code contains query
       } else if (muni.startsWith(query)) {
-        score = 4 // Municipality starts with query
+        score = 6 // Municipality starts with query
       } else if (muni.includes(query)) {
-        score = 5 // Municipality contains query
+        score = 7 // Municipality contains query
       }
 
       if (score >= 0) {
@@ -467,7 +476,7 @@ export function Header() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsSearchFocused(true)}
                     onKeyDown={handleSearchKeyDown}
-                    placeholder={isDesktop ? 'Hae osoitetta tai aluetta...' : 'Hae osoitetta tai aluetta...'}
+                    placeholder="Hae..."
                     className={cn(
                       'w-full pr-2 md:pr-2.5 bg-transparent text-[#1a1a1a]',
                       'placeholder:text-[#999] md:placeholder:text-[#666]',
