@@ -4,12 +4,6 @@
 
 Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomalaisten alueiden asuntojen hinta-arvioita, ikärakennetta ja muita rakennettuun ympäristöön liittyviä tilastotietoja karttanäkymässä. Sovellus laskee oman algoritminsa ja avoimesti saatavilla olevan tilastotiedon perusteella hinta-arvion jokaiselle asuinrakennukselle.
 
-Sovellus sisältää myös **markkinapaikan (marketplace)**, jossa:
-- **Myyjät** voivat ilmoittaa myyvänsä tiettyä rakennusta (sell intent)
-- **Ostajat** voivat merkitä kiinnostuksensa tiettyyn rakennukseen (buy interest) — huonemäärä, neliöhaarukka, vapaamuotoinen viesti
-- **Tekoälyhaku** mahdollistaa asuntohaun luonnollisella kielellä ("Kaksio Kalliossa alle 6000€/m²")
-- **Tekoälytäydennetyt viestit** — Claude Haiku 4.5 generoi myyjille myynti-ilmoituksen ja ostajille yhteydenottoviestipohjan rakennusdatan perusteella
-
 ## Teknologiapino
 
 | Kerros | Teknologia |
@@ -21,8 +15,10 @@ Sovellus sisältää myös **markkinapaikan (marketplace)**, jossa:
 | Backend/API | Next.js Route Handlers |
 | Tietokanta | PostgreSQL via Supabase |
 | ORM | Supabase JS client + PostGIS |
-| AI | Claude Haiku 4.5 (raw fetch, ei SDK:ta) |
-| Autentikaatio | Supabase Auth (email/password + Google OAuth) |
+| Autentikaatio | Supabase Auth (Google OAuth + email) |
+| Analytics | PostHog (EU hosting, reverse proxy via /ingest) |
+| Mobiilisovellus | Capacitor (server URL → neliohinnat.fi) |
+| Domain | neliohinnat.fi (Cloudflare DNS → Vercel) |
 | Deployment | Vercel |
 
 ## Prioriteetit
@@ -56,22 +52,13 @@ Sovellus sisältää myös **markkinapaikan (marketplace)**, jossa:
     /buildings/route.ts               # Rakennukset bbox:n sisällä (zoom ≥14)
     /buildings/[id]/route.ts          # Yksittäisen rakennuksen tiedot
     /municipalities/route.ts          # Kuntatason GeoJSON (WFS + hintadata, vain hinnoitellut kunnat)
-    /marketplace/
-      /signals/route.ts               # GET: rakennuksen signaalimäärät (ostokiinnostus + myynti-ilmoitukset)
-      /interest/route.ts              # POST/DELETE: ostokiinnostuksen jättäminen/poisto (auth required)
-      /sell-intent/route.ts           # POST/DELETE: myynti-ilmoituksen jättäminen/poisto (auth required)
-      /my-signals/route.ts            # GET: käyttäjän omat signaalit + rakennustiedot (auth required)
-      /ai-search/route.ts             # POST: luonnollinen kieli → hakufiltterit (Claude Haiku 4.5)
-      /search/route.ts                # POST: filtteripohjainen rakennushaku + klusterit
-      /generate-summary/route.ts      # POST: AI-generoitu myynti-ilmoitus / ostajan viesti
   /components
     /map/
       MapContainer.tsx                # Pääkarttakomponentti (Voronoi + rakennukset)
     /sidebar/
       Sidebar.tsx                     # Sivupaneelin container
       StatsPanel.tsx                  # Alueen tilastot
-      BuildingPanel.tsx               # Rakennuksen hinta-arvio + tekijäerittely + MarketplaceSignals
-      SearchResultsPanel.tsx          # AI-hakutulosten listaus (desktop: sidebar, mobile: bottom sheet)
+      BuildingPanel.tsx               # Rakennuksen hinta-arvio + tekijäerittely
       ComparisonPanel.tsx             # Alueiden vertailu
       TrendChart.tsx                  # Hintakehitysgraafit
     /ui/                              # shadcn/ui komponentit
@@ -84,7 +71,6 @@ Sovellus sisältää myös **markkinapaikan (marketplace)**, jossa:
     /cities.ts                        # Kaupunkikonfiguraatiot (single source of truth)
     /formatters.ts                    # Numero- ja hintaformatointi
     /colorScales.ts                   # Hintaväripaletit (Voronoi + rakennukset)
-    /buildingClassification.ts        # Ei-asuinrakennusten denylist (SSOT)
     /mockData.ts                      # Mock-data fallback
   /types
     /index.ts                         # TypeScript-tyypit
@@ -94,15 +80,13 @@ Sovellus sisältää myös **markkinapaikan (marketplace)**, jossa:
   /hooks
     /useMapData.ts                    # Aluedatan hakeminen kartalle
     /useBuildingData.ts               # Rakennusdatan hakeminen (viewport-aware)
-    /useMarketplaceSignals.ts         # Rakennuksen marketplace-signaalit (interest/sell + AI summary)
     /useInView.ts                     # IntersectionObserver hook (fire-once, respects reduced-motion)
   /contexts
     /MapContext.tsx                    # Kartan tila (valittu alue, rakennus, filtterit)
-    /AISearchContext.tsx              # AI-haun tila (filtterit, tulokset, klusterit, matchingBuildingIds)
-    /AuthContext.tsx                  # Supabase Auth -tila (käyttäjä, kirjautuminen)
+    /AuthContext.tsx                   # Autentikaatio (useAuth hook)
+    /AISearchContext.tsx              # AI-haku (luonnollinen kieli → filtterit)
   /omat-ilmoitukset
-    /page.tsx                          # Käyttäjän omat signaalit (interests + sell intents)
-    /layout.tsx                        # Metadata
+    /page.tsx                         # Käyttäjän omat osto-/myyntisignaalit
 
 /scripts
   /data-import/
@@ -131,7 +115,7 @@ Sovellus sisältää myös **markkinapaikan (marketplace)**, jossa:
   /migrations/017_recalibrated_water_factors.sql  # Uudelleenkalibroidut vesistökertoimet (7-tasoinen, max 1.35)
   /migrations/018_fix_nonresidential_denylist.sql  # Laajennettu ei-asuinrakennusten denylist (supermarket, library, stadium, jne.)
   /migrations/022_sync_price_factors.sql           # Synkronoidut faktorit: uudet age factors, ei water dampening, size factor SQL:ssä
-  /migrations/027_marketplace_signals.sql          # Marketplace: user_profiles, building_interests, building_sell_intents, RLS, RPC:t
+  /migrations/027_marketplace_signals.sql          # Markkinapaikka: user_profiles, building_interests, building_sell_intents + RLS
 
 /scripts
   /validation/
@@ -192,42 +176,6 @@ CREATE TABLE demographic_stats (
   pct_over_65 NUMERIC,
   avg_household_size NUMERIC
 );
--- Käyttäjäprofiilit (auto-created via trigger on auth.users)
-CREATE TABLE user_profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id),
-  display_name TEXT,
-  phone TEXT,
-  email TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Ostokiinnostus rakennukseen
-CREATE TABLE building_interests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES user_profiles(id),
-  building_id UUID REFERENCES buildings(id),
-  room_count TEXT,                     -- '1'|'2'|'3'|'4'|'5+'
-  min_sqm NUMERIC,
-  max_sqm NUMERIC,
-  max_price_per_sqm NUMERIC,
-  note TEXT,                           -- vapaamuotoinen viesti (max 280 merkkiä)
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '90 days'
-);
-
--- Myynti-ilmoitus rakennuksessa
-CREATE TABLE building_sell_intents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES user_profiles(id),
-  building_id UUID REFERENCES buildings(id),
-  property_type TEXT,                  -- 'kerrostalo'|'rivitalo'|'omakotitalo'
-  note TEXT,                           -- vapaamuotoinen viesti (max 500 merkkiä)
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '90 days'
-);
--- RLS: käyttäjät näkevät vain omat rivinsä, lukumäärät julkisia (RPC)
--- RPC: get_building_signals(building_id) → {interest_count, sell_intent_count}
--- RPC: get_buildings_signal_counts(building_ids[]) → batch-versio
 ```
 
 ## API-endpointit
@@ -238,13 +186,7 @@ CREATE TABLE building_sell_intents (
 | `/api/areas/[id]` | GET | Yksittäisen alueen kaikki tilastot, query: `year` |
 | `/api/buildings` | GET | Rakennukset bounding boxin sisällä, query: `west,south,east,north,year` |
 | `/api/buildings/[id]` | GET | Yksittäisen rakennuksen tiedot + hinta-arvioerittely |
-| `/api/marketplace/signals` | GET | Rakennuksen signaalimäärät, query: `buildingId` |
-| `/api/marketplace/interest` | POST/DELETE | Ostokiinnostuksen jättäminen/poisto (auth required) |
-| `/api/marketplace/sell-intent` | POST/DELETE | Myynti-ilmoituksen jättäminen/poisto (auth required) |
-| `/api/marketplace/my-signals` | GET | Käyttäjän omat signaalit + rakennustiedot (auth required) |
-| `/api/marketplace/ai-search` | POST | Luonnollinen kieli → hakufiltterit (Claude Haiku 4.5) |
-| `/api/marketplace/search` | POST | Filtteripohjainen rakennushaku + klusterit |
-| `/api/marketplace/generate-summary` | POST | AI-generoitu myynti-ilmoitus tai ostajan viesti |
+| `/api/marketplace/*` | * | Markkinapaikkasignaalit, AI-haku, yhteenvedot (ks. Markkinapaikkaarkkitehtuuri) |
 
 ## Ympäristömuuttujat
 
@@ -253,7 +195,9 @@ CREATE TABLE building_sell_intents (
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-ANTHROPIC_API_KEY=                    # Claude Haiku 4.5 (AI-haku + summary-generointi)
+ANTHROPIC_API_KEY=                     # Claude Haiku 4.5 (AI-haku + yhteenvedot)
+NEXT_PUBLIC_POSTHOG_KEY=               # PostHog analytics (EU hosting)
+NEXT_PUBLIC_POSTHOG_HOST=              # PostHog reverse proxy (/ingest)
 # Kartta: MapLibre + CartoCDN Positron – ei vaadi API-tokenia
 ```
 
@@ -319,39 +263,6 @@ Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 
 ### UI/UX painotettuna
 - Selkeä design-filosofia, väripaletti hintahaarukalle, animaatio-ohjeet ja esteettömyysvaatimukset
-
-### Marketplace-arkkitehtuuri
-
-**Signaalijärjestelmä (Phase 1):**
-- Kevyet "signaalit" — ei raskas myyntiprosessi. Käyttäjä merkitsee kiinnostuksen/myyntiaikeen yhdellä klikkauksella.
-- Signaalit näkyvät BuildingPanel-sivupaneelissa (ostokiinnostus-lukumäärä + myynti-ilmoitusten lukumäärä)
-- Auth required: Supabase Auth (email/password + Google OAuth), `AuthContext.tsx` hallinnoi tilaa
-- RLS-politiikat: käyttäjät näkevät/poistavat vain omat rivinsä, aggregoidut luvut julkisia RPC:n kautta
-- Signaalit vanhenevat 90 päivässä (`expires_at`)
-- Käyttäjän omat signaalit: `/omat-ilmoitukset` -sivu
-
-**AI-haku (luonnollinen kieli → filtterit):**
-- Käyttäjä kirjoittaa esim. "Kaksio Kalliossa alle 6000€/m²" Headeriin
-- `AISearchContext` hallinnoi koko haun tilaa: parsitut filtterit, tulokset, klusterit, matchingBuildingIds
-- Kaksivaihinen flow: 1) `/api/marketplace/ai-search` → Claude Haiku parsii filtterit + chips 2) `/api/marketplace/search` → palvelinpuolen Supabase-haku filttereillä
-- AI-haku käyttää raw `fetch` Anthropic API:n (`https://api.anthropic.com/v1/messages`), EI SDK:ta (ei npm-pakettia)
-- Malli: `claude-haiku-4-5-20251001`, max_tokens 1024
-- Hakutulokset näytetään **lista ensin** (SearchResultsPanel), ei kartta-ensin — toimii kaikilla zoom-tasoilla
-- Kartalla: keltaiset klusteripisteet (matalat zoom-tasot), rakennusten opacity putoaa 0.25:een (korkeat zoom-tasot) → matchaavat rakennukset erottuvat
-- Klusterit: grid-based (0.01° ≈ 1km), circle-koko skaalautuu `point_count`:n mukaan
-
-**AI-täydennetyt viestit:**
-- `/api/marketplace/generate-summary` — hakee rakennusdatan (hinta, vuosi, kerrokset, palvelut) ja generoi suomenkielisen tekstin
-- Myyjälle: markkinoiva myynti-ilmoitus (max 3 lausetta, korostaa rakennuksen vahvuuksia)
-- Ostajalle: kohtelias kiinnostuksenilmaisu (max 2 lausetta)
-- **AI generoi vasta kun käyttäjä painaa lähetä-painiketta** — ei automaattista generointia lomakkeen avautuessa
-- Jos käyttäjä kirjoittaa oman viestin, se käytetään sellaisenaan (AI:ta ei kutsuta)
-- Kustannus: ~$0.001/query (Claude Haiku 4.5), merkityksetön skaalassa
-
-**Marketplace-hookit ja komponentit:**
-- `useMarketplaceSignals(buildingId)` — hallinnoi signaalit: `submitInterest(prefs)`, `removeInterest()`, `submitSellIntent(opts)`, `removeSellIntent()`, `generateSummary(type, prefs)`
-- `MarketplaceSignals` (BuildingPanel.tsx:ssä) — kaksi lomaketta: ostokiinnostus (huonemäärä-chipit, neliöpresetit, vapaa viesti) + myynti-ilmoitus (vapaa viesti)
-- `SearchResultsPanel` — AI-hakutuloslista (desktop: left sidebar, mobile: bottom sheet), filter chips, klikattavat tulokset
 
 ### Karttakomponentit
 
@@ -431,11 +342,11 @@ Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`o
 - [x] Hakutoiminto (postinumero/aluenimi)
 - [x] Oikea data: Tilastokeskus Paavo + StatFin (Supabase + PostGIS)
 - [x] Rakennuskerros kartalla (zoom ≥14, klikkaa → hinta-arvio)
-- [x] Marketplace: ostokiinnostus + myynti-ilmoitukset (signaalit) per rakennus
-- [x] AI-haku luonnollisella kielellä (Claude Haiku 4.5)
-- [x] AI-täydennetyt viestit myyjille ja ostajille
-- [x] Supabase Auth (email/password + Google OAuth)
-- [ ] Mobiiliresponsiivisuus
+- [x] Mobiiliresponsiivisuus (perus: header, sidebar sheet, building sheet, legend, locate)
+- [x] Autentikaatio (Google OAuth + email)
+- [x] Markkinapaikkasignaalit (osto-kiinnostus + myynti-ilmoitus)
+- [x] AI-haku (luonnollinen kieli → rakennushaku, Claude Haiku 4.5)
+- [x] Osoitehaku (Nominatim geocoding)
 
 ## Data-import
 
@@ -735,12 +646,91 @@ uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) lasket
 
 **Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää
 
+## Liiketoimintamalli ja monetisaatio
+
+Sovelluksella on kaksi pääkäyttötapausta:
+1. **Selaus** — rakennusten hintatietojen ja aluetilastojen tutkiminen
+2. **Markkinapaikka** — ostajien ja myyjien yhdistäminen
+
+### Monetisaatiostrategia (Freemium → Lead Gen → Listing)
+
+| Vaihe | Malli | Ilmainen | Maksettu |
+|-------|-------|----------|----------|
+| **1. Freemium** | Perusdata ilmaiseksi, premium-ominaisuudet maksullisia | Kartta, hinta-arviot, perustilastot | Vertailu, trendit, rakennuskohtaiset yksityiskohdat, AI-haku |
+| **2. Lead Generation** | Osto-/myyntisignaalit, yhteydenottopyyntöjen välitys | Signaalien näkeminen (määrät) | Yhteydenotto kiinnostuneisiin, myynti-ilmoituksen jättö |
+| **3. Listing Platform** | Täysi markkinapaikka ilmoituksilla | Selaus | Premium-listaus, korostettu näkyvyys, agenttituki |
+
+### Markkinapaikkaarkkitehtuuri (Marketplace Signals)
+
+**Taulut** (migraatio 027):
+- `user_profiles` — laajentaa Supabase auth.users (display_name, avatar_url, phone_verified)
+- `building_interests` — ostosignaalit (room_count, min/max_sqm, max_price_per_sqm, note). Vanhenee 90 pv.
+- `building_sell_intents` — myynti-ilmoitukset (asking_price_per_sqm, property_type, note). Vanhenee 180 pv.
+
+**RPC-funktiot:**
+- `get_building_signals(p_building_id)` — palauttaa interest_count, sell_intent_count, has_sell_intent (julkinen)
+- `get_buildings_signal_counts(p_building_ids[])` — batch-versio karttalayerille
+- `handle_new_user()` — trigger: luo user_profile automaattisesti auth.users-insertissä
+
+**RLS:** Aggregate counts julkisia, yksityiskohdat vain omistajalle.
+
+**API-endpointit (markkinapaikka):**
+
+| Endpoint | Metodi | Auth | Kuvaus |
+|----------|--------|------|--------|
+| `/api/marketplace/signals` | GET | Ei | Rakennuksen signaaliyhteenveto (interest_count, sell_intent_count) |
+| `/api/marketplace/interest` | POST/DELETE | Kyllä | Osto-kiinnostuksen jättö/poisto |
+| `/api/marketplace/sell-intent` | POST/DELETE | Kyllä | Myynti-ilmoituksen jättö/poisto |
+| `/api/marketplace/my-signals` | GET | Kyllä | Käyttäjän omat signaalit + rakennustiedot |
+| `/api/marketplace/ai-search` | POST | Ei | NLP → strukturoidut filtterit (Claude Haiku 4.5) |
+| `/api/marketplace/search` | POST | Ei | Rakennushaku filtterien perusteella (paginoitu, klusterit) |
+| `/api/marketplace/generate-summary` | POST | Ei | AI-generoitu myynti-/ostoteksti (Claude Haiku 4.5) |
+
+### AI-haku (AISearchContext)
+
+- **2-vaiheinen flow:** 1) Claude Haiku parsii luonnollisen kielen → strukturoidut filtterit + chipit, 2) palvelin hakee rakennukset filtterien perusteella
+- **Filtterit:** area_codes, municipality, property_type, room_count, min/max_sqm, min/max_price_per_sqm, construction_year, amenity-etäisyydet, floor_count, sort_by
+- **Klusterointi:** 1km grid-pohjainen ryhmittely kartalle
+- **Integraatio:** Header-hakukenttä triggaa AI-haun kun query näyttää luonnolliselta kieleltä (≥5 merkkiä, sisältää välilyönnin)
+- **Konteksti:** `app/contexts/AISearchContext.tsx` — hallitsee hakutilan, chipit, tulokset
+
+### Autentikaatio
+
+- **Supabase Auth:** Google OAuth + email/password
+- **AuthContext** (`app/contexts/AuthContext.tsx`): `useAuth()` → user, session, loading, signOut
+- **Supabase browser client:** `app/lib/supabaseBrowserClient.ts`
+- **UserMenu** (`app/components/UserMenu.tsx`): kirjautuminen/ulos, avatar, dropdown
+- **Omat ilmoitukset** -sivu: `/omat-ilmoitukset` — käyttäjän omat signaalit
+
+## Mobiiliresponsiiviys
+
+### Breakpoint-strategia
+- **Desktop-first** (data-rikkaat näkymät), mutta kaikki kriittiset flowt toimivat mobiilissa
+- Breakpoint: `md` (768px). Tailwind: `max-md:` mobiili-only, `md:` desktop-only
+
+### Z-index -hierarkia
+| Z | Elementti |
+|---|-----------|
+| z-50 | Sheet panel (mobile bottom sheet) |
+| z-40 | Backdrop (sheet blur overlay) |
+| z-30 | Header |
+| z-20 | Floating controls (legend, locate button, zoom hint) |
+| z-10 | Attribution |
+
+### Mobiili-layout
+- **Header:** Year selector piilotettu mobiilissa (`hidden md:block`), oletusvuosi = uusin
+- **Haku:** Placeholder `"Hae..."` (lyhyt, mahtuu mobiiliin). Expandable search icon → full-width input
+- **Sidebar (area stats):** Bottom Sheet (`Sheet` component), max-height 80vh, backdrop blur, drag handle
+- **Building panel:** Bottom Sheet mobiilissa (sama kuin area stats), floating card desktopissa
+- **`hideClose` pattern:** BuildingPanel saa `hideClose` propin kun se on Sheet-komponentissa (Sheet:llä on oma sulkupainike)
+- **Legend:** `bottom-4` mobiilissa, `bottom-[4.5rem]` desktopissa. Piilotetaan kun sheet on auki.
+- **Locate button:** Piilotetaan mobiilissa kun sheet on auki (`max-md:opacity-0 max-md:pointer-events-none`)
+
 ## Seuraavat vaiheet
 
-- **Marketplace: migraatio 027 ajettava** — `027_marketplace_signals.sql` ei ole vielä ajettu tietokantaan
-- **Marketplace: ostajan ↔ myyjän matchaus** — ilmoittaa molemmille kun samalla rakennuksella on sekä osto- että myynti-signaali
-- **Marketplace: viestinvälitys** — suora viestintä ostajan ja myyjän välillä (Supabase Realtime tai sähköposti-notifikaatiot)
-- Suosikkialueet ja -rakennukset (kirjautuneille käyttäjille)
+- Mobiiliresponsiivisuuden viimeistely + testaus
 - Julkinen API
 - Lisää Etuovi-dataa neighborhood factoreihin (harvan datan alueet)
 - Energiatodistusdata (ARA-rekisteri, ei avoin)
+- Premium-ominaisuuksien rajoitus (paywall)
+- Markkinapaikan laajentaminen (viestintä ostaja↔myyjä)

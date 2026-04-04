@@ -83,7 +83,7 @@ export function Header() {
     flyTo,
   } = useMapContext()
 
-  const { search: aiSearch, isActive: isAISearchActive, isLoading: isAILoading } = useAISearch()
+  const { search: aiSearch, isLoading: isAILoading } = useAISearch()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
