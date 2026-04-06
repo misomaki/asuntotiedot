@@ -89,7 +89,7 @@ export default function TermsOfServicePage() {
 
           <h2>7. Vastuunrajoitus</h2>
           <p>
-            Palvelu tarjotaan "sellaisena kuin se on" ilman takuita.
+            Palvelu tarjotaan &ldquo;sellaisena kuin se on&rdquo; ilman takuita.
             Emme vastaa palvelun keskeytyksistä, virheistä tai tietojen tarkkuudesta.
             Vastuumme rajoittuu sovellettavan lain sallimissa rajoissa.
           </p>

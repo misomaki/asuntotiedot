@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, HandCoins, Eye, Sparkles } from 'lucide-react'
+import { MapPin, ChevronDown, Building2, TrendingUp, Layers, HandCoins, Eye, Sparkles } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
 import { trackFaqAccordion } from '@/app/lib/analytics'
 import { useInView } from '@/app/hooks/useInView'

@@ -230,7 +230,7 @@ export function Header() {
       clearTimeout(timer)
       abortRef.current?.abort()
     }
-  }, [searchQuery])
+  }, [searchQuery, searchResults.length, cityResults.length])
 
   // Close search and reset state (shared by all select handlers)
   const closeSearch = useCallback(() => {
@@ -314,7 +314,7 @@ export function Header() {
         }
       }
     },
-    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, currentZoom]
+    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, currentZoom, closeSearch]
   )
 
   // Only show address results if they belong to the current (or similar) query
