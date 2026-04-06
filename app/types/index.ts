@@ -273,6 +273,64 @@ export interface AISearchResponse {
   }>
 }
 
+// ── Marketplace Analytics ──
+
+/** A building ranked by signal activity */
+export interface TopBuildingBySignal {
+  building_id: string
+  address: string | null
+  area_code: string
+  area_name: string
+  municipality: string
+  estimated_price_per_sqm: number | null
+  construction_year: number | null
+  interest_count: number
+  sell_intent_count: number
+  has_match: boolean
+}
+
+/** An area ranked by signal activity */
+export interface TopAreaBySignal {
+  area_id: string
+  area_code: string
+  area_name: string
+  municipality: string
+  interest_count: number
+  sell_intent_count: number
+  match_count: number
+  unique_buildings_with_signals: number
+}
+
+/** Overall marketplace summary statistics */
+export interface MarketplaceSummary {
+  total_interests: number
+  total_sell_intents: number
+  total_matches: number
+  unique_buildings_with_interest: number
+  unique_buildings_with_sell_intent: number
+  unique_areas_with_signals: number
+  unique_users: number
+}
+
+/** Per-city marketplace activity breakdown */
+export interface CityMarketplaceStats {
+  municipality: string
+  interest_count: number
+  sell_intent_count: number
+  match_count: number
+  unique_buildings: number
+  unique_areas: number
+}
+
+/** Full analytics response from /api/marketplace/analytics */
+export interface MarketplaceAnalytics {
+  summary: MarketplaceSummary
+  top_buildings_by_interest: TopBuildingBySignal[]
+  top_buildings_by_sell_intent: TopBuildingBySignal[]
+  top_areas: TopAreaBySignal[]
+  by_city: CityMarketplaceStats[]
+}
+
 /** User's own signals (for /omat-ilmoitukset page) */
 export interface UserSignalWithBuilding {
   id: string
