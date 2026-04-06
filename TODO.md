@@ -5,6 +5,11 @@
 
 ## Now
 
+- [ ] **Aja migraatio 032 + re-enrichment** — korjaa kerrostiedot (MML kerrosluku usein väärä, Ryhti ylikirjoittaa nyt):
+  1. Aja `supabase/migrations/032_fix_ryhti_floor_matching.sql` SQL Editorissa
+  2. `npx tsx scripts/data-import/06-enrich-from-ryhti.ts`
+  3. `UPDATE buildings SET estimation_year = NULL;`
+  4. `npx tsx scripts/data-import/05-compute-building-prices.ts`
 - [ ] Mobiiliresponsiivisuuden viimeistely ja testaus (erityisesti sheet-interaktiot, legend-sijoittelu)
 - [ ] Lisää Etuovi-dataa neighborhood factoreihin — harvan datan alueet (68 high, tarvitaan lisää)
 - [ ] Cookie consent + GDPR-yhteensopivuus (CookieConsentBanner komponentti kesken)
