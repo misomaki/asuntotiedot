@@ -111,7 +111,7 @@ function parseConstructionYear(tags: Record<string, string>): number | null {
 }
 
 function parseFloorCount(tags: Record<string, string>): number | null {
-  const raw = tags['building:levels'] || null
+  const raw = tags['building:levels'] || tags['levels'] || null
   if (!raw) return null
 
   const num = parseInt(String(raw), 10)
