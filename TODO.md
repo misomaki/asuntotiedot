@@ -21,6 +21,9 @@
 
 ## Next
 
+- [ ] SEO: OG-kuva (1200x630px) — suurin puuttuva tekijä sosiaalisen median jakamisessa
+- [ ] SEO: ISR (`revalidate: 3600`) `force-dynamic`:n tilalle `/alue`-sivuille — parempi välimuistitus Googlebotille
+- [ ] SEO: Lähetä sitemap Google Search Consoleen
 - [x] MML Tilastopalvelu REST API -integraatio — OKT-toteutuneet kauppahinnat postinumeroittain (avoin, ilmainen, 1 457 aluetta)
 - [ ] Ota yhteyttä MML:ään (verkkopalvelu@maanmittauslaitos.fi) uudesta Kiinteistökauppojen kyselypalvelusta (OGC API Features, tuotanto 06/2026) — hae beta-testaajaksi, selvitä käyttölupaehdot
 - [ ] Premium-ominaisuuksien paywall (freemium-malli: vertailu, trendit, AI-haku)
