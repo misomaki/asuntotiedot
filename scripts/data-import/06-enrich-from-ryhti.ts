@@ -316,16 +316,18 @@ async function matchConstructionYears(): Promise<number> {
 }
 
 async function matchFloorCounts(): Promise<number> {
-  console.log('\nMatching floor counts (buildings with year but missing floors)...')
+  console.log('\nMatching floor counts (missing or correcting MML data with Ryhti)...')
 
+  // Count buildings that need floor matching:
+  // - missing floor_count, OR
+  // - have floor_count but Ryhti may have a better value
   const { count } = await supabase
     .from('buildings')
     .select('id', { count: 'exact', head: true })
     .not('area_id', 'is', null)
     .not('construction_year', 'is', null)
-    .is('floor_count', null)
 
-  console.log(`Buildings with year but without floor_count: ${count}`)
+  console.log(`Buildings eligible for Ryhti floor matching: ${count}`)
 
   if (!count || count === 0) return 0
 

@@ -1,27 +1,25 @@
 -- ============================================================
 -- Migration 032: Fix Ryhti floor matching accuracy
 -- ============================================================
--- Problems fixed:
---   1. Nearest-neighbor matching without cross-validation caused
---      wrong floor counts in dense areas (e.g., 2-storey rowhouse
---      matched to adjacent 8-storey apartment building's Ryhti record)
---   2. insert_ryhti_batch ON CONFLICT only updated floor_area,
---      silently dropping other fields on duplicate
---   3. No floor count bounds validation from Ryhti (OSM validates 1-50)
+-- Root cause: MML Maastotietokanta kerrosluku (floor count) is
+-- often wrong — it's a topographic survey, not a building registry.
+-- Ryhti (SYKE) is the authoritative building registry but was
+-- blocked from correcting MML data by COALESCE(b.floor_count, ...).
 --
--- Cross-validation strategy:
---   - If OSM building_type is known, validate Ryhti storeys are plausible
---   - house/detached → reject if storeys > 4
---   - apartments → reject if storeys = 1 AND footprint < 200m²
---   - terrace/semidetached → reject if storeys > 4
---   - Reject all matches with storeys < 1 or > 50
---   - Use Ryhti main_purpose for additional cross-check when available
+-- Fixes:
+--   1. Ryhti floor count now OVERRIDES MML/existing floor count
+--      (Ryhti is the authoritative source for building attributes)
+--   2. Cross-validation prevents wrong proximity matches in dense areas
+--   3. insert_ryhti_batch ON CONFLICT now updates ALL fields
+--   4. Bounds validation (1-50) for Ryhti floor counts
+--   5. New match_ryhti_override_floors_batch() to fix buildings that
+--      already have (wrong) floor_count from MML
 --
 -- After deploying:
---   1. Clear bad floor data: see comments below
+--   1. Run this migration in Supabase SQL Editor
 --   2. Re-run enrichment: npx tsx scripts/data-import/06-enrich-from-ryhti.ts
---   3. Recalculate prices: UPDATE buildings SET estimation_year = NULL;
---   4. npx tsx scripts/data-import/05-compute-building-prices.ts
+--   3. Reset prices: UPDATE buildings SET estimation_year = NULL;
+--   4. Recompute: npx tsx scripts/data-import/05-compute-building-prices.ts
 -- ============================================================
 
 -- ============================================================
@@ -70,14 +68,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================
--- Helper: validate Ryhti floor count against OSM building type
+-- Helper: validate Ryhti floor count against building type
 -- ============================================================
 -- Returns TRUE if the floor count is plausible for this building.
 -- Conservative: when in doubt, accept the match (return TRUE).
 CREATE OR REPLACE FUNCTION _ryhti_floor_plausible(
   p_ryhti_storeys INT,
   p_ryhti_purpose TEXT,
-  p_osm_building_type TEXT,
+  p_building_type TEXT,
   p_footprint_area_sqm NUMERIC
 ) RETURNS BOOLEAN AS $$
 BEGIN
@@ -86,32 +84,32 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  -- Cross-validate Ryhti purpose vs OSM type when both are available
-  -- If Ryhti says detached house (0110) but storeys >= 5, likely wrong match
+  -- Cross-validate Ryhti purpose vs storeys
+  -- Detached house (0110) with >= 5 floors is likely a wrong match
   IF p_ryhti_purpose = '0110' AND p_ryhti_storeys >= 5 THEN
     RETURN FALSE;
   END IF;
 
-  -- If Ryhti says apartment building (0130/0140) but only 1 storey with small footprint
+  -- Apartment building (0130/0140) with 1 storey and small footprint
   IF p_ryhti_purpose IN ('0130', '0140') AND p_ryhti_storeys = 1
      AND p_footprint_area_sqm IS NOT NULL AND p_footprint_area_sqm < 200 THEN
     RETURN FALSE;
   END IF;
 
-  -- OSM type cross-validation
-  IF p_osm_building_type IS NOT NULL THEN
+  -- Building type cross-validation (from MML kohdeluokka or OSM)
+  IF p_building_type IS NOT NULL THEN
     -- Detached houses should not have > 4 floors
-    IF p_osm_building_type IN ('detached', 'house') AND p_ryhti_storeys > 4 THEN
+    IF p_building_type IN ('detached', 'house', 'residential') AND p_ryhti_storeys > 4 THEN
       RETURN FALSE;
     END IF;
 
     -- Row houses / semidetached should not have > 4 floors
-    IF p_osm_building_type IN ('terrace', 'semidetached_house') AND p_ryhti_storeys > 4 THEN
+    IF p_building_type IN ('terrace', 'semidetached_house') AND p_ryhti_storeys > 4 THEN
       RETURN FALSE;
     END IF;
 
     -- Apartments with 1 storey and small footprint is suspicious
-    IF p_osm_building_type = 'apartments' AND p_ryhti_storeys = 1
+    IF p_building_type = 'apartments' AND p_ryhti_storeys = 1
        AND p_footprint_area_sqm IS NOT NULL AND p_footprint_area_sqm < 200 THEN
       RETURN FALSE;
     END IF;
@@ -122,7 +120,8 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- ============================================================
--- Fix 2: match_ryhti_to_buildings_batch with cross-validation
+-- Fix 2: match_ryhti_to_buildings_batch
+-- Ryhti floor count OVERRIDES existing (MML) when plausible
 -- ============================================================
 CREATE OR REPLACE FUNCTION match_ryhti_to_buildings_batch(p_limit INT DEFAULT 500)
 RETURNS INT AS $$
@@ -132,11 +131,11 @@ BEGIN
   UPDATE buildings b
   SET
     construction_year = sub.ryhti_year,
+    -- Ryhti overrides MML floor count (Ryhti = authoritative registry)
     floor_count = CASE
-      WHEN b.floor_count IS NOT NULL THEN b.floor_count
       WHEN _ryhti_floor_plausible(sub.ryhti_storeys, sub.ryhti_purpose, b.building_type, b.footprint_area_sqm)
         THEN sub.ryhti_storeys
-      ELSE NULL
+      ELSE b.floor_count  -- keep existing if Ryhti is implausible
     END,
     apartment_count = COALESCE(b.apartment_count, sub.ryhti_apartments),
     energy_class = COALESCE(b.energy_class, sub.ryhti_energy_class),
@@ -175,6 +174,7 @@ $$ LANGUAGE plpgsql;
 
 -- ============================================================
 -- Fix 3: match_ryhti_floors_batch with cross-validation
+-- Now also targets buildings WITH floor_count (to fix MML data)
 -- ============================================================
 CREATE OR REPLACE FUNCTION match_ryhti_floors_batch(p_limit INT DEFAULT 500)
 RETURNS INT AS $$
@@ -183,6 +183,7 @@ DECLARE
 BEGIN
   UPDATE buildings b
   SET
+    -- Ryhti overrides MML floor count
     floor_count = sub.ryhti_storeys,
     total_area_sqm = COALESCE(b.total_area_sqm, sub.ryhti_floor_area),
     estimated_price_per_sqm = NULL,
@@ -204,7 +205,8 @@ BEGIN
     WHERE b2.centroid IS NOT NULL
       AND b2.area_id IS NOT NULL
       AND b2.construction_year IS NOT NULL
-      AND b2.floor_count IS NULL
+      -- Target buildings without floor_count OR where Ryhti disagrees
+      AND (b2.floor_count IS NULL OR b2.floor_count != nearest.number_of_storeys)
       AND ST_Distance(b2.centroid::geography, nearest.geometry::geography) < 50
       -- Cross-validate: reject implausible floor counts
       AND _ryhti_floor_plausible(
@@ -222,7 +224,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================
--- Fix 4: match_ryhti_energy_apartment_batch with floor_area validation
+-- Fix 4: match_ryhti_energy_apartment_batch (unchanged logic,
+-- just re-created with floor_area support from migration 029)
 -- ============================================================
 CREATE OR REPLACE FUNCTION match_ryhti_energy_apartment_batch(p_limit INT DEFAULT 500)
 RETURNS INT AS $$
