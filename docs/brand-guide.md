@@ -2,10 +2,10 @@
 
 ## Brand Identity
 
-**Name:** Hintakartta
-**Tagline:** Suomen asuntohinnat, nahtyna.
-**Archetype:** The Sage — knowledgeable, truth-seeking, data-driven
-**Tone:** Expert but accessible. Data-confident, not salesy. Finnish directness.
+**Name:** Neliöt
+**Tagline:** Löydä koti, jota et tiennyt etsiväsi.
+**Archetype:** The Explorer — empowering, transparent, challenger
+**Tone:** Direct but warm. Data-transparent, not salesy. Empowers buyers and sellers to connect without middlemen.
 
 ## Logo System
 

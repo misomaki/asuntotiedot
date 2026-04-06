@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Libre_Franklin, Public_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/Providers";
-import { Analytics } from "@vercel/analytics/next";
+import { ConditionalAnalytics } from "./components/ConditionalAnalytics";
 
 const libreFranklin = Libre_Franklin({
   subsets: ["latin"],
@@ -34,9 +34,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 export { viewport } from './viewport'
 
 export const metadata: Metadata = {
-  title: "Neliöt \u2013 Suomen asuntohinnat, nähtynä",
+  title: "Neliöt \u2013 Löydä koti, jota et tiennyt etsiväsi",
   description:
-    "Interaktiivinen karttasovellus Suomen asuntojen hinta-arvioiden, ikärakenteen ja tilastotietojen tarkasteluun. Rakennuskohtaiset hinta-arviot avoimesta datasta.",
+    "Neliöt näyttää jokaisen asuinrakennuksen hinta-arvion ja yhdistää ostajat suoraan myyjiin — ilman välittäjää. 266 000 kohdetta, läpinäkyvät hinnat, avoin data.",
   keywords: [
     "asuntohinnat",
     "Suomi",
@@ -44,13 +44,14 @@ export const metadata: Metadata = {
     "neliöhinta",
     "neliöt",
     "hinta-arvio",
-    "tilastokeskus",
+    "asuntokauppa",
+    "ilman välittäjää",
   ],
   authors: [{ name: "Neliöt" }],
   openGraph: {
-    title: "Neliöt \u2013 Suomen asuntohinnat, nähtynä",
+    title: "Neliöt \u2013 Löydä koti, jota et tiennyt etsiväsi",
     description:
-      "Rakennuskohtaiset hinta-arviot avoimesta datasta. Tarkastele Suomen asuntomarkkinaa interaktiivisella kartalla.",
+      "266 000 asuinrakennuksen hinta-arviot, läpinäkyvä hinnan muodostus ja suora yhteys ostajan ja myyjän välillä — ilman välikäsiä.",
     type: "website",
     locale: "fi_FI",
   },
@@ -69,7 +70,7 @@ export default function RootLayout({
     >
       <body className="antialiased">
         <Providers>{children}</Providers>
-        <Analytics />
+        <ConditionalAnalytics />
       </body>
     </html>
   );

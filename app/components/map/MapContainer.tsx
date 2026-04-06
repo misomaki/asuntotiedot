@@ -21,6 +21,7 @@ import { getMapLibreColorExpression, getColorForPrice, PRICE_BREAKS, BUILDING_PR
 import { formatPriceRange, getBuildingTypeLabel } from '@/app/lib/formatters'
 import { computePriceRange } from '@/app/lib/priceEstimation'
 import { useMunicipalityData } from '@/app/hooks/useMunicipalityData'
+import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import MapLegend from './MapLegend'
 import MapTooltip from './MapTooltip'
 
@@ -31,8 +32,10 @@ const MAP_STYLE =
 /** Minimum zoom level at which individual buildings appear */
 const BUILDING_ZOOM_THRESHOLD = 13
 
-/** Cache-bust version — increment after recomputing building prices */
-const TILE_VERSION = 'v9'
+/** Cache-bust version — increment after recomputing building prices.
+ *  Also used in Source id to force react-map-gl to recreate the source
+ *  when `reuseMaps` keeps the MapLibre instance alive across mounts. */
+const TILE_VERSION = 'v14'
 
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {
@@ -149,6 +152,9 @@ export default function MapContainer() {
   // Show zoom hint when approaching building level (z11–13), hide when loading
   const showZoomHint = viewport.zoom >= 11 && viewport.zoom < BUILDING_ZOOM_THRESHOLD && !buildingsLoading
 
+  // Responsive breakpoint
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+
   // Geolocation state for the locate-me button
   const [isLocating, setIsLocating] = useState(false)
   const [mapReady, setMapReady] = useState(false)
@@ -158,7 +164,7 @@ export default function MapContainer() {
     if (!map || !mapReady) return
 
     const onSourceData = (e: { sourceId: string; isSourceLoaded: boolean }) => {
-      if (e.sourceId === 'building-tiles') {
+      if (e.sourceId === `building-tiles-${TILE_VERSION}`) {
         setBuildingsLoading(!e.isSourceLoaded)
       }
     }
@@ -665,7 +671,7 @@ export default function MapContainer() {
         {/* Building layers — vector tiles, always mounted so MapLibre manages tile lifecycle.
             minzoom on Source prevents tile fetching below z14; minzoom on Layer prevents rendering. */}
         <Source
-          id="building-tiles"
+          id={`building-tiles-${TILE_VERSION}`}
           type="vector"
           tiles={[buildingTileUrl]}
           minzoom={13}
@@ -817,7 +823,9 @@ export default function MapContainer() {
            Both hidden when a sheet is open (building or area panel).
            Desktop: independent absolute positioning. */}
 
-      {/* Locate me button — bottom-right, above legend */}
+      {/* Locate me button
+           Mobile: top-right below header — always accessible
+           Desktop: bottom-right above legend */}
       <button
         type="button"
         aria-label="Näytä sijaintini"
@@ -839,7 +847,8 @@ export default function MapContainer() {
         }}
         className={cn(
           'absolute z-20 right-3 md:right-6',
-          'bottom-24 md:bottom-[4.5rem]',
+          // Mobile: top-right (below header); Desktop: bottom-right (above legend)
+          'top-[4.5rem] md:top-auto md:bottom-[4.5rem]',
           'neo-press h-10 w-10 md:h-9 md:w-9',
           'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary shadow-hard-sm',
           'flex items-center justify-center',
@@ -864,6 +873,7 @@ export default function MapContainer() {
         municipalityScale={municipalityScale}
         zoom={viewport.zoom}
         hiddenOnMobile={(isSidebarOpen && (!!selectedArea || isCompareMode)) || !!selectedBuilding}
+        defaultCollapsed={!isDesktop}
       />
 
       {/* ── Center indicators: zoom hint, loading, compare mode ──
@@ -885,18 +895,20 @@ export default function MapContainer() {
         </div>
       </div>
 
-      {/* Building tile loading indicator */}
+      {/* Building tile loading — full-map shimmer overlay */}
       <div
-        className={cn(
-          'absolute bottom-[50%] md:bottom-14 left-1/2 -translate-x-1/2 z-20 transition-all duration-300 pointer-events-none',
-          (isSidebarOpen || selectedBuilding) && 'max-md:hidden',
-        )}
+        className="absolute inset-0 z-[5] pointer-events-none transition-opacity duration-500"
         style={{ opacity: showBuildings && buildingsLoading && !dataLoading ? 1 : 0 }}
       >
-        <div className="relative overflow-hidden bg-[#FFFBF5]/90 backdrop-blur-sm border-2 border-[#1a1a1a] rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs text-[#1a1a1a] font-body flex items-center gap-2 shadow-hard-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/60 to-transparent bg-[length:200%_100%] animate-shimmer rounded-full" />
-          <span className="relative inline-block h-2.5 w-2.5 rounded-full border-2 border-pink border-t-transparent animate-spin" />
-          <span className="relative">Ladataan rakennuksia...</span>
+        {/* Warm shimmer wash across the entire map */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-baby/30 to-transparent bg-[length:200%_100%] animate-shimmer" />
+
+        {/* Centered loading text */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex items-center gap-2.5 bg-[#FFFBF5]/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-hard-sm border-2 border-[#1a1a1a]">
+            <span className="inline-block h-3 w-3 rounded-full border-2 border-pink border-t-transparent animate-spin" />
+            <span className="text-xs font-body text-[#1a1a1a]">Ladataan...</span>
+          </div>
         </div>
       </div>
 

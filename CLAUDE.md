@@ -98,6 +98,8 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     06-enrich-from-ryhti.ts           # Rikastus Ryhti-rakennusrekisteristä (SYKE)
     07-classify-buildings.ts          # Rakennusluokittelu (residential/non-residential)
     09-compute-neighborhood-factors.ts # Aluekertoimien laskenta Etuovi-datasta
+    10-import-khr-stats.ts            # MML kauppahintarekisteri tilastopalvelu (OKT-transaktiot)
+    11-compute-khr-okt-prices.ts      # KHR-pohjainen OKT EUR/m² → price_estimates
     /config.ts                        # Kaupungit, postinumeroprefixet
     /lib/supabaseAdmin.ts             # Admin-client importeille
     /lib/pxwebClient.ts               # PxWeb API helper
@@ -116,6 +118,7 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
   /migrations/018_fix_nonresidential_denylist.sql  # Laajennettu ei-asuinrakennusten denylist (supermarket, library, stadium, jne.)
   /migrations/022_sync_price_factors.sql           # Synkronoidut faktorit: uudet age factors, ei water dampening, size factor SQL:ssä
   /migrations/027_marketplace_signals.sql          # Markkinapaikka: user_profiles, building_interests, building_sell_intents + RLS
+  /migrations/031_khr_transaction_stats.sql        # KHR-tilastotaulu (MML kauppahintarekisteri, OKT-transaktiot)
 
 /scripts
   /validation/
@@ -329,24 +332,11 @@ Basemap-infrastruktuurin värit ylikirjoitetaan `handleMapLoad`-callbackissa (`o
 - **Ratkaisu:** Kun muutat `handleMapLoad`-koodia, selain täytyy avata **uudessa tabissa/ikkunassa** (pelkkä reload EI riitä koska moduulitason cache säilyy)
 - Tuotannossa ei ongelmaa — kartta latautuu aina tuoreena
 
-## MVP:n laajuus (ensimmäinen julkaisu)
+## Backlog & päätökset
 
-- [x] Karttanäkymä Voronoi-tesselloinnilla (terrain-tyylinen)
-- [x] Choropleth-visualisointi hinta/m² (IDW-interpoloitu, sileä gradientti)
-- [x] Alueen klikkaus → tilastopaneeli (hinnat, rakennuskanta, väestö)
-- [x] Aikajanafiltteri (vuosi)
-- [x] Asuntotyyppi-filtteri (kerrostalo/rivitalo/omakotitalo)
-- [x] Vertailu kahden alueen välillä
-- [x] Trendigraafit per alue
-- [x] Kävelyscore
-- [x] Hakutoiminto (postinumero/aluenimi)
-- [x] Oikea data: Tilastokeskus Paavo + StatFin (Supabase + PostGIS)
-- [x] Rakennuskerros kartalla (zoom ≥14, klikkaa → hinta-arvio)
-- [x] Mobiiliresponsiivisuus (perus: header, sidebar sheet, building sheet, legend, locate)
-- [x] Autentikaatio (Google OAuth + email)
-- [x] Markkinapaikkasignaalit (osto-kiinnostus + myynti-ilmoitus)
-- [x] AI-haku (luonnollinen kieli → rakennushaku, Claude Haiku 4.5)
-- [x] Osoitehaku (Nominatim geocoding)
+- **Backlog:** Katso [`TODO.md`](TODO.md) — prioriteetit, avoimet tehtävät, valmistuneet
+- **Arkkitehtuuripäätökset:** Katso [`DECISIONS.md`](DECISIONS.md) — miksi-päätökset aikajärjestyksessä
+- **Changelog:** Katso [`CHANGELOG.md`](CHANGELOG.md) — automaattisesti päivitetty commit-hookilla
 
 ## Data-import
 
@@ -388,6 +378,15 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # Hinta-arviot (ei-as
 npx tsx scripts/data-import/06-enrich-from-ryhti.ts        # ✅ 454 431 Ryhti-rakennusta, apartment_count 91%
 # Resetoi hinnat SQL Editorissa: UPDATE buildings SET estimation_year = NULL, estimated_price_per_sqm = NULL;
 npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennusta sai hinta-arvion (6 faktoria)
+
+# Vaihe 10: Aja migraatio 031 SQL Editorissa
+# supabase/migrations/031_khr_transaction_stats.sql        # ✅ KHR-tilastotaulu
+
+# Vaihe 11: MML KHR -import + OKT-perushinnat
+npx tsx scripts/data-import/10-import-khr-stats.ts         # ✅ 43 539 riviä, 2 286 postinumeroa (2000-2026)
+npx tsx scripts/data-import/11-compute-khr-okt-prices.ts   # ✅ 5 452 OKT EUR/m² hintaa → price_estimates
+# Resetoi hinnat: UPDATE buildings SET estimation_year = NULL, estimated_price_per_sqm = NULL;
+npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 267 909 rakennusta sai hinta-arvion (KHR OKT base prices)
 ```
 
 ### Datan nykytilanne
@@ -399,10 +398,26 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 - **Kerrostieto:** ~93% kattavuus
 - **Asuntomäärä (apartment_count):** ~636 000 / ~700 000 (91%) — Ryhti-rekisteristä
 - **Energialuokka (energy_class):** 0% — Ryhti open data ei sisällä energiatodistuksia. Data on erillisessä energiatodistusrekisterissä (ARA), ei avoimesti saatavilla.
-- **Hinta-arvio:** 677 000 / 677 058 (100%) — kuntatasoinen fallback + neighborhood factors + energy/size factors (migraatiot 006, 009, 015)
+- **KHR-transaktiotilastot:** 43 539 riviä, 2 286 postinumeroa, 2000–2026 (MML Tilastopalvelu REST API, CC BY 4.0)
+- **OKT-perushinnat (KHR-pohjainen):** 5 452 hintarecordia, 270 postinumeroa — todellisiin OKT-kauppahintoihin perustuva EUR/m² (korvaa RT×1.10/KT×0.90 -fallbackin)
+- **Hinta-arvio:** ~268 000 / ~271 000 (98.8%) — kuntatasoinen fallback + neighborhood factors + energy/size factors + KHR OKT base prices
 - **Rakennusluokittelu:** `is_residential` (3-tasoinen: OSM building_type denylist → Ryhti main_purpose → pinta-alaheuristiikka). Denylist-prioriteetti korjattu 2026-03 (migraatio 018).
 - **Kunnat:** ~107 kuntaa hintadatalla (municipality choropleth). WFS-rajat haetaan Tilastokeskukselta, hintadata median per kunta `areas` + `price_estimates` -tauluista.
 - **Nokia:** Postinumeroprefxi '37' lisätty Tampereen konfiguraatioon (`cities.ts`). Nokia-alueen data sisältyy Tampere-hakuun.
+
+### MML Kauppahintarekisteri (KHR) Tilastopalvelu REST API
+- URL: `https://khr.maanmittauslaitos.fi/tilastopalvelu/rest/1.1`
+- Avoin data (CC BY 4.0), ei API-avainta, ei autentikointia
+- **Kattaa vain kiinteistökauppa** (omakotitalot omalla tontilla), EI asunto-osakekauppaa (kerrostalo/rivitalo)
+- Tilastodata: lukumäärä, mediaani, keskiarvo, keskihajonta, keskipinta-ala
+- Aluejaot: maa, maakunta, seutukunta, kunta, **postinumero**, 5/10/30km hila
+- Vuodet: 1990→nykyinen, kuukausittain päivittyvä kuluvan vuoden data
+- Min. 3 kauppaa per kategoria (muuten ei dataa)
+- Indikaattorit (rakennetut asuinpientalot): 2311=lkm, 2312=pinta-ala ka, 2313=mediaani €, 2314=ka €, 2315=hajonta
+- Haja-asutusalue: 2501-2505 (samat kentät)
+- **HUOM:** Hinnat ovat kokonaishintoja (€), EI neliöhintoja (€/m²). OKT EUR/m² lasketaan: `khr_mediaani / avg_okt_asuntoala`
+- OKT asuntoala: buildings-taulun `total_area_sqm` (Ryhti) keskiarvo per postinumero, `apartment_count = 1`, 50-500 m²
+- Taulut: `khr_transaction_stats` (raakadata), tulokset → `price_estimates` (`property_type = 'omakotitalo'`)
 
 ### Overpass API -huomiot
 - Endpoint: `https://overpass-api.de/api/interpreter`, POST, URL-encoded `data`-parametri
@@ -494,6 +509,8 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 | `supabase/migrations/013_water_distance_lake_sea_only.sql` | Tietokanta — vesistöetäisyys vain järvet+meri, EPSG:3067 | Vesistösuodatus tai etäisyyslaskenta muuttuu |
 | `scripts/validation/validate-prices.ts` | Validointiskripti | Faktoriarvo muuttuu |
 | `scripts/data-import/09-compute-neighborhood-factors.ts` | Laskee neighborhood factorit Etuovi-datasta | Factor-laskentalogiikka muuttuu |
+| `scripts/data-import/10-import-khr-stats.ts` | MML KHR -raakadata → `khr_transaction_stats` | KHR-aineiston päivitys |
+| `scripts/data-import/11-compute-khr-okt-prices.ts` | KHR → OKT EUR/m² → `price_estimates` | OKT-perushintalaskenta muuttuu |
 
 **KRIITTINEN:** TypeScript-faktorit (`priceEstimation.ts`) ja SQL-faktorit (migraatiot) PITÄÄ päivittää yhdessä. Jos muutat esim. age factoria TypeScriptissä mutta unohdat SQL-migraation, tietokannassa lasketut arvot ja frontendin laskemat arvot eroavat.
 
@@ -574,14 +591,13 @@ npx tsx scripts/validation/validate-prices.ts
 #    c) npx tsx scripts/data-import/05-compute-building-prices.ts
 ```
 
-### Tunnetut rajoitukset ja kehityskohteet
+### Tunnetut rajoitukset
 
-- **Neighborhood factor -dataa kerättävä lisää:** Tarvitaan ≥5 listingsiä per alue+talotyyppi luotettavaan faktoriin → kerää lisää Etuovi-dataa harvaan peitettyihin alueisiin
-- **Vesikerroin validoimaton:** Etuovi-ilmoituksista ei saada vesistöetäisyyttä → water_factor = 1.0 validoinnissa ja factor-laskennassa
-- **Pyyntihinnat vs toteutuneet:** Etuovi = asking prices, toteutuneet hinnat ovat ~5-10% alhaisempia → neighborhood factor kompensoi osittain
-- **Energiatodistus puuttuu (0% kattavuus):** energy_factor on algoritmissa mutta kaikki arvot 1.0. Ryhti open data ei sisällä energialuokkaa — data on ARA:n energiatodistusrekisterissä (ei avoin). Vaikuttaisi erityisesti 1960-80-luvun rakennusten hintaan.
-- **Remonttitaso puuttuu:** Remontoitu 70-luvun talo voi olla kalliimpi kuin remontoimaton 2000-luvun talo
-- **Neighborhood factor aikariippuva:** Markkina-alueelliset hintasuhteet muuttuvat — faktorit pitää laskea uudelleen vuosittain
+Katso [`TODO.md`](TODO.md) → Later/Ideas ja algoritmin tunnetut rajoitukset:
+- **Energiatodistus 0% kattavuus** — energy_factor = 1.0 kaikille (ARA-rekisteri ei avoin)
+- **Remonttitaso puuttuu** — ei dataa, ei faktoria
+- **Etuovi = pyyntihinnat** — toteutuneet ~5-10% alemmat, neighborhood factor kompensoi osittain
+- **Vesikerroin validoimaton** — Etuovi ei sisällä etäisyyttä, water_factor = 1.0 validoinnissa
 
 ### Hinta-arvioalgoritmin tarkka kuvaus
 
@@ -589,8 +605,10 @@ npx tsx scripts/validation/validate-prices.ts
 estimated_price = base_price × age_factor × energy_factor × water_factor × floor_factor × size_factor × neighborhood_factor
 ```
 
-**Base price** = StatFin €/m² (postinumero + vuosi + talotyyppi)
-- Omakotitalo fallback: ei omaa StatFin-dataa → rivitalo × OKT_FALLBACK.fromRivitalo (1.10) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.90)
+**Base price** = €/m² (postinumero + vuosi + talotyyppi)
+- Kerrostalo/rivitalo: StatFin PxWeb API
+- Omakotitalo: **KHR-pohjainen** (MML kauppahintarekisteri mediaani / avg asuntoala per postinumero, 270 aluetta, 2000–2026)
+- Omakotitalo fallback (jos ei KHR-dataa): rivitalo × OKT_FALLBACK.fromRivitalo (1.10) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.90)
 
 **Age factor** (U-käyrä, recalibrated 2026-04-01):
 ```
@@ -728,9 +746,4 @@ Sovelluksella on kaksi pääkäyttötapausta:
 
 ## Seuraavat vaiheet
 
-- Mobiiliresponsiivisuuden viimeistely + testaus
-- Julkinen API
-- Lisää Etuovi-dataa neighborhood factoreihin (harvan datan alueet)
-- Energiatodistusdata (ARA-rekisteri, ei avoin)
-- Premium-ominaisuuksien rajoitus (paywall)
-- Markkinapaikan laajentaminen (viestintä ostaja↔myyjä)
+Katso [`TODO.md`](TODO.md) — prioriteettijärjestyksessä (Now / Next / Later).

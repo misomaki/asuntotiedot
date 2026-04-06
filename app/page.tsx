@@ -35,7 +35,7 @@ export default function Home() {
 
       {/* Data attribution — above MapLibre's built-in attribution */}
       <div className="absolute bottom-1 left-1 md:bottom-1 md:right-1 md:left-auto z-10 text-[9px] md:text-[10px] text-muted-foreground/60 pointer-events-none select-none max-w-[60vw] md:max-w-none md:text-right text-left">
-        Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: OpenStreetMap
+        Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: MML Maastotietokanta (CC BY 4.0)
       </div>
     </main>
   )

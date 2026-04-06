@@ -364,7 +364,7 @@ export class SupabaseDataProvider implements DataProvider {
       .from('buildings')
       .select(
         `id, building_type, construction_year, floor_count,
-         footprint_area_sqm, address, estimated_price_per_sqm,
+         footprint_area_sqm, total_area_sqm, address, estimated_price_per_sqm,
          min_distance_to_water_m, area_id,
          energy_class, apartment_count,
          ryhti_main_purpose, is_residential, is_leased_plot,
@@ -424,11 +424,15 @@ export class SupabaseDataProvider implements DataProvider {
     const footprint = building.footprint_area_sqm
       ? Number(building.footprint_area_sqm)
       : null
+    const totalArea = building.total_area_sqm
+      ? Number(building.total_area_sqm)
+      : null
     const sizeFactor = computeSizeFactor(
       building.apartment_count ?? null,
       footprint,
       building.floor_count,
-      propertyType
+      propertyType,
+      totalArea
     )
 
     // Apply premium dampening to match the SQL-stored estimated_price_per_sqm
@@ -444,6 +448,7 @@ export class SupabaseDataProvider implements DataProvider {
       construction_year: building.construction_year,
       floor_count: building.floor_count,
       footprint_area_sqm: footprint,
+      total_area_sqm: totalArea,
       address: building.address,
       estimated_price_per_sqm: building.estimated_price_per_sqm
         ? Number(building.estimated_price_per_sqm)
@@ -493,6 +498,12 @@ export class SupabaseDataProvider implements DataProvider {
 
       const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
       if (kerrostaloPrice !== null) return kerrostaloPrice * OKT_FALLBACK.fromKerrostalo
+    }
+
+    // Rivitalo fallback: kerrostalo × 0.85 (rivitalo typically 10-20% below KT in same area)
+    if (propertyType === 'rivitalo') {
+      const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
+      if (kerrostaloPrice !== null) return kerrostaloPrice * 0.85
     }
 
     // Phase 2: Municipality-level fallback

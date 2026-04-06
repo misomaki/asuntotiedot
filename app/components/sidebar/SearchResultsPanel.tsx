@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useAISearch } from '@/app/contexts/AISearchContext'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { cn } from '@/app/lib/utils'
@@ -8,11 +8,13 @@ import { formatNumber } from '@/app/lib/formatters'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { Sheet } from '@/app/components/ui/sheet'
+import { BuildingPanel } from '@/app/components/sidebar/BuildingPanel'
 import {
   X,
   Sparkles,
   Building2,
   Loader2,
+  ArrowLeft,
 } from 'lucide-react'
 import type { AISearchResult } from '@/app/types'
 
@@ -22,7 +24,9 @@ import type { AISearchResult } from '@/app/types'
  * Desktop: Left panel (same position as Sidebar).
  * Mobile: Bottom sheet.
  *
- * Clicking a result flies the map to that building and selects it.
+ * Clicking a result flies the map to that building and shows its
+ * BuildingPanel inline (replacing the list). A back arrow returns
+ * to the results list.
  */
 export function SearchResultsPanel() {
   const {
@@ -39,11 +43,14 @@ export function SearchResultsPanel() {
 
   const {
     flyTo,
+    selectedBuilding,
     setSelectedBuilding,
-    setIsSidebarOpen,
   } = useMapContext()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
+
+  // Track which result is being viewed inline (building detail mode)
+  const [viewingBuilding, setViewingBuilding] = useState(false)
 
   const handleSelectResult = useCallback((result: AISearchResult) => {
     if (result.lat && result.lng) {
@@ -54,13 +61,68 @@ export function SearchResultsPanel() {
       })
     }
     setSelectedBuilding(result.id)
-    setIsSidebarOpen(true)
-  }, [flyTo, setSelectedBuilding, setIsSidebarOpen])
+    setViewingBuilding(true)
+  }, [flyTo, setSelectedBuilding])
+
+  const handleBackToResults = useCallback(() => {
+    setViewingBuilding(false)
+    setSelectedBuilding(null)
+  }, [setSelectedBuilding])
+
+  const handleClose = useCallback(() => {
+    setViewingBuilding(false)
+    setSelectedBuilding(null)
+    clearSearch()
+  }, [setSelectedBuilding, clearSearch])
 
   if (!isActive) return null
 
-  const content = (
-    <div className="flex flex-col h-full">
+  // ---- Building detail view (inline) ----
+  const buildingDetailContent = (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Back header */}
+      <div className="flex items-center gap-2 px-3 py-2.5 flex-shrink-0 border-b border-[#1a1a1a]/5">
+        <button
+          type="button"
+          onClick={handleBackToResults}
+          className={cn(
+            'neo-press h-8 w-8 rounded-lg border-2 border-[#1a1a1a]',
+            'bg-bg-primary shadow-hard-sm',
+            'flex items-center justify-center',
+            'text-[#1a1a1a] hover:bg-pink-baby transition-colors',
+          )}
+          aria-label="Takaisin tuloksiin"
+        >
+          <ArrowLeft size={14} />
+        </button>
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <Sparkles size={12} className="text-yellow flex-shrink-0" />
+          <span className="text-xs text-muted-foreground truncate">
+            {totalCount} osumaa &middot; &quot;{queryText}&quot;
+          </span>
+        </div>
+        {isDesktop && (
+          <button
+            type="button"
+            onClick={handleClose}
+            className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
+            aria-label="Sulje haku"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* BuildingPanel content */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-4">
+        <BuildingPanel hideClose />
+      </div>
+    </div>
+  )
+
+  // ---- Results list view ----
+  const resultsListContent = (
+    <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="flex items-start justify-between gap-2 p-4 pb-2 flex-shrink-0">
         <div className="min-w-0 flex-1">
@@ -76,14 +138,16 @@ export function SearchResultsPanel() {
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={clearSearch}
-          className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
-          aria-label="Sulje haku"
-        >
-          <X size={16} />
-        </button>
+        {isDesktop && (
+          <button
+            type="button"
+            onClick={handleClose}
+            className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
+            aria-label="Sulje haku"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Filter chips */}
@@ -127,7 +191,7 @@ export function SearchResultsPanel() {
           <p className="text-sm text-red-600">{error}</p>
           <button
             type="button"
-            onClick={clearSearch}
+            onClick={handleClose}
             className="text-xs text-muted-foreground hover:text-foreground mt-2"
           >
             Sulje
@@ -137,7 +201,7 @@ export function SearchResultsPanel() {
 
       {/* Results list */}
       {!isLoading && !error && (
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {results.length === 0 ? (
             <div className="px-4 py-12 text-center">
               <Building2 size={32} className="mx-auto text-muted-foreground/30 mb-3" />
@@ -171,14 +235,18 @@ export function SearchResultsPanel() {
     </div>
   )
 
+  // Choose which view to show
+  const showBuildingDetail = viewingBuilding && selectedBuilding
+  const content = showBuildingDetail ? buildingDetailContent : resultsListContent
+
   // Mobile: bottom sheet
   if (!isDesktop) {
     return (
       <Sheet
         open={isActive}
-        onClose={clearSearch}
+        onClose={handleClose}
         side="bottom"
-        className="max-h-[80vh]"
+        className={cn('max-h-[80vh]', showBuildingDetail && 'max-h-[85vh]')}
       >
         {content}
       </Sheet>
@@ -234,7 +302,7 @@ function ResultRow({
         'w-full px-4 py-3 text-left',
         'hover:bg-yellow/5 transition-colors',
         'focus-visible:outline-none focus-visible:bg-yellow/10',
-        'animate-slide-up',
+        'animate-slide-up cursor-pointer',
       )}
       style={{ animationDelay: `${Math.min(index, 10) * 30}ms`, animationFillMode: 'both' }}
     >

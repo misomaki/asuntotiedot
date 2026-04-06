@@ -146,6 +146,7 @@ export interface BuildingWithPrice {
   construction_year: number | null
   floor_count: number | null
   footprint_area_sqm: number | null
+  total_area_sqm: number | null
   address: string | null
   estimated_price_per_sqm: number | null
   min_distance_to_water_m: number | null
@@ -218,6 +219,24 @@ export interface BuildingSellIntent {
   note: string | null
   created_at: string
   expires_at: string
+}
+
+// ── User Addresses ──
+
+/** A user-registered address linked to a building */
+export interface UserAddress {
+  id: string
+  user_id: string
+  address_text: string
+  building_id: string | null
+  latitude: number | null
+  longitude: number | null
+  created_at: string
+  // Joined building info (from API)
+  building_address?: string | null
+  building_type?: string | null
+  construction_year?: number | null
+  estimated_price_per_sqm?: number | null
 }
 
 // ── AI Property Search ──

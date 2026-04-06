@@ -19,6 +19,8 @@ interface MapLegendProps {
   zoom?: number
   /** Hide on mobile (e.g. when sidebar sheet is open) */
   hiddenOnMobile?: boolean
+  /** Start collapsed (e.g. on mobile to save space) */
+  defaultCollapsed?: boolean
 }
 
 /** Zoom threshold: below this we show municipality legend */
@@ -29,8 +31,8 @@ const MUNICIPALITY_ZOOM_MAX = 9.5
  * Switches between municipality-level and building-level scales based on zoom.
  * Crossfades between the two scales for a smooth transition.
  */
-export default function MapLegend({ municipalityScale, zoom = 12, hiddenOnMobile }: MapLegendProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+export default function MapLegend({ municipalityScale, zoom = 12, hiddenOnMobile, defaultCollapsed }: MapLegendProps) {
+  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed)
 
   const showMunicipalityScale = zoom < MUNICIPALITY_ZOOM_MAX && municipalityScale
 

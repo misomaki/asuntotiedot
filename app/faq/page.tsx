@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, Search, BarChart3 } from 'lucide-react'
+import { MapPin, ChevronDown, Building2, TrendingUp, Layers, Database, HandCoins, Eye, Sparkles } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
 import { trackFaqAccordion } from '@/app/lib/analytics'
 import { useInView } from '@/app/hooks/useInView'
+import { LogoMark } from '@/app/components/brand/LogoMark'
 import type { LucideIcon } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
@@ -15,33 +16,33 @@ import type { LucideIcon } from 'lucide-react'
 const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
   {
     icon: Building2,
-    title: '700 000+ rakennusta',
-    description: 'Jokaisen asuinrakennuksen hinta-arvio seitsemässä suurimmassa kaupungissa.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Hintakehitys 2018–2024',
-    description: 'Seuraa neliöhintojen muutosta vuosittain postinumeroalueittain.',
+    title: 'Jokainen rakennus — ei vain myynnissä olevat',
+    description: 'Asuntoportaaleissa näet vain sen, mitä joku on päättänyt laittaa myyntiin. Neliöissä näet 266 000 rakennuksen hinta-arvion — myös sen talon, jota kukaan ei vielä myy.',
   },
   {
     icon: Layers,
-    title: '6 hintatekijää',
-    description: 'Ikä, sijainti, vesistö, kerrokset, koko ja aluekerroin – kaikki läpinäkyvästi eriteltyinä.',
+    title: 'Läpinäkyvä hinnan muodostus',
+    description: 'Hinta-arvio ei ole yksi numero. Näet erikseen, miten rakennusvuosi, vesistön läheisyys, sijainti, koko ja aluekerroin vaikuttavat — ja ymmärrät, miksi naapuritalo maksaa eri verran.',
   },
   {
-    icon: Search,
-    title: 'Hae osoitteella',
-    description: 'Etsi mikä tahansa osoite, postinumero tai alue ja näe hinta-arvio välittömästi.',
+    icon: HandCoins,
+    title: 'Myy ilman välittäjää',
+    description: 'Lisää osoitteesi asetuksissa ja merkitse asuntosi myyntiin — kiinnostuneet ostajat löytävät sinut suoraan kartalta. Säästät välityspalkkion — tyypillisesti 3–5 % kauppahinnasta.',
   },
   {
-    icon: BarChart3,
-    title: 'Vertaile alueita',
-    description: 'Valitse kaksi postinumeroaluetta ja vertaile hintoja, väestöä ja rakennuskantaa.',
+    icon: Eye,
+    title: 'Löydä kohde ennen muita',
+    description: 'Näetkö talon, joka kiinnostaa? Merkitse se. Jos omistaja harkitsee myyntiä, yhteys syntyy — ennen kuin kohde ilmestyy muualle.',
   },
   {
-    icon: Database,
-    title: 'Avoin data',
-    description: 'Tilastokeskus, OpenStreetMap ja SYKE Ryhti – kaikki lähteet avoimesti saatavilla.',
+    icon: Sparkles,
+    title: 'Kuvaa unelma-asuntosi omin sanoin',
+    description: '"Kolmio Kalliossa lähellä metroa alle 5 000 €/m²" — tekoäly etsii kartalta rakennukset, jotka vastaavat kuvaustasi.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Seuraa markkinan suuntaa',
+    description: 'Miten alueesi neliöhinta on kehittynyt vuosina 2018–2024? Vertaile postinumeroalueita ja tunnista nousevat alueet.',
   },
 ]
 
@@ -62,44 +63,55 @@ interface FAQItem {
 
 const FAQ_ITEMS: FAQItem[] = [
   {
+    question: 'Miksi hinta-arvio voi poiketa todellisesta kauppahinnasta?',
+    answer: [
+      'Algoritmimme tuntee rakennuksen — mutta ei yksittäistä asuntoa. Se tietää talon iän, sijainnin, koon ja alueen hintatason, mutta ei näe juuri remontoitua keittiötä, parveketta etelään tai märkää kellaria.',
+      'Siksi lopullinen kauppahinta muodostuu aina ostajan ja myyjän välillä. Hinta-arvio kertoo, mistä lähtökohdasta neuvottelu kannattaa aloittaa — ja mitkä tekijät siihen vaikuttavat.',
+    ],
+  },
+  {
+    question: 'Miten Neliöt eroaa perinteisistä asuntoportaaleista?',
+    answer: [
+      'Asuntoportaaleissa näet vain kohteet, jotka joku on päättänyt laittaa myyntiin — välittäjän asettamalla hinnalla. Neliöissä näet jokaisen rakennuksen riippumatta siitä, onko se myynnissä vai ei.',
+      'Voit ilmaista kiinnostuksesi mihin tahansa rakennukseen kartalla. Myyjänä lisäät osoitteesi asetuksissa ja merkitset asuntosi myyntiin — ilman välittäjää ja ilman välityspalkkiota.',
+    ],
+  },
+  {
     question: 'Miten hinta-arviot lasketaan?',
     answer: [
       'Jokaisen rakennuksen hinta-arvio perustuu kuuteen tekijään:',
       '1. Perushinta — Tilastokeskuksen toteutuneet kauppahinnat (€/m²) postinumero- ja talotyyppitasolla.',
-      '2. Ikäkerroin — Rakennusvuosi vaikuttaa hintaan U-käyrämäisesti: uudisrakentaminen ja yli 100-vuotiaat historialliset talot ovat arvostetumpia, kun taas 1960–80-luvun elementtirakentaminen on edullisinta.',
-      '3. Vesistökerroin — Etäisyys lähimpään järveen (>1 ha) tai mereen nostaa hintaa jopa 35 %.',
+      '2. Ikäkerroin — Rakennusvuosi vaikuttaa hintaan U-käyrämäisesti: uudisrakentaminen ja historialliset talot ovat arvostetumpia, kun taas 1960–80-luvun elementtirakentaminen on edullisinta.',
+      '3. Vesistökerroin — Etäisyys lähimpään järveen tai mereen nostaa hintaa jopa 35 %.',
       '4. Kerroskerroin — Esimerkiksi yksikerroksisissa rivitaloissa ja korkeissa kerrostaloissa on pieni preemio.',
-      '5. Kokokerroin — Pienemmät kerrostalot (alle 10 asuntoa) ovat tyypillisesti arvokkaampia per neliö.',
-      '6. Aluekerroin — Alueen toteutunut hintataso suhteessa perushintoihin.',
+      '5. Kokokerroin — Pienemmät kerrostalot ovat tyypillisesti arvokkaampia neliöltä.',
+      '6. Aluekerroin — Alueen toteutunut hintataso suhteessa tilastohintoihin, kalibroitu markkinadatasta.',
     ],
   },
   {
-    question: 'Kuinka tarkkoja hinta-arviot ovat?',
+    question: 'Miten osto- ja myyntisignaalit toimivat?',
     answer: [
-      'Hinta-arviot on validoitu vertaamalla niitä toteutuneisiin markkinahintoihin. Keskimääräinen poikkeama on noin 19 %.',
-      'Arvio ei huomioi remonttitasoa, energiatodistusta (data ei vielä saatavilla) eikä yksittäisen asunnon ominaisuuksia — kyseessä on rakennustason arvio.',
+      'Ostajana klikkaat rakennusta kartalla ja merkitset kiinnostuksesi — voit kertoa, millaista asuntoa etsit.',
+      'Myyjänä lisäät asuntosi osoitteen asetuksissa ja merkitset sen myyntiin yhdellä napilla. Kiinnostuneet ostajat näkevät ilmoituksesi suoraan kartalla.',
+      'Signaalit näkyvät kartalla anonyymisti: muut näkevät, että rakennuksessa on kiinnostuneita tai myyntiaikeita. Osto-kiinnostukset ovat voimassa 90 päivää, myynti-ilmoitukset 180 päivää.',
     ],
-  },
-  {
-    question: 'Miksi hinta-arvio puuttuu joiltain rakennuksilta?',
-    answer: 'Hinta-arvio lasketaan vain asuinrakennuksille. Koulut, kaupat, teollisuusrakennukset yms. on luokiteltu ei-asuinrakennuksiksi eikä niille näytetä hinta-arviota. Joissakin tapauksissa rakennukselta puuttuu tarvittava lähtödata (esim. postinumeroalueen hintatieto).',
   },
   {
     question: 'Mistä data tulee?',
     answer: [
-      'Tilastokeskus (Paavo & StatFin) — Postinumeroalueiden rajat, väestötiedot ja asuntojen kauppahinnat. CC BY 4.0.',
-      'OpenStreetMap — Rakennusten geometriat (pohjapiirros kartalla).',
+      'Tilastokeskus (Paavo & StatFin) — Postinumeroalueiden rajat, väestötiedot ja toteutuneet asuntokauppahinnat. CC BY 4.0.',
+      'OpenStreetMap — Rakennusten pohjapiirrokset kartalla.',
       'SYKE Ryhti-rekisteri — Rakennusvuosi, kerrosluku, asuntomäärä ja käyttötarkoitus. CC BY 4.0.',
-      'Maanmittauslaitos (MML) — Osoitetiedot rakennuksille.',
+      'Maanmittauslaitos — Osoitetiedot rakennuksille.',
     ],
   },
 ]
 
 const STATS: { value: number; label: string; format: boolean }[] = [
-  { value: 458392, label: 'Kerrostaloa', format: true },
-  { value: 128741, label: 'Rivitaloa', format: true },
-  { value: 109284, label: 'Omakotitaloa', format: true },
-  { value: 107, label: 'Kuntaa', format: false },
+  { value: 24783, label: 'Kerrostaloa', format: true },
+  { value: 47451, label: 'Rivitaloa', format: true },
+  { value: 194610, label: 'Omakotitaloa', format: true },
+  { value: 106, label: 'Kuntaa', format: false },
 ]
 
 // ---------------------------------------------------------------------------
@@ -396,8 +408,11 @@ export default function FAQPage() {
       {/* Header */}
       <header className="border-b-2 border-[#1a1a1a] bg-[#FFFBF5] sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg text-[#1a1a1a] hover:text-pink transition-colors">
-            Neliöt
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <LogoMark size={30} />
+            <span className="font-brand text-xl tracking-tight text-[#1a1a1a]">
+              Neliöt
+            </span>
           </Link>
           <Link
             href="/"
@@ -422,7 +437,7 @@ export default function FAQPage() {
                 heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               )}
             >
-              Jokaisen suomalaisen<br className="hidden md:block" /> rakennuksen hinta-arvio
+              Löydä koti, jota et<br className="hidden md:block" /> tiennyt etsiväsi.
             </h1>
             <p
               className={cn(
@@ -430,9 +445,9 @@ export default function FAQPage() {
                 heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               )}
             >
-              Neliöt yhdistää Tilastokeskuksen kauppahinnat, rakennusrekisterit ja avoimet datalähteet
-              yhdeksi interaktiiviseksi kartaksi. Katso minkä tahansa asuinrakennuksen arvioitu
-              neliöhinta — ja ymmärrä mistä se koostuu.
+              Neliöt näyttää jokaisen asuinrakennuksen hinta-arvion ja sen muodostavat tekijät — avoimesti ja
+              läpinäkyvästi. Kun löydät kiinnostavan kohteen, voit tavoittaa myyjän suoraan.
+              Ilman välittäjää, ilman välityspalkkiota.
             </p>
           </div>
         </section>
@@ -474,7 +489,7 @@ export default function FAQPage() {
               featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             )}
           >
-            Mitä Neliöt tekee?
+            Miten Neliöt toimii?
           </h2>
           <p
             className={cn(
@@ -482,7 +497,7 @@ export default function FAQPage() {
               featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             )}
           >
-            Avoimen datan pohjalta rakennettu työkalu asuntojen hintatason ymmärtämiseen.
+            Avoin data, läpinäkyvät hinnat ja suora yhteys ostajan ja myyjän välillä.
           </p>
           <div className="mt-8 md:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((feature, i) => {
@@ -575,7 +590,7 @@ export default function FAQPage() {
               faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             )}
           >
-            Miten hinta-arviot lasketaan ja mistä data tulee.
+            Hinnoittelusta, markkinapaikasta ja datalähteistä.
           </p>
 
           <div className="mt-8 md:mt-10 space-y-2.5">
@@ -595,10 +610,10 @@ export default function FAQPage() {
             )}
           >
             <h2 className="text-lg md:text-xl font-display font-bold text-[#1a1a1a]">
-              Kokeile itse
+              Löydä kohde, jota kukaan ei vielä myy.
             </h2>
             <p className="text-sm md:text-base text-muted-foreground mt-2 max-w-md mx-auto">
-              Hae osoitteella, klikkaa rakennusta ja näe mistä hinta-arvio koostuu.
+              Klikkaa rakennusta, tutki hinnan muodostuminen ja ota suoraan yhteyttä — ilman välikäsiä.
             </p>
             <div className="mt-5">
               <Link
@@ -615,8 +630,13 @@ export default function FAQPage() {
 
       {/* Footer */}
       <footer className="border-t-2 border-[#1a1a1a]/10 bg-[#FFFBF5] py-6">
-        <div className="max-w-4xl mx-auto px-4 text-xs text-muted-foreground">
+        <div className="max-w-4xl mx-auto px-4 text-xs text-muted-foreground space-y-2">
           <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: OpenStreetMap | SYKE Ryhti (CC BY 4.0)</p>
+          <p>
+            <Link href="/tietosuoja" className="underline underline-offset-2 hover:text-[#1a1a1a] transition-colors">Tietosuojaseloste</Link>
+            {' · '}
+            <Link href="/kayttoehdot" className="underline underline-offset-2 hover:text-[#1a1a1a] transition-colors">Käyttöehdot</Link>
+          </p>
         </div>
       </footer>
     </div>
