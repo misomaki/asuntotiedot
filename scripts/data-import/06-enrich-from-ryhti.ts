@@ -24,7 +24,7 @@
  */
 
 import { supabase } from './lib/supabaseAdmin'
-import { CITIES } from './config'
+import { CITIES, type CityConfig } from './config'
 import { sleep } from './lib/pxwebClient'
 
 // ---------------------------------------------------------------------------
@@ -54,6 +54,7 @@ interface RyhtiRecord {
   purpose: string | null // main_purpose
   apartments: number | null
   energyClass: string | null // energy_class (A-G)
+  floorArea: number | null // floor_area (kerrosala, m²)
   lng: number
   lat: number
   modifiedAt: string | null
@@ -66,6 +67,7 @@ interface RyhtiFeatureProperties {
   main_purpose: string | null
   apartment_count: number | null
   energy_class: string | null
+  floor_area: number | null // kerrosala (m²)
   modified_timestamp_utc: string | null
 }
 
@@ -192,6 +194,7 @@ async function fetchRyhtiForBbox(
         purpose: props.main_purpose,
         apartments: props.apartment_count,
         energyClass: props.energy_class,
+        floorArea: props.floor_area,
         lng,
         lat,
         modifiedAt: props.modified_timestamp_utc,
@@ -237,6 +240,7 @@ async function insertIntoStaging(records: RyhtiRecord[]): Promise<number> {
       purpose: r.purpose,
       apartments: r.apartments,
       energyClass: r.energyClass,
+      floorArea: r.floorArea,
       lng: r.lng,
       lat: r.lat,
     }))
@@ -403,6 +407,40 @@ async function matchEnergyAndApartments(): Promise<number> {
 }
 
 // ---------------------------------------------------------------------------
+// Bbox tile splitting (for large areas that cause Ryhti API timeouts)
+// ---------------------------------------------------------------------------
+
+function splitBbox(
+  bbox: [number, number, number, number],
+  maxDeg = 0.25
+): Array<[number, number, number, number]> {
+  const [west, south, east, north] = bbox
+  const width = east - west
+  const height = north - south
+
+  if (width <= maxDeg && height <= maxDeg) return [bbox]
+
+  const cols = Math.ceil(width / maxDeg)
+  const rows = Math.ceil(height / maxDeg)
+  const stepLng = width / cols
+  const stepLat = height / rows
+  const tiles: Array<[number, number, number, number]> = []
+
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      tiles.push([
+        west + c * stepLng,
+        south + r * stepLat,
+        west + (c + 1) * stepLng,
+        south + (r + 1) * stepLat,
+      ])
+    }
+  }
+
+  return tiles
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -418,24 +456,39 @@ async function main() {
     process.exit(1)
   }
 
-  // Step 2: Fetch Ryhti data per city
+  // Step 2: Fetch Ryhti data per city (split large bboxes into tiles)
   const allRecords = new Map<string, RyhtiRecord>()
 
   for (const city of CITIES) {
-    console.log(`\n${city.name}: fetching Ryhti buildings [${city.bbox.join(', ')}]`)
+    const tiles = splitBbox(city.bbox)
+    const tileLabel = tiles.length > 1 ? ` (${tiles.length} tiles)` : ''
+    console.log(`\n${city.name}: fetching Ryhti buildings [${city.bbox.join(', ')}]${tileLabel}`)
 
-    const cityRecords = await fetchRyhtiForBbox(city.bbox)
-    console.log(`  ${cityRecords.size} unique buildings from Ryhti`)
-
-    // Merge into global map (deduplicate across cities)
-    let newCount = 0
-    for (const [id, record] of cityRecords) {
-      if (!allRecords.has(id)) {
-        allRecords.set(id, record)
-        newCount++
+    for (let ti = 0; ti < tiles.length; ti++) {
+      if (tiles.length > 1) {
+        console.log(`  Tile ${ti + 1}/${tiles.length}`)
       }
+
+      const tileRecords = await fetchRyhtiForBbox(tiles[ti])
+
+      // Merge into global map (deduplicate across tiles and cities)
+      let newCount = 0
+      for (const [id, record] of tileRecords) {
+        if (!allRecords.has(id)) {
+          allRecords.set(id, record)
+          newCount++
+        }
+      }
+
+      if (tiles.length > 1) {
+        console.log(`    ${tileRecords.size} fetched, ${newCount} new`)
+      }
+
+      // Small delay between tiles
+      if (ti < tiles.length - 1) await sleep(1000)
     }
-    console.log(`  ${newCount} new (total unique: ${allRecords.size})`)
+
+    console.log(`  ${city.name} total unique: ${allRecords.size}`)
 
     // Rate limit between cities
     if (CITIES.indexOf(city) < CITIES.length - 1) {
@@ -450,6 +503,7 @@ async function main() {
   const withStoreys = records.filter((r) => r.storeys !== null).length
   const withEnergy = records.filter((r) => r.energyClass !== null).length
   const withApartments = records.filter((r) => r.apartments !== null).length
+  const withFloorArea = records.filter((r) => r.floorArea !== null).length
 
   console.log(`\n--- Ryhti data summary ---`)
   console.log(`Total unique buildings:   ${allRecords.size}`)
@@ -457,6 +511,7 @@ async function main() {
   console.log(`With floor count:         ${withStoreys} (${Math.round((withStoreys / allRecords.size) * 100)}%)`)
   console.log(`With energy class:        ${withEnergy} (${Math.round((withEnergy / allRecords.size) * 100)}%)`)
   console.log(`With apartment count:     ${withApartments} (${Math.round((withApartments / allRecords.size) * 100)}%)`)
+  console.log(`With floor area:          ${withFloorArea} (${Math.round((withFloorArea / allRecords.size) * 100)}%)`)
 
   // Step 3: Insert into staging table
   console.log(`\nInserting ${allRecords.size} records into staging table...`)

@@ -11,6 +11,7 @@ import { Sheet } from '@/app/components/ui/sheet'
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/app/lib/utils'
+import { useAISearch } from '@/app/contexts/AISearchContext'
 import { trackSidebarOpen, trackAreaComparison } from '@/app/lib/analytics'
 
 /**
@@ -40,6 +41,7 @@ export function Sidebar() {
   } = useMapContext()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
+  const { isActive: isAISearchActive } = useAISearch()
 
   // Fetch detailed area stats whenever selectedArea or year changes
   const areaCode = selectedArea?.areaCode ?? null
@@ -127,10 +129,10 @@ export function Sidebar() {
     return <StatsPanel data={data} isLoading={isLoading} year={filters.year} />
   }
 
-  // ---- Floating building card (desktop only) ----
+  // ---- Floating building card (desktop only, not during AI search) ----
   const desktopBuildingCard = (
     <AnimatePresence>
-      {hasSelectedBuilding && isDesktop && (
+      {hasSelectedBuilding && isDesktop && !isAISearchActive && (
         <motion.div
           key="building-card"
           initial={{ y: 20, opacity: 0 }}
@@ -149,7 +151,7 @@ export function Sidebar() {
 
   // ---- Mobile: bottom sheet for BOTH area stats and building panel ----
   if (!isDesktop) {
-    const isBuildingSheetOpen = hasSelectedBuilding && !isOpen
+    const isBuildingSheetOpen = hasSelectedBuilding && !isOpen && !isAISearchActive
     return (
       <>
         {/* Area stats sheet */}

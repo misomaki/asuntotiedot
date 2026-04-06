@@ -6,34 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { isValidUUID, sanitizeNote, isPositiveNumber } from '@/app/lib/validation'
+import { getAuthenticatedSupabase } from '@/app/lib/supabaseClient'
 
 export const dynamic = 'force-dynamic'
-
-async function getAuthenticatedSupabase() {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            try {
-              cookieStore.set(name, value, options)
-            } catch {
-              // Server component — ignore
-            }
-          })
-        },
-      },
-    }
-  )
-}
 
 export async function POST(request: NextRequest) {
   const supabase = await getAuthenticatedSupabase()
@@ -53,8 +29,8 @@ export async function POST(request: NextRequest) {
     note?: string
   }
 
-  if (!building_id) {
-    return NextResponse.json({ error: 'Missing building_id' }, { status: 400 })
+  if (!isValidUUID(building_id)) {
+    return NextResponse.json({ error: 'Invalid building_id' }, { status: 400 })
   }
 
   // Validate room_count
@@ -63,15 +39,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid room_count' }, { status: 400 })
   }
 
-  // Validate sqm range
+  // Validate numeric fields
+  if (min_sqm != null && !isPositiveNumber(min_sqm)) {
+    return NextResponse.json({ error: 'Invalid min_sqm' }, { status: 400 })
+  }
+  if (max_sqm != null && !isPositiveNumber(max_sqm)) {
+    return NextResponse.json({ error: 'Invalid max_sqm' }, { status: 400 })
+  }
   if (min_sqm != null && max_sqm != null && min_sqm > max_sqm) {
     return NextResponse.json({ error: 'min_sqm cannot exceed max_sqm' }, { status: 400 })
   }
-
-  // Validate note length
-  if (note && note.length > 280) {
-    return NextResponse.json({ error: 'Note too long (max 280 chars)' }, { status: 400 })
+  if (max_price_per_sqm != null && !isPositiveNumber(max_price_per_sqm)) {
+    return NextResponse.json({ error: 'Invalid max_price_per_sqm' }, { status: 400 })
   }
+
+  // Sanitize note
+  const sanitizedNote = sanitizeNote(note, 280)
 
   const { data, error } = await supabase
     .from('building_interests')
@@ -83,7 +66,7 @@ export async function POST(request: NextRequest) {
         min_sqm: min_sqm ?? null,
         max_sqm: max_sqm ?? null,
         max_price_per_sqm: max_price_per_sqm ?? null,
-        note: note ?? null,
+        note: sanitizedNote,
       },
       { onConflict: 'user_id,building_id' }
     )
@@ -95,7 +78,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to save interest' }, { status: 500 })
   }
 
-  return NextResponse.json(data, { status: 201 })
+  // Check for match: is there a seller for this building?
+  const { count: sellCount } = await supabase
+    .from('building_sell_intents')
+    .select('*', { count: 'exact', head: true })
+    .eq('building_id', building_id)
+
+  return NextResponse.json({
+    ...data,
+    match: sellCount && sellCount > 0
+      ? { has_sell_intent: true }
+      : null,
+  }, { status: 201 })
 }
 
 export async function DELETE(request: NextRequest) {
@@ -107,8 +101,8 @@ export async function DELETE(request: NextRequest) {
   }
 
   const buildingId = request.nextUrl.searchParams.get('buildingId')
-  if (!buildingId) {
-    return NextResponse.json({ error: 'Missing buildingId' }, { status: 400 })
+  if (!isValidUUID(buildingId)) {
+    return NextResponse.json({ error: 'Invalid buildingId' }, { status: 400 })
   }
 
   const { error } = await supabase

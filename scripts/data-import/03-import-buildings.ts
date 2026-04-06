@@ -186,7 +186,10 @@ async function importBuildingsForCity(city: CityConfig): Promise<number> {
 
     const { error } = await supabase
       .from('buildings')
-      .insert(rows as Record<string, unknown>[])
+      .upsert(rows as Record<string, unknown>[], {
+        onConflict: 'osm_id',
+        ignoreDuplicates: true,
+      })
 
     if (error) {
       console.error(`  Batch error at ${i}: ${error.message}`)

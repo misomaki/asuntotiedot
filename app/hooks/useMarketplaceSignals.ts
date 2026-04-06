@@ -23,8 +23,8 @@ interface UseMarketplaceSignalsResult {
   isLoading: boolean
   hasMyInterest: boolean
   hasMySellIntent: boolean
-  /** Submit interest with preferences and optional note */
-  submitInterest: (prefs: InterestPreferences) => Promise<void>
+  /** Submit interest with preferences and optional note. Returns match info if seller exists. */
+  submitInterest: (prefs: InterestPreferences) => Promise<{ match?: { has_sell_intent: boolean } }>
   /** Remove existing interest */
   removeInterest: () => Promise<void>
   /** Submit sell intent with note */
@@ -84,10 +84,10 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
       })
   }, [buildingId, user, refreshKey])
 
-  const submitInterest = useCallback(async (prefs: InterestPreferences) => {
-    if (!buildingId || !user) return
+  const submitInterest = useCallback(async (prefs: InterestPreferences): Promise<{ match?: { has_sell_intent: boolean } }> => {
+    if (!buildingId || !user) return {}
 
-    await fetch('/api/marketplace/interest', {
+    const res = await fetch('/api/marketplace/interest', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -98,7 +98,15 @@ export function useMarketplaceSignals(buildingId: string | null): UseMarketplace
         note: prefs.note ?? null,
       }),
     })
+
+    let match: { has_sell_intent: boolean } | undefined
+    if (res.ok) {
+      const data = await res.json()
+      match = data.match ?? undefined
+    }
+
     refresh()
+    return { match }
   }, [buildingId, user, refresh])
 
   const removeInterest = useCallback(async () => {

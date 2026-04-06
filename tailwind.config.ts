@@ -148,6 +148,9 @@ const config: Config = {
         "float-slow": "float 8s ease-in-out 1.5s infinite",
         wiggle: "wiggle 2s ease-in-out infinite",
         "bounce-gentle": "bounceGentle 2s ease-in-out infinite",
+        "glow-pulse": "glowPulse 1.5s ease-in-out",
+        "celebration-in": "celebrationIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "border-flash": "borderFlash 1.2s ease-out",
       },
 
       keyframes: {
@@ -198,6 +201,22 @@ const config: Config = {
         bounceGentle: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-4px)" },
+        },
+        glowPulse: {
+          "0%": { boxShadow: "0 0 0 0 rgba(255, 144, 232, 0)" },
+          "30%": { boxShadow: "0 0 20px 6px rgba(255, 144, 232, 0.4)" },
+          "60%": { boxShadow: "0 0 12px 3px rgba(255, 201, 0, 0.3)" },
+          "100%": { boxShadow: "0 0 0 0 rgba(35, 200, 160, 0)" },
+        },
+        celebrationIn: {
+          "0%": { transform: "scale(0.8) translateY(8px)", opacity: "0" },
+          "100%": { transform: "scale(1) translateY(0)", opacity: "1" },
+        },
+        borderFlash: {
+          "0%": { borderColor: "#ff90e8" },
+          "33%": { borderColor: "#ffc900" },
+          "66%": { borderColor: "#23c8a0" },
+          "100%": { borderColor: "#22c55e" },
         },
       },
 

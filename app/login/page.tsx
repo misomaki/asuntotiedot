@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/app/lib/supabase/client'
+import Link from 'next/link'
 import { LogoMark } from '@/app/components/brand/LogoMark'
 import { cn } from '@/app/lib/utils'
 
@@ -64,7 +65,7 @@ function LoginContent() {
       } else if (message.includes('User already registered')) {
         setError('Tili on jo olemassa. Kirjaudu sisään.')
       } else if (message.includes('Password should be at least')) {
-        setError('Salasanan tulee olla vähintään 6 merkkiä.')
+        setError('Salasanan tulee olla vähintään 8 merkkiä.')
       } else {
         setError(message)
       }
@@ -194,10 +195,10 @@ function LoginContent() {
               id="password"
               type="password"
               required
-              minLength={6}
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Vähintään 6 merkkiä"
+              placeholder="Vähintään 8 merkkiä"
               className={cn(
                 'w-full h-11 px-3 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
                 'text-sm font-body text-[#1a1a1a] placeholder:text-[#999]',
@@ -205,6 +206,18 @@ function LoginContent() {
               )}
             />
           </div>
+
+          {mode === 'login' && (
+            <div className="text-right -mt-2">
+              <button
+                type="button"
+                onClick={() => router.push('/auth/reset-password')}
+                className="text-xs text-[#666] font-body underline underline-offset-2 hover:text-[#1a1a1a] transition-colors"
+              >
+                Unohditko salasanasi?
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-lg border-2 border-red-400 bg-red-50 px-3 py-2 text-sm text-red-700 font-body">
@@ -257,6 +270,15 @@ function LoginContent() {
             </>
           )}
         </p>
+
+        {mode === 'signup' && (
+          <p className="mt-4 text-center text-[11px] text-[#999] font-body leading-relaxed">
+            Luomalla tilin hyväksyt{' '}
+            <Link href="/kayttoehdot" className="underline underline-offset-2 hover:text-[#666]">käyttöehdot</Link>
+            {' '}ja{' '}
+            <Link href="/tietosuoja" className="underline underline-offset-2 hover:text-[#666]">tietosuojaselosteen</Link>.
+          </p>
+        )}
       </div>
     </div>
   )

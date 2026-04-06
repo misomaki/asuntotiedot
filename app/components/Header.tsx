@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { Search, X, ChevronDown, MapPin, Navigation, Sparkles } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useAISearch } from '@/app/contexts/AISearchContext'
@@ -229,7 +230,7 @@ export function Header() {
       clearTimeout(timer)
       abortRef.current?.abort()
     }
-  }, [searchQuery])
+  }, [searchQuery, searchResults.length, cityResults.length])
 
   // Close search and reset state (shared by all select handlers)
   const closeSearch = useCallback(() => {
@@ -313,7 +314,7 @@ export function Header() {
         }
       }
     },
-    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, currentZoom]
+    [geojson, setSelectedArea, setIsSidebarOpen, flyTo, currentZoom, closeSearch]
   )
 
   // Only show address results if they belong to the current (or similar) query
@@ -432,13 +433,16 @@ export function Header() {
             'shadow-hard-sm'
           )}
         >
-          {/* Left: Logo + Brand name */}
-          <h1 className="flex-shrink-0 flex items-center gap-2">
+          {/* Left: Logo + Brand name → links to info page */}
+          <Link
+            href="/faq"
+            className="flex-shrink-0 flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <LogoMark size={isDesktop ? 32 : 28} />
             <span className="font-brand text-xl tracking-tight text-[#1a1a1a] hidden md:inline">
               Neliöt
             </span>
-          </h1>
+          </Link>
 
           {/* Search + Year selector — inline on both mobile and desktop */}
           <div className="flex items-center gap-2 md:gap-2 ml-auto flex-1 md:flex-none justify-end">

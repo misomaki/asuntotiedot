@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1050" font-family="'DM Sans', 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#1a1a1a" flood-opacity="1"/>
+    </filter>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="2" dy="2" stdDeviation="0" flood-color="#1a1a1a" flood-opacity="1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="1050" fill="#FFFBF5" rx="0"/>
+
+  <!-- Title -->
+  <text x="450" y="45" text-anchor="middle" font-size="22" font-weight="900" fill="#1a1a1a" font-family="'Libre Franklin', 'DM Sans', sans-serif">HINTA-ARVION MUODOSTUMINEN</text>
+  <text x="450" y="68" text-anchor="middle" font-size="12" fill="#666" font-family="'IBM Plex Mono', monospace">estimated_price = base × age × energy × water × floor × size × neighborhood × tontti</text>
+
+  <!-- ═══════════════ BASE PRICE ═══════════════ -->
+  <rect x="300" y="95" width="300" height="60" rx="12" fill="#ff90e8" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow)"/>
+  <text x="450" y="120" text-anchor="middle" font-size="14" font-weight="700" fill="#1a1a1a">PERUSHINTA (base_price)</text>
+  <text x="450" y="138" text-anchor="middle" font-size="11" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">StatFin €/m² · postinumero · vuosi</text>
+
+  <!-- Fallback note -->
+  <rect x="620" y="95" width="250" height="60" rx="10" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="745" y="114" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">OKT fallback:</text>
+  <text x="745" y="129" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">RT-hinta × 1.00</text>
+  <text x="745" y="143" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">KT-hinta × 0.75</text>
+
+  <!-- Arrow down -->
+  <line x1="450" y1="158" x2="450" y2="185" stroke="#1a1a1a" stroke-width="2"/>
+  <polygon points="450,192 444,182 456,182" fill="#1a1a1a"/>
+
+  <!-- ═══════════════ MULTIPLY SYMBOL ═══════════════ -->
+  <circle cx="450" cy="200" r="12" fill="#ffc900" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="450" y="205" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">×</text>
+
+  <!-- Arrow down -->
+  <line x1="450" y1="212" x2="450" y2="230" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- ═══════════════ FACTOR GRID (2 columns × 4 rows) ═══════════════ -->
+
+  <!-- Row 1: Age Factor -->
+  <rect x="50" y="235" width="380" height="90" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="50" y="235" width="380" height="26" rx="12" fill="#ffc900" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="50" y="248" width="380" height="1" fill="#1a1a1a"/>
+  <text x="240" y="253" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">① IKÄ (age_factor)</text>
+  <text x="60" y="279" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">U-käyrä: uudet kalliimmat, 60-70-l halvimmat</text>
+  <text x="60" y="293" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">≤0v: 1.55  ≤10v: 1.32  ≤30v: 1.00</text>
+  <text x="60" y="307" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">≤50v: 0.86  ≤60v: 0.82  &gt;100v: 0.88</text>
+
+  <!-- Row 1: Energy Factor -->
+  <rect x="470" y="235" width="380" height="90" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="470" y="235" width="380" height="26" rx="12" fill="#23c8a0" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="470" y="248" width="380" height="1" fill="#1a1a1a"/>
+  <text x="660" y="253" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">② ENERGIA (energy_factor)</text>
+  <text x="480" y="279" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">Energialuokka A–G (Aalto-yliopiston tutkimus)</text>
+  <text x="480" y="293" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">A: 1.08  B: 1.05  C: 1.02  D: 1.00</text>
+  <text x="480" y="307" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">E: 0.97  F: 0.94  G: 0.90  null: 1.00</text>
+
+  <!-- Row 2: Water Factor -->
+  <rect x="50" y="345" width="380" height="90" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="50" y="345" width="380" height="26" rx="12" fill="#88b0cc" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="50" y="358" width="380" height="1" fill="#1a1a1a"/>
+  <text x="240" y="363" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">③ VESI (water_factor)</text>
+  <text x="60" y="389" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">Etäisyys järviin (&gt;1ha) ja mereen</text>
+  <text x="60" y="403" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">≤10m: 1.35  ≤50m: 1.20  ≤200m: 1.07</text>
+  <text x="60" y="417" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">≤500m: 1.03  &gt;500m: 1.00</text>
+
+  <!-- Row 2: Floor Factor -->
+  <rect x="470" y="345" width="380" height="90" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="470" y="345" width="380" height="26" rx="12" fill="#e8d098" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="470" y="358" width="380" height="1" fill="#1a1a1a"/>
+  <text x="660" y="363" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">④ KERROKSET (floor_factor)</text>
+  <text x="480" y="389" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">Talotyyppikohtainen kerroskerroin</text>
+  <text x="480" y="403" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">RT 1-krs: 1.05 · RT 2-krs: 1.00</text>
+  <text x="480" y="417" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">KT ≥8krs: 1.03 · KT ≥5krs: 1.01</text>
+
+  <!-- Row 3: Size Factor -->
+  <rect x="50" y="455" width="380" height="90" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="50" y="455" width="380" height="26" rx="12" fill="#d4a0b8" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="50" y="468" width="380" height="1" fill="#1a1a1a"/>
+  <text x="240" y="473" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">⑤ KOKO (size_factor)</text>
+  <text x="60" y="499" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">Pienempi rakennus → korkeampi €/m²</text>
+  <text x="60" y="513" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">KT: &lt;10 as. 1.04 · ≥60 as. 0.97</text>
+  <text x="60" y="527" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">OKT: ≤100m² 1.03 · &gt;300m² 0.92</text>
+
+  <!-- Row 3: Neighborhood Factor -->
+  <rect x="470" y="455" width="380" height="90" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="470" y="455" width="380" height="26" rx="12" fill="#ff90e8" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="470" y="468" width="380" height="1" fill="#1a1a1a"/>
+  <text x="660" y="473" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">⑥ ALUE (neighborhood_factor)</text>
+  <text x="480" y="499" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">Etuovi.fi-ilmoituksista kalibroitu</text>
+  <text x="480" y="513" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">factor = avg(pyyntihinta) / avg(arvio)</text>
+  <text x="480" y="527" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">Vaihteluväli: 0.70 – 1.50</text>
+
+  <!-- Row 4: Tontti Factor -->
+  <rect x="260" y="565" width="380" height="75" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <rect x="260" y="565" width="380" height="26" rx="12" fill="#c8c0b4" stroke="#1a1a1a" stroke-width="2"/>
+  <rect x="260" y="578" width="380" height="1" fill="#1a1a1a"/>
+  <text x="450" y="583" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">⑦ TONTTI (tontti_factor)</text>
+  <text x="270" y="607" font-size="9" fill="#1a1a1a" font-family="'IBM Plex Mono', monospace">Vuokratontti: 0.92 (KT, RT)</text>
+  <text x="270" y="621" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">Oma tontti / OKT: 1.00</text>
+
+  <!-- ═══════════════ DAMPENING BOX ═══════════════ -->
+  <line x1="450" y1="643" x2="450" y2="658" stroke="#1a1a1a" stroke-width="2"/>
+
+  <rect x="130" y="660" width="640" height="65" rx="12" fill="#fff4e0" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)" stroke-dasharray="6 3"/>
+  <text x="450" y="682" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">⚙ PREMIUM DAMPENING (vanhat rakennukset, age_factor &lt; 0.85)</text>
+  <text x="450" y="698" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">Neighborhood-preemio vaimennetaan: age 0.85 → 0%, age 0.70 → 50% dampening</text>
+  <text x="450" y="712" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">Vesi/energia/koko/kerros EI vaimenneta (pysyvät fyys. ominaisuudet)</text>
+
+  <!-- ═══════════════ RESULT ═══════════════ -->
+  <line x1="450" y1="728" x2="450" y2="755" stroke="#1a1a1a" stroke-width="2"/>
+  <polygon points="450,762 444,752 456,752" fill="#1a1a1a"/>
+
+  <rect x="250" y="765" width="400" height="55" rx="12" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow)"/>
+  <text x="450" y="790" text-anchor="middle" font-size="15" font-weight="700" fill="#FFFBF5">HINTA-ARVIO €/m²</text>
+  <text x="450" y="808" text-anchor="middle" font-size="10" fill="#999" font-family="'IBM Plex Mono', monospace">= base × age × energy × water × floor × size × nbhd × tontti</text>
+
+  <!-- ═══════════════ CONFIDENCE RANGE ═══════════════ -->
+  <line x1="450" y1="823" x2="450" y2="845" stroke="#1a1a1a" stroke-width="2"/>
+  <polygon points="450,852 444,842 456,842" fill="#1a1a1a"/>
+
+  <rect x="180" y="855" width="540" height="80" rx="12" fill="#FFFBF5" stroke="#1a1a1a" stroke-width="2" filter="url(#shadow-sm)"/>
+  <text x="450" y="878" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">LUOTTAMUSVÄLIHAARUKKA (±3% – ±10%)</text>
+  <text x="450" y="897" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">Perusmarginaali ±10%, kaventuu metatietojen mukaan:</text>
+  <text x="450" y="912" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">Nbhd high −3pp · year −1pp · energy −1pp · floor −0.5pp · size −0.5pp</text>
+  <text x="450" y="927" text-anchor="middle" font-size="9" fill="#666" font-family="'IBM Plex Mono', monospace">≤5% → Korkea · ≤7% → Keskitaso · ≤9% → Matala · &gt;9% → Oletus</text>
+
+  <!-- ═══════════════ DATA SOURCES ═══════════════ -->
+  <rect x="50" y="960" width="800" height="65" rx="12" fill="#f0eeec" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="450" y="982" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">DATALÄHTEET</text>
+  <text x="140" y="1002" text-anchor="middle" font-size="9" fill="#666">Tilastokeskus StatFin</text>
+  <text x="140" y="1014" text-anchor="middle" font-size="8" fill="#999">perushinnat</text>
+  <text x="300" y="1002" text-anchor="middle" font-size="9" fill="#666">OpenStreetMap</text>
+  <text x="300" y="1014" text-anchor="middle" font-size="8" fill="#999">rakennukset, geometria</text>
+  <text x="450" y="1002" text-anchor="middle" font-size="9" fill="#666">SYKE Ryhti</text>
+  <text x="450" y="1014" text-anchor="middle" font-size="8" fill="#999">vuosi, kerrokset, as.määrä</text>
+  <text x="600" y="1002" text-anchor="middle" font-size="9" fill="#666">PostGIS</text>
+  <text x="600" y="1014" text-anchor="middle" font-size="8" fill="#999">vesistöetäisyydet</text>
+  <text x="750" y="1002" text-anchor="middle" font-size="9" fill="#666">Etuovi.fi</text>
+  <text x="750" y="1014" text-anchor="middle" font-size="8" fill="#999">aluekertoimet</text>
+
+  <!-- Dividers between data sources -->
+  <line x1="220" y1="995" x2="220" y2="1018" stroke="#ccc" stroke-width="1"/>
+  <line x1="375" y1="995" x2="375" y2="1018" stroke="#ccc" stroke-width="1"/>
+  <line x1="525" y1="995" x2="525" y2="1018" stroke="#ccc" stroke-width="1"/>
+  <line x1="675" y1="995" x2="675" y2="1018" stroke="#ccc" stroke-width="1"/>
+</svg>

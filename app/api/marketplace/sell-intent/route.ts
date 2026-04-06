@@ -6,34 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { isValidUUID, sanitizeNote, isPositiveNumber } from '@/app/lib/validation'
+import { getAuthenticatedSupabase, getSupabaseAdmin } from '@/app/lib/supabaseClient'
 
 export const dynamic = 'force-dynamic'
-
-async function getAuthenticatedSupabase() {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            try {
-              cookieStore.set(name, value, options)
-            } catch {
-              // Server component — ignore
-            }
-          })
-        },
-      },
-    }
-  )
-}
 
 export async function POST(request: NextRequest) {
   const supabase = await getAuthenticatedSupabase()
@@ -51,12 +27,24 @@ export async function POST(request: NextRequest) {
     note?: string
   }
 
-  if (!building_id) {
-    return NextResponse.json({ error: 'Missing building_id' }, { status: 400 })
+  if (!isValidUUID(building_id)) {
+    return NextResponse.json({ error: 'Invalid building_id' }, { status: 400 })
   }
 
-  if (note && note.length > 500) {
-    return NextResponse.json({ error: 'Note too long (max 500 chars)' }, { status: 400 })
+  // Verify user has registered this building as their address
+  const admin = getSupabaseAdmin()
+  const { data: userAddr } = await admin
+    .from('user_addresses')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('building_id', building_id)
+    .limit(1)
+
+  if (!userAddr || userAddr.length === 0) {
+    return NextResponse.json(
+      { error: 'Voit ilmoittaa myyntiin vain osoitteeseesi linkitetyn rakennuksen. Lisää osoitteesi ensin asetuksissa.' },
+      { status: 403 }
+    )
   }
 
   // Validate property_type if provided
@@ -64,6 +52,14 @@ export async function POST(request: NextRequest) {
   if (property_type && !validTypes.includes(property_type)) {
     return NextResponse.json({ error: 'Invalid property_type' }, { status: 400 })
   }
+
+  // Validate numeric fields
+  if (asking_price_per_sqm != null && !isPositiveNumber(asking_price_per_sqm)) {
+    return NextResponse.json({ error: 'Invalid asking_price_per_sqm' }, { status: 400 })
+  }
+
+  // Sanitize note
+  const sanitizedNote = sanitizeNote(note, 500)
 
   const { data, error } = await supabase
     .from('building_sell_intents')
@@ -73,7 +69,7 @@ export async function POST(request: NextRequest) {
         building_id,
         asking_price_per_sqm: asking_price_per_sqm ?? null,
         property_type: property_type ?? null,
-        note: note ?? null,
+        note: sanitizedNote,
       },
       { onConflict: 'user_id,building_id' }
     )
@@ -85,7 +81,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to save sell intent' }, { status: 500 })
   }
 
-  return NextResponse.json(data, { status: 201 })
+  // Check for match: are there interested buyers on this building?
+  const { count: interestCount } = await admin
+    .from('building_interests')
+    .select('*', { count: 'exact', head: true })
+    .eq('building_id', building_id)
+
+  return NextResponse.json({
+    ...data,
+    match: interestCount && interestCount > 0
+      ? { interest_count: interestCount }
+      : null,
+  }, { status: 201 })
 }
 
 export async function DELETE(request: NextRequest) {
@@ -97,8 +104,8 @@ export async function DELETE(request: NextRequest) {
   }
 
   const buildingId = request.nextUrl.searchParams.get('buildingId')
-  if (!buildingId) {
-    return NextResponse.json({ error: 'Missing buildingId' }, { status: 400 })
+  if (!isValidUUID(buildingId)) {
+    return NextResponse.json({ error: 'Invalid buildingId' }, { status: 400 })
   }
 
   const { error } = await supabase

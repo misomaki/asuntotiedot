@@ -43,6 +43,8 @@ export interface PriceEstimationInput {
   apartmentCount?: number | null
   /** Building footprint area in m² (null if unknown) */
   footprintAreaSqm?: number | null
+  /** Total floor area (kerrosala) in m² from Ryhti — more accurate than footprint × floors */
+  totalAreaSqm?: number | null
   /** Whether building sits on a municipality-owned leased plot (vuokratontti) */
   isLeasedPlot?: boolean | null
 }
@@ -157,7 +159,8 @@ export function computeSizeFactor(
   apartmentCount: number | null,
   footprintAreaSqm: number | null,
   floorCount: number | null,
-  propertyType?: PropertyType
+  propertyType?: PropertyType,
+  totalAreaSqm?: number | null
 ): number {
   if (propertyType === 'kerrostalo' && apartmentCount !== null) {
     if (apartmentCount >= 60) return 0.97
@@ -166,13 +169,21 @@ export function computeSizeFactor(
     return 1.04
   }
 
-  if (propertyType === 'omakotitalo' && footprintAreaSqm !== null) {
-    const floors = floorCount ?? 1
-    const totalArea = footprintAreaSqm * floors
-    if (totalArea > 300) return 0.92
-    if (totalArea > 200) return 0.96
-    if (totalArea > 100) return 1.00
-    return 1.03
+  if (propertyType === 'omakotitalo') {
+    // Prefer real kerrosala from Ryhti, fall back to footprint × floors
+    let totalArea: number | null = null
+    if (totalAreaSqm != null) {
+      totalArea = totalAreaSqm
+    } else if (footprintAreaSqm !== null) {
+      const floors = floorCount ?? 1
+      totalArea = footprintAreaSqm * floors
+    }
+    if (totalArea !== null) {
+      if (totalArea > 300) return 0.92
+      if (totalArea > 200) return 0.96
+      if (totalArea > 100) return 1.00
+      return 1.03
+    }
   }
 
   return 1.0
@@ -257,8 +268,8 @@ export function inferPropertyType(
   // 3. Floor count + apartment count heuristic
   if (floorCount !== null && floorCount >= 3) return 'kerrostalo'
   if (floorCount === 2) return 'rivitalo'
-  // 1-floor with multiple apartments → rivitalo (e.g. single-story row houses)
-  if (floorCount === 1 && apartmentCount != null && apartmentCount >= 3) return 'rivitalo'
+  // 1-floor with 2+ apartments → paritalo/rivitalo (e.g. single-story row houses, paritalot)
+  if (floorCount === 1 && apartmentCount != null && apartmentCount >= 2) return 'rivitalo'
 
   // 4. Footprint heuristic — large buildings without metadata are rivitalo, not OKT.
   // A typical Finnish omakotitalo has footprint < 200m². Buildings ≥ 300m² are
@@ -284,7 +295,8 @@ export function estimateBuildingPrice(
     input.apartmentCount ?? null,
     input.footprintAreaSqm ?? null,
     input.floorCount,
-    input.propertyType
+    input.propertyType,
+    input.totalAreaSqm ?? null
   )
   const rawNeighborhoodFactor = input.neighborhoodFactor ?? 1.0
 

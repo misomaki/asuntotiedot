@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { useMarketplaceSignals } from '@/app/hooks/useMarketplaceSignals'
+import { MatchCelebration } from '@/app/components/ui/MatchCelebration'
 import { cn } from '@/app/lib/utils'
-import { formatNumber, formatPriceRange } from '@/app/lib/formatters'
+import { formatNumber, formatPriceRange, getPropertyTypeLabel } from '@/app/lib/formatters'
 import { computePriceRange, inferPropertyType } from '@/app/lib/priceEstimation'
 import type { ConfidenceLevel } from '@/app/lib/priceEstimation'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
@@ -133,16 +134,15 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
       })
     : null
 
-  // Resolve building type label — use inferred propertyType as primary,
-  // with Ryhti subcategory labels (e.g. "Paritalo", "Senioritalo") when available
-  const PROPERTY_TYPE_LABELS: Record<string, string> = {
-    kerrostalo: 'Kerrostalo',
-    rivitalo: 'Rivitalo',
-    omakotitalo: 'Omakotitalo',
+  // Resolve building type label — Ryhti subcategory > paritalo heuristic > shared formatter
+  let typeLabel: string | null
+  if (building.ryhti_main_purpose) {
+    typeLabel = getRyhtiPurposeLabel(building.ryhti_main_purpose)
+  } else if (propertyType === 'omakotitalo' && building.apartment_count === 2) {
+    typeLabel = 'Paritalo'
+  } else {
+    typeLabel = getPropertyTypeLabel(propertyType)
   }
-  const typeLabel = building.ryhti_main_purpose
-    ? getRyhtiPurposeLabel(building.ryhti_main_purpose)
-    : PROPERTY_TYPE_LABELS[propertyType] ?? null
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -312,11 +312,17 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
         />
         <CompactAttribute
           icon={<Home size={14} />}
-          label="Pohja-ala"
+          label={building.total_area_sqm !== null
+            ? 'Kerrosala'
+            : building.footprint_area_sqm !== null && building.floor_count !== null && building.floor_count > 1
+              ? 'Pinta-ala (arvio)'
+              : 'Pinta-ala'}
           value={
-            building.footprint_area_sqm !== null
-              ? `${Math.round(building.footprint_area_sqm)} m²`
-              : '–'
+            building.total_area_sqm !== null
+              ? `${Math.round(building.total_area_sqm)} m²`
+              : building.footprint_area_sqm !== null
+                ? `${Math.round(building.footprint_area_sqm * (building.floor_count ?? 1))} m²`
+                : '–'
           }
           delay={3}
         />
@@ -386,30 +392,24 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
   const {
     signals,
     hasMyInterest,
-    hasMySellIntent,
     submitInterest,
     removeInterest,
-    submitSellIntent,
-    removeSellIntent,
     generateSummary,
   } = useMarketplaceSignals(buildingId)
 
   // Form visibility
-  const [activeForm, setActiveForm] = useState<'interest' | 'sell' | null>(null)
+  const [showForm, setShowForm] = useState(false)
   // Interest form state
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
   const [selectedSqmIdx, setSelectedSqmIdx] = useState<number | null>(null)
-  // Sell form state
-  const [sellNote, setSellNote] = useState('')
-  // Shared state
   const [interestNote, setInterestNote] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [submitPhase, setSubmitPhase] = useState<null | 'generating' | 'saving'>(null)
+  // Match celebration
+  const [showMatchCelebration, setShowMatchCelebration] = useState(false)
 
   // Submit interest: generate AI summary, then save
   async function handleSubmitInterest() {
-    setIsSubmitting(true)
-    setIsGenerating(true)
+    setSubmitPhase('generating')
 
     const sqmPreset = selectedSqmIdx != null ? SQM_PRESETS[selectedSqmIdx] : null
     const prefs = {
@@ -418,46 +418,28 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
       max_sqm: sqmPreset?.max,
     }
 
-    // Generate AI summary
     const summary = await generateSummary('buyer', prefs)
-    setIsGenerating(false)
+    setSubmitPhase('saving')
     const note = interestNote || summary
 
-    await submitInterest({ ...prefs, note })
-    setActiveForm(null)
+    const result = await submitInterest({ ...prefs, note })
+
+    if (result.match?.has_sell_intent) {
+      setShowMatchCelebration(true)
+    }
+
+    setShowForm(false)
     setSelectedRoom(null)
     setSelectedSqmIdx(null)
     setInterestNote('')
-    setIsSubmitting(false)
-  }
-
-  // Submit sell intent: generate AI summary, then save
-  async function handleSubmitSellIntent() {
-    setIsSubmitting(true)
-    setIsGenerating(true)
-
-    const summary = await generateSummary('seller')
-    setIsGenerating(false)
-    const note = sellNote || summary
-
-    await submitSellIntent({ note })
-    setActiveForm(null)
-    setSellNote('')
-    setIsSubmitting(false)
+    setSubmitPhase(null)
   }
 
   async function handleRemoveInterest() {
-    setIsSubmitting(true)
+    setSubmitPhase('saving')
     await removeInterest()
-    setActiveForm(null)
-    setIsSubmitting(false)
-  }
-
-  async function handleRemoveSellIntent() {
-    setIsSubmitting(true)
-    await removeSellIntent()
-    setActiveForm(null)
-    setIsSubmitting(false)
+    setShowForm(false)
+    setSubmitPhase(null)
   }
 
   const interestCount = signals?.interest_count ?? 0
@@ -488,64 +470,46 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
         </div>
       )}
 
-      {/* Action buttons */}
+      {/* Match celebration — buyer submitted interest and seller exists */}
+      {showMatchCelebration && (
+        <MatchCelebration
+          variant="buyer"
+          onDismiss={() => setShowMatchCelebration(false)}
+          autoDismissMs={6000}
+        />
+      )}
+
+      {/* Action button — buyer only */}
       {user ? (
         <div className="space-y-2">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (hasMyInterest) {
-                  handleRemoveInterest()
-                } else {
-                  setActiveForm(activeForm === 'interest' ? null : 'interest')
-                }
-              }}
-              disabled={isSubmitting}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-1.5',
-                'px-3 py-2 rounded-lg text-xs font-medium',
-                'border-2 transition-all duration-150',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                hasMyInterest
-                  ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-50'
-                  : activeForm === 'interest'
-                    ? 'bg-blue-50 border-blue-300 text-blue-800'
-                    : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300 hover:bg-blue-50/50',
-              )}
-            >
-              <Eye size={14} />
-              {hasMyInterest ? 'Poista kiinnostus' : 'Olen kiinnostunut'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (hasMySellIntent) {
-                  handleRemoveSellIntent()
-                } else {
-                  setActiveForm(activeForm === 'sell' ? null : 'sell')
-                }
-              }}
-              disabled={isSubmitting}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-1.5',
-                'px-3 py-2 rounded-lg text-xs font-medium',
-                'border-2 transition-all duration-150',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                hasMySellIntent
-                  ? 'bg-green-100 border-green-300 text-green-800 hover:bg-green-50'
-                  : activeForm === 'sell'
-                    ? 'bg-green-50 border-green-300 text-green-800'
-                    : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-green-300 hover:bg-green-50/50',
-              )}
-            >
-              <HandCoins size={14} />
-              {hasMySellIntent ? 'Poista ilmoitus' : 'Myyn tätä'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (hasMyInterest) {
+                handleRemoveInterest()
+              } else {
+                setShowForm(!showForm)
+              }
+            }}
+            disabled={submitPhase !== null}
+            className={cn(
+              'w-full flex items-center justify-center gap-1.5',
+              'px-3 py-2 rounded-lg text-xs font-medium',
+              'border-2 transition-all duration-150',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              hasMyInterest
+                ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-50'
+                : showForm
+                  ? 'bg-blue-50 border-blue-300 text-blue-800'
+                  : 'bg-white border-[#1a1a1a]/15 text-foreground hover:border-blue-300 hover:bg-blue-50/50',
+            )}
+          >
+            <Eye size={14} />
+            {hasMyInterest ? 'Poista kiinnostus' : 'Olen kiinnostunut'}
+          </button>
 
           {/* ── Interest form ── */}
-          {activeForm === 'interest' && !hasMyInterest && (
+          {showForm && !hasMyInterest && (
             <div className="rounded-xl border-2 border-blue-200 bg-blue-50/30 p-3 space-y-3 animate-fade-in">
               {/* Room count */}
               <div>
@@ -626,7 +590,7 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
               <button
                 type="button"
                 onClick={handleSubmitInterest}
-                disabled={isSubmitting}
+                disabled={submitPhase !== null}
                 className={cn(
                   'w-full py-2 rounded-lg text-xs font-bold',
                   'bg-blue-600 text-white border-2 border-blue-700',
@@ -635,67 +599,15 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
                   'flex items-center justify-center gap-1.5',
                 )}
               >
-                {isSubmitting ? (
+                {submitPhase ? (
                   <>
                     <Loader2 size={13} className="animate-spin" />
-                    {isGenerating ? 'Tekoäly kirjoittaa...' : 'Tallennetaan...'}
+                    {submitPhase === 'generating' ? 'Tekoäly kirjoittaa...' : 'Tallennetaan...'}
                   </>
                 ) : (
                   <>
                     <Sparkles size={13} />
                     Lähetä kiinnostus
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* ── Sell intent form ── */}
-          {activeForm === 'sell' && !hasMySellIntent && (
-            <div className="rounded-xl border-2 border-green-200 bg-green-50/30 p-3 space-y-3 animate-fade-in">
-              {/* Note */}
-              <div>
-                <label className="text-xs font-medium text-foreground block mb-1.5">
-                  Ilmoitusteksti <span className="text-muted-foreground font-normal">(valinnainen)</span>
-                </label>
-                <textarea
-                  value={sellNote}
-                  onChange={e => setSellNote(e.target.value)}
-                  placeholder="Jätä tyhjäksi → tekoäly kirjoittaa ilmoituksen rakennuksen tietojen perusteella"
-                  maxLength={500}
-                  rows={3}
-                  className={cn(
-                    'w-full px-2.5 py-2 rounded-lg text-xs',
-                    'border border-[#1a1a1a]/15 bg-white',
-                    'placeholder:text-muted-foreground/50',
-                    'focus:outline-none focus:border-green-300',
-                    'resize-none',
-                  )}
-                />
-              </div>
-
-              {/* Submit */}
-              <button
-                type="button"
-                onClick={handleSubmitSellIntent}
-                disabled={isSubmitting}
-                className={cn(
-                  'w-full py-2 rounded-lg text-xs font-bold',
-                  'bg-green-600 text-white border-2 border-green-700',
-                  'hover:bg-green-700 transition-colors',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'flex items-center justify-center gap-1.5',
-                )}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={13} className="animate-spin" />
-                    {isGenerating ? 'Tekoäly kirjoittaa ilmoitusta...' : 'Tallennetaan...'}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={13} />
-                    Julkaise myynti-ilmoitus
                   </>
                 )}
               </button>
@@ -790,7 +702,7 @@ const FACTOR_TOOLTIPS: Record<string, string> = {
   'Ikäkerroin': 'Rakennuksen iän vaikutus hintaan. Uudet ja historialliset rakennukset ovat arvokkaampia, 1960–80-luvun elementtirakennukset halvimpia.',
   'Energiakerroin': 'Rakennuksen energialuokan vaikutus hintaan. Hyvä energialuokka nostaa arvoa.',
   'Kerroskerroin': 'Kerrosmäärän vaikutus. Korkeat kerrostalot ja yksikerroksiset rivitalot saavat pienen lisän.',
-  'Kokokerroin': 'Rakennuksen pohja-alan vaikutus hintaan.',
+  'Kokokerroin': 'Rakennuksen koon vaikutus hintaan. Pienemmät rakennukset ovat tyypillisesti kalliimpia per neliö.',
   'Vesikerroin': 'Vesistön läheisyyden vaikutus. Alle 200 m järvestä tai merestä nostaa hintaa.',
   'Naapurustokerroin': 'Alueen hintatason poikkeama perushinnasta, laskettu toteutuneiden kauppahintojen perusteella.',
   'Tonttikerroin': 'Vuokratontti (kaupungin omistama maa) alentaa asunnon hintaa, koska ostaja maksaa tonttivuokraa.',
