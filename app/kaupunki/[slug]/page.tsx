@@ -35,9 +35,32 @@ async function getCityData(slug: string) {
   if (!city) return null
 
   const provider = getDataProvider()
-  const geojson = await provider.getAreasGeoJSON(2024, 'kerrostalo')
-  const features = geojson?.features ?? []
 
+  // Fetch all 3 property types in parallel — each GeoJSON only has a single `price` field
+  const [ktGeo, rtGeo, oktGeo] = await Promise.all([
+    provider.getAreasGeoJSON(2024, 'kerrostalo'),
+    provider.getAreasGeoJSON(2024, 'rivitalo'),
+    provider.getAreasGeoJSON(2024, 'omakotitalo'),
+  ])
+
+  // Build price maps by area_code for rivitalo and omakotitalo
+  const rtPriceMap = new Map<string, number | null>()
+  const oktPriceMap = new Map<string, number | null>()
+
+  for (const f of (rtGeo?.features ?? [])) {
+    const code = f.properties?.area_code as string
+    if (code && !rtPriceMap.has(code)) {
+      rtPriceMap.set(code, (f.properties?.price as number | null) ?? null)
+    }
+  }
+  for (const f of (oktGeo?.features ?? [])) {
+    const code = f.properties?.area_code as string
+    if (code && !oktPriceMap.has(code)) {
+      oktPriceMap.set(code, (f.properties?.price as number | null) ?? null)
+    }
+  }
+
+  const features = ktGeo?.features ?? []
   const cityFeatures = features.filter(f => {
     const code = f.properties?.area_code as string
     return code && city.postalPrefixes.some(p => code.startsWith(p))
@@ -48,13 +71,14 @@ async function getCityData(slug: string) {
   const areaPrices: CityAreaPrice[] = cityFeatures
     .map(f => {
       const props = f.properties as Record<string, unknown>
+      const areaCode = props.area_code as string
       return {
-        area_code: props.area_code as string,
+        area_code: areaCode,
         name: props.name as string,
         municipality: props.municipality as string,
-        kerrostalo: props.price_kerrostalo as number | null,
-        rivitalo: props.price_rivitalo as number | null,
-        omakotitalo: props.price_omakotitalo as number | null,
+        kerrostalo: (props.price as number | null) ?? null,
+        rivitalo: rtPriceMap.get(areaCode) ?? null,
+        omakotitalo: oktPriceMap.get(areaCode) ?? null,
       }
     })
     .filter(a => {

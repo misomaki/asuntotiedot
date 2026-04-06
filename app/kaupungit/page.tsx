@@ -41,7 +41,7 @@ async function getCityPrices() {
     })
 
     const prices = uniqueFeatures
-      .map(f => f.properties?.price_kerrostalo as number | null)
+      .map(f => f.properties?.price as number | null)
       .filter((p): p is number => p != null && p > 0)
 
     const sorted = [...prices].sort((a, b) => a - b)
