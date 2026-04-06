@@ -55,10 +55,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: 'website',
-      url: `https://neliot.vercel.app/alue/${area.area_code}`,
+      url: `/alue/${area.area_code}`,
     },
     alternates: {
-      canonical: `https://neliot.vercel.app/alue/${area.area_code}`,
+      canonical: `/alue/${area.area_code}`,
     },
   }
 }

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { getDataProvider } from '@/app/lib/dataProvider'
 
-const BASE_URL = 'https://neliot.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neliohinnat.fi'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const provider = getDataProvider()
@@ -16,7 +16,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
   return [
-    // Main pages
     {
       url: BASE_URL,
       lastModified: now,
@@ -28,6 +27,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/faq`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/kayttoehdot`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/tietosuoja`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
     },
     // Area pages
     ...areaCodes.map(code => ({

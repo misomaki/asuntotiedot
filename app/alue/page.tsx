@@ -5,9 +5,16 @@ import { MapPin } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Alueet – Neliöt',
-  description: 'Selaa Suomen postinumeroalueita ja vertaile asuntojen hintoja kartalla.',
+  title: 'Alueet',
+  description: 'Selaa Suomen postinumeroalueita ja vertaile asuntojen hintoja kartalla. Yli 400 aluetta Helsingistä, Tampereelta, Turusta ja muualta Suomesta.',
   keywords: ['asuntohinnat', 'postinumero', 'neliöhinta', 'Helsinki', 'Tampere', 'Turku', 'Oulu'],
+  openGraph: {
+    title: 'Alueet – Neliöt',
+    description: 'Selaa Suomen postinumeroalueita ja vertaile asuntojen hintoja kartalla.',
+  },
+  alternates: {
+    canonical: '/alue',
+  },
 }
 
 export default function AreasIndexPage() {
