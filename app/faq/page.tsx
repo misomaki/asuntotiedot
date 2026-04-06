@@ -47,13 +47,13 @@ const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
 ]
 
 const CITIES = [
-  { name: 'Helsinki', sub: '+ Espoo, Vantaa, Kauniainen' },
-  { name: 'Tampere', sub: '+ Pirkkala, Nokia, Ylöjärvi' },
-  { name: 'Turku', sub: '+ Kaarina, Raisio, Naantali' },
-  { name: 'Oulu', sub: null },
-  { name: 'Jyväskylä', sub: null },
-  { name: 'Kuopio', sub: null },
-  { name: 'Lahti', sub: null },
+  { name: 'Helsinki', sub: '+ Espoo, Vantaa, Kauniainen', slug: 'helsinki' },
+  { name: 'Tampere', sub: '+ Pirkkala, Nokia, Ylöjärvi', slug: 'tampere' },
+  { name: 'Turku', sub: '+ Kaarina, Raisio, Naantali', slug: 'turku' },
+  { name: 'Oulu', sub: null, slug: 'oulu' },
+  { name: 'Jyväskylä', sub: null, slug: 'jyvaskyla' },
+  { name: 'Kuopio', sub: null, slug: 'kuopio' },
+  { name: 'Lahti', sub: null, slug: 'lahti' },
 ]
 
 interface FAQItem {
@@ -540,11 +540,12 @@ export default function FAQPage() {
             </h2>
             <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2 md:gap-3">
               {CITIES.map((city, i) => (
-                <span
+                <Link
                   key={city.name}
+                  href={`/kaupunki/${city.slug}`}
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full border-2 border-[#1a1a1a]/10 bg-[#FFFBF5] px-4 py-2 text-sm font-display font-bold text-[#1a1a1a]',
-                    'hover:border-pink hover:bg-pink-pale hover:shadow-hard-sm transition-all duration-200 cursor-default',
+                    'hover:border-pink hover:bg-pink-pale hover:shadow-hard-sm transition-all duration-200',
                     citiesInView ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                   )}
                   style={{
@@ -560,7 +561,7 @@ export default function FAQPage() {
                       {city.sub}
                     </span>
                   )}
-                </span>
+                </Link>
               ))}
             </div>
             <p

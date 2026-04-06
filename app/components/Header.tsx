@@ -2,13 +2,14 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Search, X, ChevronDown, MapPin, Navigation, Sparkles } from 'lucide-react'
+import { Search, X, ChevronDown, MapPin, Navigation, Sparkles, ArrowUpRight } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
 import { useAISearch } from '@/app/contexts/AISearchContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
 import { LogoMark } from '@/app/components/brand/LogoMark'
 import { CITIES, CityConfig } from '@/app/lib/cities'
+import { CITY_SLUGS } from '@/app/lib/citySlugs'
 import { cn } from '@/app/lib/utils'
 import { searchAddresses, type GeocodingResult } from '@/app/lib/geocoding'
 import { UserMenu } from '@/app/components/UserMenu'
@@ -549,32 +550,43 @@ export function Header() {
                             const globalIdx = idx++
                             const isActive = globalIdx === activeIndex
                             nodes.push(
-                              <button
+                              <div
                                 key={`city-${city.name}`}
-                                type="button"
                                 data-active={isActive}
-                                onClick={() => handleSelectCity(city)}
-                                onPointerEnter={() => setActiveIndex(globalIdx)}
-                                role="option"
-                                aria-selected={isActive}
                                 className={cn(
-                                  'w-full px-3 text-left',
+                                  'w-full px-3',
                                   'flex items-center gap-2',
                                   isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
                                   'text-[#1a1a1a]',
                                   'transition-colors',
                                   isActive ? 'bg-pink-baby' : 'hover:bg-pink-baby/50',
-                                  'focus-visible:outline-none',
                                   isDesktop && 'animate-slide-up',
                                 )}
                                 style={isDesktop ? { animationDelay: `${i * 30}ms`, animationFillMode: 'both' } : undefined}
                               >
-                                <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
-                                <span className="font-medium"><HighlightMatch text={city.name} query={q} /></span>
-                                <span className={cn('text-[#999] ml-auto flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
-                                  Kaupunki
-                                </span>
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectCity(city)}
+                                  onPointerEnter={() => setActiveIndex(globalIdx)}
+                                  role="option"
+                                  aria-selected={isActive}
+                                  className="flex items-center gap-2 flex-1 min-w-0 text-left focus-visible:outline-none"
+                                >
+                                  <MapPin size={isDesktop ? 12 : 14} className="text-[#999] flex-shrink-0" />
+                                  <span className="font-medium"><HighlightMatch text={city.name} query={q} /></span>
+                                  <span className={cn('text-[#999] flex-shrink-0', isDesktop ? 'text-xs' : 'text-sm')}>
+                                    Kaupunki
+                                  </span>
+                                </button>
+                                <Link
+                                  href={`/kaupunki/${CITY_SLUGS.find(c => c.postalPrefixes[0] === city.postalPrefixes[0])?.slug ?? city.name.toLowerCase()}`}
+                                  onClick={(e) => { e.stopPropagation(); closeSearch() }}
+                                  className="flex-shrink-0 p-1 rounded-md hover:bg-[#1a1a1a]/10 transition-colors"
+                                  title={`${city.name} – asuntohinnat`}
+                                >
+                                  <ArrowUpRight size={isDesktop ? 12 : 14} className="text-[#999]" />
+                                </Link>
+                              </div>
                             )
                           })
 
