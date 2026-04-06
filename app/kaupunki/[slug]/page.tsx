@@ -43,17 +43,25 @@ async function getCityData(slug: string) {
     return code && city.postalPrefixes.some(p => code.startsWith(p))
   })
 
-  const areaPrices: CityAreaPrice[] = cityFeatures.map(f => {
-    const props = f.properties as Record<string, unknown>
-    return {
-      area_code: props.area_code as string,
-      name: props.name as string,
-      municipality: props.municipality as string,
-      kerrostalo: props.price_kerrostalo as number | null,
-      rivitalo: props.price_rivitalo as number | null,
-      omakotitalo: props.price_omakotitalo as number | null,
-    }
-  }).filter(a => a.name)
+  // Deduplicate by area_code (Voronoi GeoJSON has multiple cells per postal code)
+  const seenCodes = new Set<string>()
+  const areaPrices: CityAreaPrice[] = cityFeatures
+    .map(f => {
+      const props = f.properties as Record<string, unknown>
+      return {
+        area_code: props.area_code as string,
+        name: props.name as string,
+        municipality: props.municipality as string,
+        kerrostalo: props.price_kerrostalo as number | null,
+        rivitalo: props.price_rivitalo as number | null,
+        omakotitalo: props.price_omakotitalo as number | null,
+      }
+    })
+    .filter(a => {
+      if (!a.name || !a.area_code || seenCodes.has(a.area_code)) return false
+      seenCodes.add(a.area_code)
+      return true
+    })
 
   const median = (arr: number[]) => {
     if (arr.length === 0) return null

@@ -31,7 +31,16 @@ async function getCityPrices() {
       return code && city.postalPrefixes.some(p => code.startsWith(p))
     })
 
-    const prices = cityFeatures
+    // Deduplicate by area_code
+    const seenCodes = new Set<string>()
+    const uniqueFeatures = cityFeatures.filter(f => {
+      const code = f.properties?.area_code as string
+      if (!code || seenCodes.has(code)) return false
+      seenCodes.add(code)
+      return true
+    })
+
+    const prices = uniqueFeatures
       .map(f => f.properties?.price_kerrostalo as number | null)
       .filter((p): p is number => p != null && p > 0)
 
@@ -41,7 +50,7 @@ async function getCityPrices() {
 
     return {
       ...city,
-      areaCount: cityFeatures.length,
+      areaCount: uniqueFeatures.length,
       medianPrice: median,
     }
   })
