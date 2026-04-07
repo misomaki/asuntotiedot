@@ -1,9 +1,10 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { MapPin, ArrowRight, TrendingUp, TrendingDown, Building2, Home, Layers } from 'lucide-react'
+import { MapPin, ArrowRight, TrendingUp, TrendingDown, Building2, Home, Layers, Flame, Snowflake } from 'lucide-react'
 import { getCityBySlug, CITY_SLUGS } from '@/app/lib/citySlugs'
 import { getDataProvider } from '@/app/lib/dataProvider'
+import { getSupabaseAdmin } from '@/app/lib/supabaseClient'
 import { formatNumber } from '@/app/lib/formatters'
 import { CityAISearch } from './CityAISearch'
 
@@ -20,6 +21,15 @@ interface CityAreaPrice {
   kerrostalo: number | null
   rivitalo: number | null
   omakotitalo: number | null
+}
+
+interface AreaTrend {
+  area_code: string
+  name: string
+  currentPrice: number
+  previousPrice: number
+  trendPct: number
+  propertyType: string
 }
 
 interface PageProps {
@@ -87,6 +97,22 @@ async function getCityData(slug: string) {
       return true
     })
 
+  // Also add areas that only have RT/OKT prices (not in KT features)
+  for (const f of (rtGeo?.features ?? [])) {
+    const code = f.properties?.area_code as string
+    if (code && city.postalPrefixes.some(p => code.startsWith(p)) && !seenCodes.has(code)) {
+      seenCodes.add(code)
+      areaPrices.push({
+        area_code: code,
+        name: f.properties?.name as string,
+        municipality: f.properties?.municipality as string,
+        kerrostalo: null,
+        rivitalo: rtPriceMap.get(code) ?? null,
+        omakotitalo: oktPriceMap.get(code) ?? null,
+      })
+    }
+  }
+
   const median = (arr: number[]) => {
     if (arr.length === 0) return null
     const sorted = [...arr].sort((a, b) => a - b)
@@ -103,6 +129,66 @@ async function getCityData(slug: string) {
     .filter(a => a.price != null && a.price > 0)
     .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
 
+  // -----------------------------------------------------------------------
+  // Fetch price trends: compare 2020 vs 2024 (kerrostalo primary)
+  // -----------------------------------------------------------------------
+  const supabase = getSupabaseAdmin()
+  const areaCodes = areaPrices.map(a => a.area_code)
+
+  // Get area IDs for our postal codes
+  const { data: areaRows } = await supabase
+    .from('areas')
+    .select('id, area_code')
+    .in('area_code', areaCodes)
+
+  const areaCodeToId = new Map<string, string>()
+  const areaIdToCode = new Map<string, string>()
+  for (const a of areaRows ?? []) {
+    areaCodeToId.set(a.area_code, a.id)
+    areaIdToCode.set(a.id, a.area_code)
+  }
+
+  const areaIds = [...areaCodeToId.values()]
+
+  // Fetch prices for both years in one query
+  const { data: trendPrices } = await supabase
+    .from('price_estimates')
+    .select('area_id, year, property_type, price_per_sqm_avg')
+    .in('area_id', areaIds)
+    .in('year', [2020, 2024])
+    .eq('property_type', 'kerrostalo')
+    .not('price_per_sqm_avg', 'is', null)
+
+  // Build trend data per area
+  const priceByAreaYear = new Map<string, Map<number, number>>()
+  for (const p of trendPrices ?? []) {
+    const code = areaIdToCode.get(p.area_id)
+    if (!code) continue
+    if (!priceByAreaYear.has(code)) priceByAreaYear.set(code, new Map())
+    priceByAreaYear.get(code)!.set(p.year, Number(p.price_per_sqm_avg))
+  }
+
+  const nameMap = new Map(areaPrices.map(a => [a.area_code, a.name]))
+  const trends: AreaTrend[] = []
+  for (const [code, yearPrices] of priceByAreaYear) {
+    const p2020 = yearPrices.get(2020)
+    const p2024 = yearPrices.get(2024)
+    if (p2020 && p2024 && p2020 > 0) {
+      trends.push({
+        area_code: code,
+        name: nameMap.get(code) ?? code,
+        currentPrice: p2024,
+        previousPrice: p2020,
+        trendPct: ((p2024 - p2020) / p2020) * 100,
+        propertyType: 'kerrostalo',
+      })
+    }
+  }
+
+  trends.sort((a, b) => b.trendPct - a.trendPct)
+  const trendingUp = trends.filter(t => t.trendPct > 0).slice(0, 5)
+  const trendingDown = trends.filter(t => t.trendPct < 0).slice(-3).reverse()
+
   return {
     city,
     areaCount: areaPrices.length,
@@ -113,6 +199,8 @@ async function getCityData(slug: string) {
     },
     topAreas: areasWithPrice.slice(0, 8),
     cheapestAreas: areasWithPrice.slice(-8).reverse(),
+    trendingUp,
+    trendingDown,
     allAreas: areaPrices.sort((a, b) => a.name.localeCompare(b.name, 'fi')),
   }
 }
@@ -129,7 +217,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getCityData(slug)
   const medianPrice = data?.prices.kerrostalo.median
 
-  const title = `${city.name} \u2013 Asuntohinnat${medianPrice ? ` ${formatNumber(medianPrice)} €/m²` : ''}`
+  const title = `${city.name} – Asuntohinnat${medianPrice ? ` ${formatNumber(medianPrice)} €/m²` : ''}`
   const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} alueella. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} €/m².` : ''} Vertaile alueita, tutki hintoja ja löydä unelma-asuntosi.`
 
   return {
@@ -145,7 +233,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       'asuntokauppa',
     ],
     openGraph: {
-      title: `${city.name} \u2013 Asuntohinnat | Neliöt`,
+      title: `${city.name} – Asuntohinnat | Neliöt`,
       description,
     },
     alternates: {
@@ -192,6 +280,76 @@ function PriceCard({ label, icon, median, min, max, count }: {
   )
 }
 
+function TrendCard({ area, rank }: { area: AreaTrend; rank: number }) {
+  const isUp = area.trendPct > 0
+  const absChange = Math.abs(area.trendPct)
+  const priceChange = area.currentPrice - area.previousPrice
+
+  return (
+    <Link
+      href={`/alue/${area.area_code}`}
+      className="group flex items-stretch gap-0 rounded-xl border-2 border-[#1a1a1a] bg-white overflow-hidden shadow-hard-sm hover:translate-y-[-2px] hover:shadow-hard transition-all duration-200"
+    >
+      {/* Rank strip */}
+      <div className={`flex items-center justify-center w-12 flex-shrink-0 ${
+        isUp
+          ? 'bg-gradient-to-b from-[#ff90e8] to-[#ffc900]'
+          : 'bg-gradient-to-b from-[#b8d4e3] to-[#8cc8b8]'
+      }`}>
+        <span className="font-mono font-black text-lg text-white drop-shadow-sm">{rank}</span>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-4 py-3.5 min-w-0">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h4 className="font-display font-bold text-[#1a1a1a] text-sm truncate group-hover:text-pink transition-colors">
+              {area.name}
+            </h4>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="font-mono text-base font-bold text-[#1a1a1a]">
+                {formatNumber(Math.round(area.currentPrice))}
+              </span>
+              <span className="text-xs text-muted-foreground">€/m²</span>
+            </div>
+          </div>
+
+          {/* Trend badge */}
+          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg flex-shrink-0 border ${
+            isUp
+              ? 'bg-[#ff90e8]/10 border-[#ff90e8]/30 text-[#c44da0]'
+              : 'bg-[#8cc8b8]/15 border-[#8cc8b8]/30 text-[#4a8a72]'
+          }`}>
+            {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+            <span className="font-mono font-bold text-sm">
+              {isUp ? '+' : '−'}{absChange.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+
+        {/* Sparkline-style change info */}
+        <div className="flex items-center gap-2 mt-2">
+          <span className="text-[10px] text-muted-foreground font-mono">2020</span>
+          <div className="flex-1 h-1.5 bg-[#f0ede8] rounded-full overflow-hidden relative">
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full ${
+                isUp
+                  ? 'bg-gradient-to-r from-[#ffc900]/60 to-[#ff90e8]'
+                  : 'bg-gradient-to-r from-[#8cc8b8] to-[#b8d4e3]/60'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(15, 50 + area.trendPct))}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-muted-foreground font-mono">2024</span>
+          <span className={`text-[10px] font-mono font-medium ${isUp ? 'text-[#c44da0]' : 'text-[#4a8a72]'}`}>
+            {isUp ? '+' : '−'}{formatNumber(Math.abs(Math.round(priceChange)))} €
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
 function AreaRankingList({ title, icon, areas, variant }: {
   title: string
   icon: React.ReactNode
@@ -221,7 +379,7 @@ function AreaRankingList({ title, icon, areas, variant }: {
                 <span className="text-sm text-[#1a1a1a] group-hover:underline">{area.name}</span>
               </span>
               <span className="font-mono text-sm font-medium text-[#1a1a1a]">
-                {area.price ? `${formatNumber(area.price)} \u20ac` : '\u2013'}
+                {area.price ? `${formatNumber(area.price)} €` : '–'}
               </span>
             </Link>
           </li>
@@ -241,7 +399,7 @@ export default async function CityPage({ params }: PageProps) {
 
   if (!data) notFound()
 
-  const { city, areaCount, prices, topAreas, cheapestAreas, allAreas } = data
+  const { city, areaCount, prices, topAreas, cheapestAreas, trendingUp, trendingDown, allAreas } = data
   const primaryPrice = prices.kerrostalo.median ?? prices.rivitalo.median
 
   return (
@@ -317,7 +475,43 @@ export default async function CityPage({ params }: PageProps) {
           </div>
         </section>
 
-        {/* Area rankings */}
+        {/* Trending areas — popularity by price trend */}
+        {(trendingUp.length > 0 || trendingDown.length > 0) && (
+          <section className="mb-10">
+            <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-1">Hintakehitys 2020–2024</h2>
+            <p className="text-sm text-muted-foreground mb-5">Kerrostalojen neliöhinnan muutos alueittain</p>
+
+            {trendingUp.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Flame size={16} className="text-[#ff90e8]" />
+                  <h3 className="font-display font-bold text-sm text-[#1a1a1a]">Nousussa</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {trendingUp.map((area, i) => (
+                    <TrendCard key={area.area_code} area={area} rank={i + 1} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {trendingDown.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Snowflake size={16} className="text-[#8cc8b8]" />
+                  <h3 className="font-display font-bold text-sm text-[#1a1a1a]">Laskussa</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {trendingDown.map((area, i) => (
+                    <TrendCard key={area.area_code} area={area} rank={i + 1} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Area rankings by price level */}
         <section className="mb-10">
           <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Alueet hintatason mukaan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,46 +537,6 @@ export default async function CityPage({ params }: PageProps) {
             Kuvaile millaista asuntoa etsit — tekoäly hakee sopivat kohteet.
           </p>
           <CityAISearch cityName={city.name} areaCodes={allAreas.map(a => a.area_code)} />
-        </section>
-
-        {/* All areas */}
-        <section className="mb-10">
-          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Kaikki {areaCount} aluetta</h2>
-          <div className="bg-white border-2 border-[#1a1a1a] rounded-xl overflow-hidden shadow-hard-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-[#1a1a1a]/10 bg-[#FFFBF5]">
-                    <th className="text-left px-4 py-3 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">Alue</th>
-                    <th className="text-right px-4 py-3 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">Kerrostalo</th>
-                    <th className="text-right px-4 py-3 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">Rivitalo</th>
-                    <th className="text-right px-4 py-3 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">Omakotitalo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allAreas.map((area, i) => (
-                    <tr key={area.area_code} className={`border-b border-[#1a1a1a]/5 ${i % 2 === 0 ? '' : 'bg-[#FFFBF5]/50'} hover:bg-[#fff5eb] transition-colors`}>
-                      <td className="px-4 py-2.5">
-                        <Link href={`/alue/${area.area_code}`} className="hover:underline text-[#1a1a1a] font-medium">
-                          {area.name}
-                        </Link>
-                        <span className="text-xs text-muted-foreground ml-1.5">{area.area_code}</span>
-                      </td>
-                      <td className="text-right px-4 py-2.5 font-mono text-sm">
-                        {area.kerrostalo ? `${formatNumber(Math.round(area.kerrostalo))}` : '\u2013'}
-                      </td>
-                      <td className="text-right px-4 py-2.5 font-mono text-sm">
-                        {area.rivitalo ? `${formatNumber(Math.round(area.rivitalo))}` : '\u2013'}
-                      </td>
-                      <td className="text-right px-4 py-2.5 font-mono text-sm">
-                        {area.omakotitalo ? `${formatNumber(Math.round(area.omakotitalo))}` : '\u2013'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </section>
 
         {/* CTA */}
