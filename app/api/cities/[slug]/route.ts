@@ -46,13 +46,13 @@ export async function GET(
   for (const f of (rtGeo?.features ?? [])) {
     const code = f.properties?.area_code as string
     if (code && !rtPriceMap.has(code)) {
-      rtPriceMap.set(code, (f.properties?.price as number | null) ?? null)
+      rtPriceMap.set(code, (f.properties?.price_per_sqm_avg as number | null) ?? null)
     }
   }
   for (const f of (oktGeo?.features ?? [])) {
     const code = f.properties?.area_code as string
     if (code && !oktPriceMap.has(code)) {
-      oktPriceMap.set(code, (f.properties?.price as number | null) ?? null)
+      oktPriceMap.set(code, (f.properties?.price_per_sqm_avg as number | null) ?? null)
     }
   }
 

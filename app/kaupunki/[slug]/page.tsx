@@ -50,13 +50,13 @@ async function getCityData(slug: string) {
   for (const f of (rtGeo?.features ?? [])) {
     const code = f.properties?.area_code as string
     if (code && !rtPriceMap.has(code)) {
-      rtPriceMap.set(code, (f.properties?.price as number | null) ?? null)
+      rtPriceMap.set(code, (f.properties?.price_per_sqm_avg as number | null) ?? null)
     }
   }
   for (const f of (oktGeo?.features ?? [])) {
     const code = f.properties?.area_code as string
     if (code && !oktPriceMap.has(code)) {
-      oktPriceMap.set(code, (f.properties?.price as number | null) ?? null)
+      oktPriceMap.set(code, (f.properties?.price_per_sqm_avg as number | null) ?? null)
     }
   }
 
@@ -76,7 +76,7 @@ async function getCityData(slug: string) {
         area_code: areaCode,
         name: props.name as string,
         municipality: props.municipality as string,
-        kerrostalo: (props.price as number | null) ?? null,
+        kerrostalo: (props.price_per_sqm_avg as number | null) ?? null,
         rivitalo: rtPriceMap.get(areaCode) ?? null,
         omakotitalo: oktPriceMap.get(areaCode) ?? null,
       }
