@@ -420,6 +420,15 @@ export default async function CityPage({ params }: PageProps) {
           </p>
         </section>
 
+        {/* AI Search */}
+        <section className="mb-10">
+          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-2">Etsi asuntoja {city.name}sta</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Kuvaile millaista asuntoa etsit — tekoäly hakee sopivat kohteet.
+          </p>
+          <CityAISearch cityName={city.name} areaCodes={allAreas.map(a => a.area_code)} />
+        </section>
+
         {/* Price overview */}
         <section className="mb-10">
           <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Hintataso talotyypeittäin</h2>
@@ -501,15 +510,6 @@ export default async function CityPage({ params }: PageProps) {
               variant="affordable"
             />
           </div>
-        </section>
-
-        {/* AI Search */}
-        <section className="mb-10">
-          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-2">Etsi asuntoja {city.name}sta</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Kuvaile millaista asuntoa etsit — tekoäly hakee sopivat kohteet.
-          </p>
-          <CityAISearch cityName={city.name} areaCodes={allAreas.map(a => a.area_code)} />
         </section>
 
         {/* CTA */}
