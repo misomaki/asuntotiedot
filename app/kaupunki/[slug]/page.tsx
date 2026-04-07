@@ -218,7 +218,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const medianPrice = data?.prices.kerrostalo.median
 
   const title = `${city.name} – Asuntohinnat${medianPrice ? ` ${formatNumber(medianPrice)} €/m²` : ''}`
-  const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} naapurustossa. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} €/m².` : ''} Vertaile naapurustoja, tutki hintoja ja löydä unelma-asuntosi.`
+  const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} alueella. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} €/m².` : ''} Vertaile alueita, tutki hintoja ja löydä unelma-asuntosi.`
 
   return {
     title,
@@ -323,22 +323,10 @@ function TrendCard({ area, rank }: { area: AreaTrend; rank: number }) {
           </div>
         </div>
 
-        {/* Sparkline-style change info */}
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-[10px] text-muted-foreground font-mono">2020</span>
-          <div className="flex-1 h-1.5 bg-[#f0ede8] rounded-full overflow-hidden relative">
-            <div
-              className={`absolute inset-y-0 left-0 rounded-full ${
-                isUp
-                  ? 'bg-gradient-to-r from-[#ffc900]/60 to-[#ff90e8]'
-                  : 'bg-gradient-to-r from-[#8cc8b8] to-[#b8d4e3]/60'
-              }`}
-              style={{ width: `${Math.min(100, Math.max(15, 50 + area.trendPct))}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-muted-foreground font-mono">2024</span>
-          <span className={`text-[10px] font-mono font-medium ${isUp ? 'text-[#c44da0]' : 'text-[#4a8a72]'}`}>
-            {isUp ? '+' : '−'}{formatNumber(Math.abs(Math.round(priceChange)))} €
+        {/* Price change in euros */}
+        <div className="mt-1.5">
+          <span className={`text-xs font-mono ${isUp ? 'text-[#c44da0]' : 'text-[#4a8a72]'}`}>
+            {isUp ? '+' : '−'}{formatNumber(Math.abs(Math.round(priceChange)))} €/m² vuodesta 2020
           </span>
         </div>
       </div>
@@ -428,7 +416,7 @@ export default async function CityPage({ params }: PageProps) {
             Asuntohinnat {city.name}
           </h1>
           <p className="text-lg text-muted-foreground mt-3 max-w-2xl">
-            {city.seoDescription} {areaCount} naapurustoa, jokaisen rakennuksen hinta-arvio.
+            {city.seoDescription} {areaCount} aluetta, jokaisen rakennuksen hinta-arvio.
           </p>
         </section>
 
@@ -464,7 +452,7 @@ export default async function CityPage({ params }: PageProps) {
         {(trendingUp.length > 0 || trendingDown.length > 0) && (
           <section className="mb-10">
             <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-1">Hintakehitys 2020–2024</h2>
-            <p className="text-sm text-muted-foreground mb-5">Kerrostalojen neliöhinnan muutos naapurustoittain</p>
+            <p className="text-sm text-muted-foreground mb-5">Kerrostalojen neliöhinnan muutos alueittain</p>
 
             {trendingUp.length > 0 && (
               <div className="mb-6">
@@ -498,16 +486,16 @@ export default async function CityPage({ params }: PageProps) {
 
         {/* Area rankings by price level */}
         <section className="mb-10">
-          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Naapurustot hintatason mukaan</h2>
+          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Alueet hintatason mukaan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AreaRankingList
-              title="Kalleimmat naapurustot"
+              title="Kalleimmat alueet"
               icon={<TrendingUp size={16} className="text-[#e8917a]" />}
               areas={topAreas}
               variant="expensive"
             />
             <AreaRankingList
-              title="Edullisimmat naapurustot"
+              title="Edullisimmat alueet"
               icon={<TrendingDown size={16} className="text-[#8cc8b8]" />}
               areas={cheapestAreas}
               variant="affordable"
@@ -551,7 +539,7 @@ export default async function CityPage({ params }: PageProps) {
                 addressLocality: city.name,
                 addressCountry: 'FI',
               },
-              description: `Asuntohinnat ${city.name}: ${areaCount} naapurustoa. ${prices.kerrostalo.median ? `Kerrostalojen mediaanihinta ${formatNumber(prices.kerrostalo.median)} €/m².` : ''}`,
+              description: `Asuntohinnat ${city.name}: ${areaCount} aluetta. ${prices.kerrostalo.median ? `Kerrostalojen mediaanihinta ${formatNumber(prices.kerrostalo.median)} €/m².` : ''}`,
               geo: {
                 '@type': 'GeoCoordinates',
                 latitude: city.center[1],
