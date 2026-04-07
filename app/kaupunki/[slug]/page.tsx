@@ -129,8 +129,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getCityData(slug)
   const medianPrice = data?.prices.kerrostalo.median
 
-  const title = `${city.name} \u2013 Asuntohinnat${medianPrice ? ` ${formatNumber(medianPrice)} \u20ac/m\u00b2` : ''}`
-  const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} alueella. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} \u20ac/m\u00b2.` : ''} Vertaile alueita, tutki hintoja ja löydä unelma-asuntosi.`
+  const title = `${city.name} \u2013 Asuntohinnat${medianPrice ? ` ${formatNumber(medianPrice)} €/m²` : ''}`
+  const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} alueella. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} €/m².` : ''} Vertaile alueita, tutki hintoja ja löydä unelma-asuntosi.`
 
   return {
     title,
@@ -178,11 +178,11 @@ function PriceCard({ label, icon, median, min, max, count }: {
         <h3 className="font-display font-bold text-sm text-[#1a1a1a]">{label}</h3>
       </div>
       <div className="font-mono font-bold text-2xl text-[#1a1a1a]">
-        {formatNumber(median)} <span className="text-sm font-normal text-muted-foreground">\u20ac/m\u00b2</span>
+        {formatNumber(median)} <span className="text-sm font-normal text-muted-foreground">€/m²</span>
       </div>
       {min != null && max != null && (
         <div className="text-xs text-muted-foreground mt-1 font-mono">
-          {formatNumber(min)} \u2013 {formatNumber(max)} \u20ac/m\u00b2
+          {formatNumber(min)} – {formatNumber(max)} €/m²
         </div>
       )}
       <div className="text-xs text-muted-foreground mt-2">
@@ -281,7 +281,7 @@ export default async function CityPage({ params }: PageProps) {
             <div className="mt-4 inline-flex items-baseline gap-2 bg-white border-2 border-[#1a1a1a] rounded-xl px-5 py-3 shadow-hard-sm">
               <span className="text-sm text-muted-foreground">Kerrostalojen mediaanihinta</span>
               <span className="font-mono font-bold text-2xl text-[#1a1a1a]">{formatNumber(primaryPrice)}</span>
-              <span className="text-sm text-muted-foreground">\u20ac/m\u00b2</span>
+              <span className="text-sm text-muted-foreground">€/m²</span>
             </div>
           )}
         </section>
@@ -412,7 +412,7 @@ export default async function CityPage({ params }: PageProps) {
                 addressLocality: city.name,
                 addressCountry: 'FI',
               },
-              description: `Asuntohinnat ${city.name}: ${areaCount} aluetta. ${prices.kerrostalo.median ? `Kerrostalojen mediaanihinta ${formatNumber(prices.kerrostalo.median)} \u20ac/m\u00b2.` : ''}`,
+              description: `Asuntohinnat ${city.name}: ${areaCount} aluetta. ${prices.kerrostalo.median ? `Kerrostalojen mediaanihinta ${formatNumber(prices.kerrostalo.median)} €/m².` : ''}`,
               geo: {
                 '@type': 'GeoCoordinates',
                 latitude: city.center[1],
