@@ -218,7 +218,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const medianPrice = data?.prices.kerrostalo.median
 
   const title = `${city.name} – Asuntohinnat${medianPrice ? ` ${formatNumber(medianPrice)} €/m²` : ''}`
-  const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} alueella. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} €/m².` : ''} Vertaile alueita, tutki hintoja ja löydä unelma-asuntosi.`
+  const description = `${city.name}: asuntojen hinta-arviot ${data?.areaCount ?? ''} naapurustossa. ${medianPrice ? `Kerrostalojen mediaanihinta ${formatNumber(medianPrice)} €/m².` : ''} Vertaile naapurustoja, tutki hintoja ja löydä unelma-asuntosi.`
 
   return {
     title,
@@ -416,7 +416,7 @@ export default async function CityPage({ params }: PageProps) {
             Asuntohinnat {city.name}
           </h1>
           <p className="text-lg text-muted-foreground mt-3 max-w-2xl">
-            {city.seoDescription} {areaCount} aluetta, jokaisen rakennuksen hinta-arvio.
+            {city.seoDescription} {areaCount} naapurustoa, jokaisen rakennuksen hinta-arvio.
           </p>
         </section>
 
@@ -461,7 +461,7 @@ export default async function CityPage({ params }: PageProps) {
         {(trendingUp.length > 0 || trendingDown.length > 0) && (
           <section className="mb-10">
             <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-1">Hintakehitys 2020–2024</h2>
-            <p className="text-sm text-muted-foreground mb-5">Kerrostalojen neliöhinnan muutos alueittain</p>
+            <p className="text-sm text-muted-foreground mb-5">Kerrostalojen neliöhinnan muutos naapurustoittain</p>
 
             {trendingUp.length > 0 && (
               <div className="mb-6">
@@ -495,16 +495,16 @@ export default async function CityPage({ params }: PageProps) {
 
         {/* Area rankings by price level */}
         <section className="mb-10">
-          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Alueet hintatason mukaan</h2>
+          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-4">Naapurustot hintatason mukaan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AreaRankingList
-              title="Kalleimmat alueet"
+              title="Kalleimmat naapurustot"
               icon={<TrendingUp size={16} className="text-[#e8917a]" />}
               areas={topAreas}
               variant="expensive"
             />
             <AreaRankingList
-              title="Edullisimmat alueet"
+              title="Edullisimmat naapurustot"
               icon={<TrendingDown size={16} className="text-[#8cc8b8]" />}
               areas={cheapestAreas}
               variant="affordable"
@@ -539,7 +539,7 @@ export default async function CityPage({ params }: PageProps) {
                 addressLocality: city.name,
                 addressCountry: 'FI',
               },
-              description: `Asuntohinnat ${city.name}: ${areaCount} aluetta. ${prices.kerrostalo.median ? `Kerrostalojen mediaanihinta ${formatNumber(prices.kerrostalo.median)} €/m².` : ''}`,
+              description: `Asuntohinnat ${city.name}: ${areaCount} naapurustoa. ${prices.kerrostalo.median ? `Kerrostalojen mediaanihinta ${formatNumber(prices.kerrostalo.median)} €/m².` : ''}`,
               geo: {
                 '@type': 'GeoCoordinates',
                 latitude: city.center[1],
