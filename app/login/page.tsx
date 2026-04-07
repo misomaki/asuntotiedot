@@ -40,7 +40,7 @@ function LoginContent() {
 
     try {
       if (mode === 'signup') {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,6 +48,15 @@ function LoginContent() {
           },
         })
         if (signUpError) throw signUpError
+
+        // If user was auto-confirmed (no email confirmation required), log in directly
+        if (signUpData.session) {
+          router.push('/')
+          router.refresh()
+          return
+        }
+
+        // Email confirmation is required — show the "check your email" screen
         setConfirmationSent(true)
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
