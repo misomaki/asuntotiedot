@@ -42,22 +42,22 @@ export const metadata: Metadata = {
     template: "%s | Neliöt",
   },
   description:
-    "Neliöt näyttää jokaisen asuinrakennuksen hinta-arvion ja yhdistää ostajat suoraan myyjiin — ilman välittäjää. 266 000 kohdetta, läpinäkyvät hinnat, avoin data.",
+    "Neliöt näyttää jokaisen asuinrakennuksen hinta-arvion kartalla. 266 000 kohdetta, läpinäkyvät hinnat, avoin data. Helsinki, Tampere, Turku, Oulu ja muut.",
   keywords: [
     "asuntohinnat",
+    "asuntohinnat kartalla",
     "Suomi",
-    "kartta",
     "neliöhinta",
     "neliöt",
     "hinta-arvio",
-    "asuntokauppa",
-    "ilman välittäjää",
+    "asunnon hinta-arvio",
+    "neliöhinnat Helsinki",
   ],
   authors: [{ name: "Neliöt" }],
   openGraph: {
-    title: "Neliöt \u2013 Löydä koti, jota et tiennyt etsiväsi",
+    title: "Neliöt \u2013 Asuntohinnat kartalla",
     description:
-      "266 000 asuinrakennuksen hinta-arviot, läpinäkyvä hinnan muodostus ja suora yhteys ostajan ja myyjän välillä — ilman välikäsiä.",
+      "266 000 asuinrakennuksen hinta-arviot kartalla. Läpinäkyvä hinnanmuodostus avoimeen dataan perustuen.",
     type: "website",
     locale: "fi_FI",
     siteName: "Neliöt",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Neliöt \u2013 Löydä koti, jota et tiennyt etsiväsi",
+    title: "Neliöt \u2013 Asuntohinnat kartalla",
     description: "266 000 asuinrakennuksen hinta-arviot kartalla. Läpinäkyvät hinnat, avoin data.",
   },
   alternates: {
@@ -85,8 +85,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {process.env.NEXT_PUBLIC_SUPABASE_URL && (
           <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
         )}
@@ -95,18 +93,36 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: 'Neliöt',
-              url: SITE_URL,
-              description: 'Jokaisen asuinrakennuksen hinta-arvio kartalla — ilman välittäjää.',
-              potentialAction: {
-                '@type': 'SearchAction',
-                target: {
-                  '@type': 'EntryPoint',
-                  urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+              '@graph': [
+                {
+                  '@type': 'WebSite',
+                  '@id': `${SITE_URL}/#website`,
+                  name: 'Neliöt',
+                  url: SITE_URL,
+                  inLanguage: 'fi',
+                  description: 'Jokaisen asuinrakennuksen hinta-arvio kartalla.',
+                  potentialAction: {
+                    '@type': 'SearchAction',
+                    target: {
+                      '@type': 'EntryPoint',
+                      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+                    },
+                    'query-input': 'required name=search_term_string',
+                  },
                 },
-                'query-input': 'required name=search_term_string',
-              },
+                {
+                  '@type': 'Organization',
+                  '@id': `${SITE_URL}/#organization`,
+                  name: 'Neliöt',
+                  url: SITE_URL,
+                  description: 'Suomalainen asuntohintapalvelu — 266 000 asuinrakennuksen hinta-arviot avoimella datalla.',
+                  logo: {
+                    '@type': 'ImageObject',
+                    url: `${SITE_URL}/icon.svg`,
+                  },
+                  sameAs: [],
+                },
+              ],
             }),
           }}
         />

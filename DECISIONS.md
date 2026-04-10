@@ -5,6 +5,22 @@
 
 ---
 
+## 2026-04: GTM UI-strippaus — fokus selauskokemukseen
+
+**Päätös:** Poistetaan UI:sta markkinapaikka (MarketplaceSignals), autentikaatio (UserMenu), ja AI-haku (Header-integraatio). Backend-infrastruktuuri jätetään paikoilleen uudelleenkytkentää varten. Lisätään kaupunkipaneeli (CityPanel) sivupalkkiin ja hakuvinkkidropdown Headeriin.
+
+**Miksi:** MVP-lanseeraus keskittyy selaus-käyttötapaukseen: kartta, hinta-arviot, aluetilastot. Markkinapaikka ja AI-haku ovat arvokkaita mutta lisäävät monimutkaisuutta ja vaativat vielä viimeistelyä (auth-flow bugit, GDPR-suostumukset). Parempi julkaista riisuttu versio nopeasti ja kerätä palautetta kuin odottaa kaiken valmistumista. Backend pidetään ehjänä jotta uudelleenkytkentä on triviaali.
+
+---
+
+## 2026-04: Kaupunkipaneeli sivupalkkiin (CityPanel)
+
+**Päätös:** Kaupunkihaku avaa CityPanel-overlayn kartalle samaan sidebaariin kuin postinumeroalueet. MapContext saa uuden `selectedCity`-tilan.
+
+**Miksi:** Kaupunkisivut (`/kaupunki/[slug]`) ovat hyödyllisiä mutta siirtävät käyttäjän pois kartalta. Sidebar-paneeli pitää käyttäjän kartalla ja näyttää olennaisimman datan (hintatiedot talotyypeittäin, kalleimmat/edullisimmat naapurustot). Naapuruston klikkaus paneelissa siirtyy suoraan aluetilastoihin. Sama pattern kuin selectedArea → StatsPanel.
+
+---
+
 ## 2026-04: AI-haku 2-vaiheinen arkkitehtuuri
 
 **Päätös:** Claude Haiku parsii luonnollisen kielen → strukturoidut filtterit, sitten palvelin hakee rakennukset SQL:llä.

@@ -2,9 +2,8 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Search, X, ChevronDown, MapPin, Navigation, Sparkles, ArrowUpRight } from 'lucide-react'
+import { Search, X, ChevronDown, MapPin, Navigation, ArrowUpRight } from 'lucide-react'
 import { useMapContext } from '@/app/contexts/MapContext'
-import { useAISearch } from '@/app/contexts/AISearchContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { useMapData } from '@/app/hooks/useMapData'
 import { LogoMark } from '@/app/components/brand/LogoMark'
@@ -12,7 +11,7 @@ import { CITIES, CityConfig } from '@/app/lib/cities'
 import { CITY_SLUGS } from '@/app/lib/citySlugs'
 import { cn } from '@/app/lib/utils'
 import { searchAddresses, type GeocodingResult } from '@/app/lib/geocoding'
-import { UserMenu } from '@/app/components/UserMenu'
+import { HelpCircle } from 'lucide-react'
 import { trackAreaClick, trackCityClick, trackAddressClick, trackFilterChange, trackSearch } from '@/app/lib/analytics'
 
 // ---------------------------------------------------------------------------
@@ -80,12 +79,11 @@ export function Header() {
     filters,
     updateFilter,
     setSelectedArea,
+    setSelectedCity,
     setIsSidebarOpen,
     viewport: { zoom: currentZoom },
     flyTo,
   } = useMapContext()
-
-  const { search: aiSearch, isLoading: isAILoading } = useAISearch()
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -257,11 +255,22 @@ export function Header() {
     [flyTo, closeSearch]
   )
 
-  // Select a city from search results — fly to its bounding box
+  // Select a city from search results — open city panel + fly to it
   const handleSelectCity = useCallback(
     (city: CityConfig) => {
       closeSearch()
       trackCityClick({ cityName: city.name })
+
+      // Find the CitySlugConfig for this city (to open the panel)
+      const citySlug = CITY_SLUGS.find(c =>
+        c.postalPrefixes[0] === city.postalPrefixes[0]
+      )
+
+      if (citySlug) {
+        setSelectedArea(null)
+        setSelectedCity(citySlug)
+        setIsSidebarOpen(true)
+      }
 
       const [west, south, east, north] = city.bbox
       flyTo({
@@ -270,7 +279,7 @@ export function Header() {
         zoom: 12,
       })
     },
-    [flyTo, closeSearch]
+    [flyTo, closeSearch, setSelectedArea, setSelectedCity, setIsSidebarOpen]
   )
 
   // Select an area from search results
@@ -372,20 +381,11 @@ export function Header() {
           selectResultAt(activeIndex)
         }
       }
-      // If no standard results but query looks like natural language, trigger AI search
-      if (e.key === 'Enter' && !cityResults.length && !searchResults.length && !filteredAddressResults.length) {
-        const q = searchQuery.trim()
-        if (q.length >= 5 && q.includes(' ')) {
-          closeSearch()
-          aiSearch(q)
-          return
-        }
-      }
       if (e.key === 'Escape') {
         closeSearch()
       }
     },
-    [allResults, activeIndex, selectResultAt, closeSearch, cityResults, searchResults, filteredAddressResults, searchQuery, aiSearch]
+    [allResults, activeIndex, selectResultAt, closeSearch]
   )
 
   // Close dropdowns when clicking/tapping outside
@@ -419,6 +419,8 @@ export function Header() {
 
   const showSearchDropdown =
     isSearchFocused && searchQuery.trim().length > 0
+  const showSearchHint =
+    isSearchFocused && searchQuery.trim().length === 0
   const hasAnyResults = cityResults.length > 0 || searchResults.length > 0 || filteredAddressResults.length > 0
   const showNoResults =
     showSearchDropdown && !hasAnyResults && !isAddressLoading
@@ -686,40 +688,39 @@ export function Header() {
                         })()}
                       </>
                     )}
-                    {/* AI search option — show when query looks like natural language */}
-                    {searchQuery.trim().length >= 5 && searchQuery.trim().includes(' ') && (
-                      <>
-                        <div className="border-t border-[#e5e5e5]" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const q = searchQuery.trim()
-                            closeSearch()
-                            aiSearch(q)
-                          }}
-                          disabled={isAILoading}
-                          className={cn(
-                            'w-full px-3 text-left',
-                            'flex items-center gap-2',
-                            isDesktop ? 'py-2.5 text-xs' : 'py-3 text-sm',
-                            'text-[#1a1a1a]',
-                            'hover:bg-yellow/20 transition-colors',
-                            'focus-visible:outline-none focus-visible:bg-yellow/20',
-                            'disabled:opacity-50',
-                          )}
-                        >
-                          <Sparkles size={isDesktop ? 13 : 15} className="text-yellow flex-shrink-0" />
-                          <span className="flex-1">
-                            <span className="font-medium">Hae tekoälyllä</span>
-                            <span className="text-[#999] ml-1.5 truncate">
-                              &quot;{searchQuery.trim().length > 30
-                                ? searchQuery.trim().slice(0, 30) + '...'
-                                : searchQuery.trim()}&quot;
-                            </span>
-                          </span>
-                        </button>
-                      </>
+                  </div>
+                )}
+
+                {/* Search hint — show when focused but empty */}
+                {showSearchHint && (
+                  <div
+                    className={cn(
+                      'absolute top-full left-0 right-0 mt-1.5 z-50',
+                      'rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
+                      'shadow-hard overflow-hidden',
+                      'animate-fade-in',
                     )}
+                  >
+                    <div className={cn(
+                      'px-3 text-muted-foreground',
+                      isDesktop ? 'py-2.5 text-xs' : 'py-3 text-sm',
+                    )}>
+                      <p className="font-medium text-[#1a1a1a]/70">Kokeile hakea</p>
+                      <div className="mt-1.5 space-y-1">
+                        <p>
+                          <span className="font-mono text-pink">Helsinki</span>
+                          {' '}— kaupungin hintatiedot
+                        </p>
+                        <p>
+                          <span className="font-mono text-pink">00100</span>
+                          {' '}— postinumeroalueen tilastot
+                        </p>
+                        <p>
+                          <span className="font-mono text-pink">Mannerheimintie 1</span>
+                          {' '}— osoitehaku
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -781,8 +782,20 @@ export function Header() {
               )}
             </div>
 
-            {/* User menu */}
-            <UserMenu />
+            {/* Info link */}
+            <Link
+              href="/faq"
+              aria-label="Tietoa palvelusta"
+              className={cn(
+                'neo-press',
+                'h-10 md:h-9 w-10 md:w-9 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
+                'shadow-hard-sm hover:bg-pink-baby transition-colors',
+                'flex items-center justify-center',
+                'flex-shrink-0'
+              )}
+            >
+              <HelpCircle size={isDesktop ? 14 : 16} className="text-[#1a1a1a]" />
+            </Link>
           </div>
         </div>
 

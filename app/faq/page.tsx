@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, ChevronDown, Building2, TrendingUp, Layers, HandCoins, Eye, Sparkles } from 'lucide-react'
+import { MapPin, ChevronDown, Building2, TrendingUp, Layers } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
 import { trackFaqAccordion } from '@/app/lib/analytics'
 import { useInView } from '@/app/hooks/useInView'
@@ -23,21 +23,6 @@ const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
     icon: Layers,
     title: 'Läpinäkyvä hinnan muodostus',
     description: 'Hinta-arvio ei ole yksi numero. Näet erikseen, miten rakennusvuosi, vesistön läheisyys, sijainti, koko ja aluekerroin vaikuttavat — ja ymmärrät, miksi naapuritalo maksaa eri verran.',
-  },
-  {
-    icon: HandCoins,
-    title: 'Myy ilman välittäjää',
-    description: 'Lisää osoitteesi asetuksissa ja merkitse asuntosi myyntiin — kiinnostuneet ostajat löytävät sinut suoraan kartalta. Säästät välityspalkkion — tyypillisesti 3–5 % kauppahinnasta.',
-  },
-  {
-    icon: Eye,
-    title: 'Löydä kohde ennen muita',
-    description: 'Näetkö talon, joka kiinnostaa? Merkitse se. Jos omistaja harkitsee myyntiä, yhteys syntyy — ennen kuin kohde ilmestyy muualle.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Kuvaa unelma-asuntosi omin sanoin',
-    description: '"Kolmio Kalliossa lähellä metroa alle 5 000 €/m²" — tekoäly etsii kartalta rakennukset, jotka vastaavat kuvaustasi.',
   },
   {
     icon: TrendingUp,
@@ -73,14 +58,14 @@ const FAQ_ITEMS: FAQItem[] = [
     question: 'Miten Neliöt eroaa perinteisistä asuntoportaaleista?',
     answer: [
       'Asuntoportaaleissa näet vain kohteet, jotka joku on päättänyt laittaa myyntiin — välittäjän asettamalla hinnalla. Neliöissä näet jokaisen rakennuksen riippumatta siitä, onko se myynnissä vai ei.',
-      'Voit ilmaista kiinnostuksesi mihin tahansa rakennukseen kartalla. Myyjänä lisäät osoitteesi asetuksissa ja merkitset asuntosi myyntiin — ilman välittäjää ja ilman välityspalkkiota.',
+      'Näet läpinäkyvästi, miten hinta-arvio muodostuu — rakennusvuosi, sijainti, vesistön läheisyys ja alueen hintataso eriteltynä.',
     ],
   },
   {
     question: 'Miten hinta-arviot lasketaan?',
     answer: [
       'Jokaisen rakennuksen hinta-arvio perustuu kuuteen tekijään:',
-      '1. Perushinta — Tilastokeskuksen toteutuneet kauppahinnat (€/m²) postinumero- ja talotyyppitasolla.',
+      '1. Perushinta — Kerros- ja rivitaloille Tilastokeskuksen toteutuneet kauppahinnat (€/m²). Omakotitaloille Maanmittauslaitoksen kauppahintarekisterin (KHR) todelliset kiinteistökauppahinnat.',
       '2. Ikäkerroin — Rakennusvuosi vaikuttaa hintaan U-käyrämäisesti: uudisrakentaminen ja historialliset talot ovat arvostetumpia, kun taas 1960–80-luvun elementtirakentaminen on edullisinta.',
       '3. Vesistökerroin — Etäisyys lähimpään järveen tai mereen nostaa hintaa jopa 35 %.',
       '4. Kerroskerroin — Esimerkiksi yksikerroksisissa rivitaloissa ja korkeissa kerrostaloissa on pieni preemio.',
@@ -89,20 +74,12 @@ const FAQ_ITEMS: FAQItem[] = [
     ],
   },
   {
-    question: 'Miten osto- ja myyntisignaalit toimivat?',
-    answer: [
-      'Ostajana klikkaat rakennusta kartalla ja merkitset kiinnostuksesi — voit kertoa, millaista asuntoa etsit.',
-      'Myyjänä lisäät asuntosi osoitteen asetuksissa ja merkitset sen myyntiin yhdellä napilla. Kiinnostuneet ostajat näkevät ilmoituksesi suoraan kartalla.',
-      'Signaalit näkyvät kartalla anonyymisti: muut näkevät, että rakennuksessa on kiinnostuneita tai myyntiaikeita. Osto-kiinnostukset ovat voimassa 90 päivää, myynti-ilmoitukset 180 päivää.',
-    ],
-  },
-  {
     question: 'Mistä data tulee?',
     answer: [
       'Tilastokeskus (Paavo & StatFin) — Postinumeroalueiden rajat, väestötiedot ja toteutuneet asuntokauppahinnat. CC BY 4.0.',
       'OpenStreetMap — Rakennusten pohjapiirrokset kartalla.',
       'SYKE Ryhti-rekisteri — Rakennusvuosi, kerrosluku, asuntomäärä ja käyttötarkoitus. CC BY 4.0.',
-      'Maanmittauslaitos — Osoitetiedot rakennuksille.',
+      'Maanmittauslaitos — Osoitetiedot rakennuksille sekä kauppahintarekisterin (KHR) kiinteistökauppahinnat omakotitaloille. CC BY 4.0.',
     ],
   },
 ]
@@ -446,8 +423,7 @@ export default function FAQPage() {
               )}
             >
               Neliöt näyttää jokaisen asuinrakennuksen hinta-arvion ja sen muodostavat tekijät — avoimesti ja
-              läpinäkyvästi. Kun löydät kiinnostavan kohteen, voit tavoittaa myyjän suoraan.
-              Ilman välittäjää, ilman välityspalkkiota.
+              läpinäkyvästi. Vertaile alueita, tutki hintakehitystä ja ymmärrä, mistä asunnon hinta muodostuu.
             </p>
           </div>
         </section>
@@ -497,7 +473,7 @@ export default function FAQPage() {
               featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             )}
           >
-            Avoin data, läpinäkyvät hinnat ja suora yhteys ostajan ja myyjän välillä.
+            Avoin data, läpinäkyvät hinnat ja 266 000 rakennuksen hinta-arviot.
           </p>
           <div className="mt-8 md:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((feature, i) => {
@@ -591,7 +567,7 @@ export default function FAQPage() {
               faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             )}
           >
-            Hinnoittelusta, markkinapaikasta ja datalähteistä.
+            Hinnoittelusta, algoritmista ja datalähteistä.
           </p>
 
           <div className="mt-8 md:mt-10 space-y-2.5">
@@ -611,10 +587,10 @@ export default function FAQPage() {
             )}
           >
             <h2 className="text-lg md:text-xl font-display font-bold text-[#1a1a1a]">
-              Löydä kohde, jota kukaan ei vielä myy.
+              Mitä naapuritalosi maksaa?
             </h2>
             <p className="text-sm md:text-base text-muted-foreground mt-2 max-w-md mx-auto">
-              Klikkaa rakennusta, tutki hinnan muodostuminen ja ota suoraan yhteyttä — ilman välikäsiä.
+              Klikkaa rakennusta kartalla ja näe hinta-arvio sekä sen muodostavat tekijät.
             </p>
             <div className="mt-5">
               <Link
@@ -632,7 +608,7 @@ export default function FAQPage() {
       {/* Footer */}
       <footer className="border-t-2 border-[#1a1a1a]/10 bg-[#FFFBF5] py-6">
         <div className="max-w-4xl mx-auto px-4 text-xs text-muted-foreground space-y-2">
-          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: OpenStreetMap | SYKE Ryhti (CC BY 4.0)</p>
+          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: MML Maastotietokanta (CC BY 4.0) | SYKE Ryhti (CC BY 4.0)</p>
           <p>
             <Link href="/tietosuoja" className="underline underline-offset-2 hover:text-[#1a1a1a] transition-colors">Tietosuojaseloste</Link>
             {' · '}

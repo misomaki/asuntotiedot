@@ -1,12 +1,12 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Tietoa palvelusta',
-  description: 'Neliöt yhdistää ostajat ja myyjät suoraan — ilman välittäjää. Tutustu palveluun, hinta-arvioalgoritmiin ja markkinapaikkaan.',
-  keywords: ['neliöt', 'hinta-arvio', 'asuntokauppa', 'ilman välittäjää', 'asuntohinnat', 'markkinapaikka'],
+  title: 'Miten hinta-arviot lasketaan? – UKK',
+  description: 'Neliöt laskee jokaisen asuinrakennuksen hinta-arvion kuuden tekijän perusteella: perushinta, ikäkerroin, vesistökerroin, kerroskerroin, kokokerroin ja aluekerroin. Data: Tilastokeskus, MML ja SYKE.',
+  keywords: ['hinta-arvio', 'laskentamenetelmä', 'asuntohinnat', 'neliöhinta', 'algoritmi', 'Tilastokeskus', 'avoin data'],
   openGraph: {
-    title: 'Tietoa palvelusta – Neliöt',
-    description: 'Tutustu palveluun, hinta-arvioalgoritmiin ja markkinapaikkaan.',
+    title: 'Miten hinta-arviot lasketaan? – Neliöt',
+    description: 'Kuuden tekijän hinta-arvioalgoritmi avoimeen dataan perustuen. 266 000 asuinrakennusta.',
   },
   alternates: {
     canonical: '/faq',

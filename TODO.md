@@ -14,10 +14,7 @@
 - [ ] Lisää Etuovi-dataa neighborhood factoreihin — harvan datan alueet (68 high, tarvitaan lisää)
 - [ ] Cookie consent + GDPR-yhteensopivuus (CookieConsentBanner komponentti kesken)
 - [ ] Käyttöehdot- ja tietosuojasivut (`/kayttoehdot`, `/tietosuoja` — tiedostot luotu, sisältö?)
-- [ ] Asetukset-sivu (`/asetukset` — luotu, viimeistely)
-- [ ] Auth flow: salasanan reset (`/auth/reset-password`, `/auth/update-password` — luotu)
-- [ ] Auth flow: tunnuksen luonnin varmistussähköposti ei lähde — korjaa Supabase email config
-- [ ] Asiakastukisähköpostin (tietosuoja@neliohinnat.fi) lisäys käyttöliittymään (footer, asetukset, tietosuojasivu)
+- [ ] Asiakastukisähköpostin (tietosuoja@neliohinnat.fi) lisäys käyttöliittymään (footer, tietosuojasivu)
 
 ## Next
 
@@ -26,6 +23,9 @@
 - [ ] SEO: Lähetä sitemap Google Search Consoleen
 - [x] MML Tilastopalvelu REST API -integraatio — OKT-toteutuneet kauppahinnat postinumeroittain (avoin, ilmainen, 1 457 aluetta)
 - [ ] Ota yhteyttä MML:ään (verkkopalvelu@maanmittauslaitos.fi) uudesta Kiinteistökauppojen kyselypalvelusta (OGC API Features, tuotanto 06/2026) — hae beta-testaajaksi, selvitä käyttölupaehdot
+- [ ] Asetukset-sivu (`/asetukset` — luotu, viimeistely) — vaatii auth-UI:n uudelleenkytkennän
+- [ ] Markkinapaikka-UI:n uudelleenkytkentä (MarketplaceSignals BuildingPaneliin, UserMenu, AI-haku Header-integraatio)
+- [ ] Auth flow: salasanan reset, varmistussähköposti — korjaa ennen marketplace-uudelleenkytkentää
 - [ ] Premium-ominaisuuksien paywall (freemium-malli: vertailu, trendit, AI-haku)
 - [ ] Markkinapaikan laajentaminen — ostaja-myyjä viestintä
 - [ ] Energiatodistusdata (ARA-rekisteri, ei avoin — selvitä saatavuus)
@@ -69,3 +69,7 @@
 - [x] Osoitehaku (Nominatim geocoding) (2026-04)
 - [x] MML-osoitedatan matchaus rakennuksiin (91% kattavuus) (2026-03)
 - [x] Capacitor-konfigurointi iOS/Android (2026-03)
+- [x] GTM UI-strippaus — marketplace, auth, AI-haku piilotettu, FAQ päivitetty (2026-04)
+- [x] Kaupunkipaneeli sivupalkkiin — kaupunkihaku avaa CityPanel-overlayn kartalle (2026-04)
+- [x] Hakuvinkkidropdown — opastaa käyttäjää hakemaan kaupunkeja, postinumeroita, osoitteita (2026-04)
+- [x] FAQ: korjattu lähdeosio (OpenStreetMap → MML Maastotietokanta) (2026-04)

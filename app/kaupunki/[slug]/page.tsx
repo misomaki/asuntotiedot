@@ -8,7 +8,7 @@ import { getSupabaseAdmin } from '@/app/lib/supabaseClient'
 import { formatNumber } from '@/app/lib/formatters'
 import { CityAISearch } from './CityAISearch'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 86400 // ISR: revalidate every 24h
 
 // ---------------------------------------------------------------------------
 // Types
@@ -532,8 +532,9 @@ export default async function CityPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'Place',
+              '@type': 'City',
               name: city.name,
+              url: `https://neliohinnat.fi/kaupunki/${slug}`,
               address: {
                 '@type': 'PostalAddress',
                 addressLocality: city.name,
@@ -545,6 +546,20 @@ export default async function CityPage({ params }: PageProps) {
                 latitude: city.center[1],
                 longitude: city.center[0],
               },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://neliohinnat.fi' },
+                { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://neliohinnat.fi/kaupungit' },
+                { '@type': 'ListItem', position: 3, name: city.name },
+              ],
             }),
           }}
         />

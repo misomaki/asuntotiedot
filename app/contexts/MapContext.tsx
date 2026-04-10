@@ -9,6 +9,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import type { CitySlugConfig } from "@/app/lib/citySlugs";
 
 /** Viewport state for the map camera */
 interface MapViewport {
@@ -25,8 +26,6 @@ interface SelectedArea {
   areaCode: string;
   name: string;
 }
-
-/** Selected building ID (for building detail panel) */
 
 /** Active filter state */
 interface MapFilters {
@@ -60,6 +59,8 @@ interface MapContextValue {
   setIsSidebarOpen: (open: boolean) => void;
   selectedBuilding: string | null;
   setSelectedBuilding: (id: string | null) => void;
+  selectedCity: CitySlugConfig | null;
+  setSelectedCity: (city: CitySlugConfig | null) => void;
   flyTo: FlyToFn;
   setFlyTo: (fn: FlyToFn) => void;
 }
@@ -163,6 +164,7 @@ export function MapProvider({ children }: MapProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<CitySlugConfig | null>(null);
   const flyToRef = useRef<FlyToFn>(() => {});
   const flyToRegistered = useRef(false);
   const flyTo: FlyToFn = useCallback((opts) => {
@@ -249,6 +251,8 @@ export function MapProvider({ children }: MapProviderProps) {
     setIsSidebarOpen,
     selectedBuilding,
     setSelectedBuilding,
+    selectedCity,
+    setSelectedCity,
     flyTo,
     setFlyTo,
   };

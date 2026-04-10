@@ -6,6 +6,7 @@ import { useAreaStats } from '@/app/hooks/useAreaStats'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { StatsPanel } from '@/app/components/sidebar/StatsPanel'
 import { BuildingPanel } from '@/app/components/sidebar/BuildingPanel'
+import { CityPanel } from '@/app/components/sidebar/CityPanel'
 import { ComparisonPanel } from '@/app/components/comparison/ComparisonPanel'
 import { Sheet } from '@/app/components/ui/sheet'
 import { X } from 'lucide-react'
@@ -37,6 +38,8 @@ export function Sidebar() {
     setIsSidebarOpen,
     selectedBuilding,
     setSelectedBuilding,
+    selectedCity,
+    setSelectedCity,
     filters,
   } = useMapContext()
 
@@ -51,11 +54,12 @@ export function Sidebar() {
   const hasSelectedArea = selectedArea !== null
   const hasComparedArea = comparedArea !== null
   const hasSelectedBuilding = selectedBuilding !== null
+  const hasSelectedCity = selectedCity !== null
   const isComparisonReady = isCompareMode && hasSelectedArea && hasComparedArea
   const isWaitingForSecondArea = isCompareMode && !hasSelectedArea && hasComparedArea
   const isOpen =
     isSidebarOpen &&
-    (hasSelectedArea || isCompareMode)
+    (hasSelectedArea || hasSelectedCity || isCompareMode)
 
   // Track panel opens
   const prevOpenRef = useRef(false)
@@ -77,6 +81,7 @@ export function Sidebar() {
   function handleClose() {
     setIsSidebarOpen(false)
     setSelectedArea(null)
+    setSelectedCity(null)
     setSelectedBuilding(null)
     setComparedArea(null)
     setIsCompareMode(false)
@@ -123,6 +128,11 @@ export function Sidebar() {
           </button>
         </div>
       )
+    }
+
+    // City mode: show city panel
+    if (hasSelectedCity && !hasSelectedArea) {
+      return <CityPanel city={selectedCity} />
     }
 
     // Normal mode: show stats panel

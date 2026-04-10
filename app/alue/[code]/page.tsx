@@ -11,7 +11,7 @@ import {
 import type { AreaWithStats } from '@/app/types'
 import { MapPin, ArrowRight, Users, GraduationCap, Briefcase, Home, TrendingUp } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 86400 // ISR: revalidate every 24h
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -100,11 +100,31 @@ export default async function AreaPage({ params }: PageProps) {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Navigaatio">
+          <Link href="/" className="hover:underline">Neliöt</Link>
+          <span>/</span>
+          <Link href="/kaupungit" className="hover:underline">Kaupungit</Link>
+          <span>/</span>
+          <Link href={`/kaupunki/${area.municipality?.toLowerCase()}`} className="hover:underline">{area.municipality}</Link>
+          <span>/</span>
+          <span className="text-[#1a1a1a]">{area.name}</span>
+        </nav>
+
         {/* Hero */}
         <div>
           <p className="text-sm text-muted-foreground font-mono">{area.area_code}</p>
           <h1 className="text-3xl font-display font-black text-[#1a1a1a] mt-1">{area.name}</h1>
           <p className="text-lg text-muted-foreground mt-1">{area.municipality}</p>
+
+          {/* Declarative opening sentence for SEO/AI citability */}
+          {primaryPriceValue != null && primaryPriceValue > 0 && (
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+              {area.name} ({area.area_code}) sijaitsee {area.municipality}ssa.
+              Alueen asuntojen mediaanineliöhinta on {formatNumber(primaryPriceValue)} €/m² vuonna 2024.
+              Tiedot perustuvat Tilastokeskuksen toteutuneisiin kauppahintoihin.
+            </p>
+          )}
 
           {primaryPriceValue != null && primaryPriceValue > 0 && (
             <div className="mt-4 inline-flex items-baseline gap-2 bg-pink-pale border-2 border-[#1a1a1a] rounded-xl px-5 py-3 shadow-hard-sm">
@@ -186,6 +206,7 @@ export default async function AreaPage({ params }: PageProps) {
               '@context': 'https://schema.org',
               '@type': 'Place',
               name: `${area.name} (${area.area_code})`,
+              url: `https://neliohinnat.fi/alue/${area.area_code}`,
               address: {
                 '@type': 'PostalAddress',
                 postalCode: area.area_code,
@@ -194,6 +215,21 @@ export default async function AreaPage({ params }: PageProps) {
                 addressCountry: 'FI',
               },
               description: `Asuntohinnat alueella ${area.name}, ${area.municipality}. ${primaryPriceValue ? `Keskihinta ${formatNumber(primaryPriceValue)} €/m².` : ''}`,
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://neliohinnat.fi' },
+                { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://neliohinnat.fi/kaupungit' },
+                { '@type': 'ListItem', position: 3, name: area.municipality, item: `https://neliohinnat.fi/kaupunki/${area.municipality?.toLowerCase()}` },
+                { '@type': 'ListItem', position: 4, name: `${area.name} (${area.area_code})`, item: `https://neliohinnat.fi/alue/${area.area_code}` },
+              ],
             }),
           }}
         />

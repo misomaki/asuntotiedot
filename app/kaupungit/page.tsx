@@ -5,7 +5,7 @@ import { CITY_SLUGS } from '@/app/lib/citySlugs'
 import { getDataProvider } from '@/app/lib/dataProvider'
 import { formatNumber } from '@/app/lib/formatters'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 86400 // ISR: revalidate every 24h
 
 export const metadata: Metadata = {
   title: 'Kaupungit',

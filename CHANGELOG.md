@@ -2,6 +2,9 @@
 
 > Auto-updated by Claude Code hook after each commit.
 
+## %Y->
+- `b5e152a` fix: handle auto-confirmed signups — redirect instead of showing email screen (%Y->- (HEAD -> main, origin/main))
+
 ## 2026-04
 
 - `130f325` feat: add AI-prefilled summaries for buyer/seller marketplace contacts (2026-04-03)
