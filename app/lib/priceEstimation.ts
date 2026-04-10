@@ -200,6 +200,38 @@ export function computeSizeFactor(
  * - ageFactor = 0.70: full 50% dampening (premium halved)
  * - Discounts (factor < 1.0) are NOT dampened
  */
+/**
+ * Price-range correction factor.
+ *
+ * StatFin base prices blend old and new transactions in each postal code,
+ * which compresses the spread: cheap areas appear more expensive than they
+ * are (sellers price higher) and premium areas appear cheaper (averages
+ * diluted by older/smaller units).
+ *
+ * This gentle S-curve correction:
+ *   - Below 2,000 €/m²: discount up to -8% (cheap areas overestimated)
+ *   - 2,000–4,000 €/m²: neutral zone (no correction)
+ *   - Above 6,000 €/m²: boost up to +6% (premium areas underestimated)
+ *
+ * The correction is applied to the final raw estimate (base × all factors)
+ * BEFORE rounding to avoid compounding with other factors.
+ */
+export function computePriceRangeCorrection(rawEstimate: number): number {
+  if (rawEstimate <= 1500) return 0.92      // strong discount for very cheap
+  if (rawEstimate <= 2000) {
+    // Linear interpolation: 0.92 at 1500 → 1.00 at 2000
+    const t = (rawEstimate - 1500) / 500
+    return 0.92 + 0.08 * t
+  }
+  if (rawEstimate <= 6000) return 1.00       // neutral zone
+  if (rawEstimate <= 8000) {
+    // Linear interpolation: 1.00 at 6000 → 1.06 at 8000
+    const t = (rawEstimate - 6000) / 2000
+    return 1.00 + 0.06 * t
+  }
+  return 1.06                                // boost for premium
+}
+
 export function dampenPremium(factor: number, ageFactor: number): number {
   if (factor <= 1.0 || ageFactor >= 0.85) return factor
   // Gradual: ageFactor 0.85 → no dampening, 0.70 → full 50% dampening
@@ -308,9 +340,9 @@ export function estimateBuildingPrice(
   // Leased plot discount (vuokratontti)
   const tonttiFactor = computeTonttiFactor(input.isLeasedPlot, input.propertyType)
 
-  const estimatedPricePerSqm = Math.round(
-    input.basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor * tonttiFactor
-  )
+  const rawEstimate = input.basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor * tonttiFactor
+  const priceRangeCorrection = computePriceRangeCorrection(rawEstimate)
+  const estimatedPricePerSqm = Math.round(rawEstimate * priceRangeCorrection)
 
   return {
     estimatedPricePerSqm,

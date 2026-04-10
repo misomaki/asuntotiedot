@@ -7,7 +7,7 @@
  */
 
 import { supabase } from '../data-import/lib/supabaseAdmin'
-import { computeAgeFactor, computeEnergyFactor, computeWaterFactor, computeFloorFactor, computeSizeFactor, dampenPremium, OKT_FALLBACK } from '../../app/lib/priceEstimation'
+import { computeAgeFactor, computeEnergyFactor, computeWaterFactor, computeFloorFactor, computeSizeFactor, computePriceRangeCorrection, dampenPremium, OKT_FALLBACK } from '../../app/lib/priceEstimation'
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 
@@ -292,14 +292,14 @@ async function fetchNeighborhoodFactor(
   areaId: string,
   propertyType: string
 ): Promise<number> {
-  // Only use high/medium confidence factors (≥3 samples)
+  // Use factors with ≥2 samples (widened from 3 for better Tampere coverage)
   // No municipality median fallback — with sparse data it biases results
   const { data } = await supabase
     .from('neighborhood_factors')
     .select('factor, property_type')
     .eq('area_id', areaId)
     .in('property_type', [propertyType, 'all'])
-    .gte('sample_count', 3)
+    .gte('sample_count', 2)
 
   if (!data?.length) return 1.0
 
@@ -370,13 +370,13 @@ async function main() {
       } else if (propertyType === 'omakotitalo') {
         const munRivitalo = await fetchMunicipalityAvgPrice(municipality, 'rivitalo')
         if (munRivitalo) {
-          basePrice = munRivitalo.price * 1.10
-          basePriceSource = 'rivitalo×1.10@municipality'
+          basePrice = munRivitalo.price * OKT_FALLBACK.fromRivitalo
+          basePriceSource = `rivitalo×${OKT_FALLBACK.fromRivitalo}@municipality`
         } else {
           const munKerrostalo = await fetchMunicipalityAvgPrice(municipality, 'kerrostalo')
           if (munKerrostalo) {
-            basePrice = munKerrostalo.price * 0.90
-            basePriceSource = 'kerrostalo×0.90@municipality'
+            basePrice = munKerrostalo.price * OKT_FALLBACK.fromKerrostalo
+            basePriceSource = `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@municipality`
           }
         }
       }
@@ -404,8 +404,11 @@ async function main() {
       neighborhoodFactor = dampenPremium(rawFactor, ageFactor)
     }
 
-    const ourEstimate = basePrice !== null
-      ? Math.round(basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor)
+    const rawEstimate = basePrice !== null
+      ? basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor
+      : null
+    const ourEstimate = rawEstimate !== null
+      ? Math.round(rawEstimate * computePriceRangeCorrection(rawEstimate))
       : null
 
     const deltaPct = ourEstimate !== null
@@ -594,7 +597,7 @@ Comparing buildings across different age brackets to verify the U-shaped age cur
   md += `
 ## Omakotitalo Pricing Analysis
 
-Key question: Is the omakotitalo fallback (rivitalo×1.10 → kerrostalo×0.90) accurate?
+Key question: Is the omakotitalo fallback (rivitalo×${OKT_FALLBACK.fromRivitalo} → kerrostalo×${OKT_FALLBACK.fromKerrostalo}) accurate?
 
 `
 

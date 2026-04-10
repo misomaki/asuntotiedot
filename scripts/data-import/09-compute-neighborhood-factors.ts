@@ -25,7 +25,7 @@ import {
 } from '../../app/lib/priceEstimation'
 
 const ESTIMATION_YEAR = 2026  // Reference year for age factor
-const FACTOR_MIN = 0.70
+const FACTOR_MIN = 0.50
 const FACTOR_MAX = 1.50
 
 interface EtuoviListing {

@@ -545,7 +545,7 @@ export class SupabaseDataProvider implements DataProvider {
       .select('factor, property_type, sample_count, confidence')
       .eq('area_id', areaId)
       .in('property_type', [propertyType, 'all'])
-      .gte('sample_count', 3)
+      .gte('sample_count', 2)
 
     if (!data?.length) return { factor: 1.0, confidence: 'default' }
 

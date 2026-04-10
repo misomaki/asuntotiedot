@@ -18,12 +18,12 @@
 import { supabase } from './lib/supabaseAdmin'
 
 /** Minimum OKT buildings in a postal code to trust the avg living area */
-const MIN_BUILDINGS = 5
+const MIN_BUILDINGS = 3
 /** Sanity bounds for derived EUR/m² */
 const MIN_PRICE_PER_SQM = 500
 const MAX_PRICE_PER_SQM = 15000
 /** Minimum KHR transactions to trust the median price */
-const MIN_TRANSACTIONS = 3
+const MIN_TRANSACTIONS = 2
 /** OKT = apartment_count = 1, living area between 50-500 m² */
 const MIN_LIVING_AREA = 50
 const MAX_LIVING_AREA = 500

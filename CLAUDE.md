@@ -56,8 +56,9 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     /map/
       MapContainer.tsx                # Pääkarttakomponentti (Voronoi + rakennukset)
     /sidebar/
-      Sidebar.tsx                     # Sivupaneelin container
+      Sidebar.tsx                     # Sivupaneelin container (area/city/comparison modes)
       StatsPanel.tsx                  # Alueen tilastot
+      CityPanel.tsx                   # Kaupungin yleiskatsaus (hinnat, kalleimmat/edullisimmat alueet)
       BuildingPanel.tsx               # Rakennuksen hinta-arvio + tekijäerittely
       ComparisonPanel.tsx             # Alueiden vertailu
       TrendChart.tsx                  # Hintakehitysgraafit
@@ -82,11 +83,11 @@ Interaktiivinen web-karttasovellus, jossa käyttäjät voivat tarkastella suomal
     /useBuildingData.ts               # Rakennusdatan hakeminen (viewport-aware)
     /useInView.ts                     # IntersectionObserver hook (fire-once, respects reduced-motion)
   /contexts
-    /MapContext.tsx                    # Kartan tila (valittu alue, rakennus, filtterit)
-    /AuthContext.tsx                   # Autentikaatio (useAuth hook)
-    /AISearchContext.tsx              # AI-haku (luonnollinen kieli → filtterit)
+    /MapContext.tsx                    # Kartan tila (valittu alue, rakennus, kaupunki, filtterit)
+    /AuthContext.tsx                   # Autentikaatio (useAuth hook) — UI piilotettu GTM:ää varten
+    /AISearchContext.tsx              # AI-haku (luonnollinen kieli → filtterit) — UI piilotettu GTM:ää varten
   /omat-ilmoitukset
-    /page.tsx                         # Käyttäjän omat osto-/myyntisignaalit
+    /page.tsx                         # Käyttäjän omat osto-/myyntisignaalit — piilotettu GTM:ää varten
 
 /scripts
   /data-import/
@@ -189,7 +190,8 @@ CREATE TABLE demographic_stats (
 | `/api/areas/[id]` | GET | Yksittäisen alueen kaikki tilastot, query: `year` |
 | `/api/buildings` | GET | Rakennukset bounding boxin sisällä, query: `west,south,east,north,year` |
 | `/api/buildings/[id]` | GET | Yksittäisen rakennuksen tiedot + hinta-arvioerittely |
-| `/api/marketplace/*` | * | Markkinapaikkasignaalit, AI-haku, yhteenvedot (ks. Markkinapaikkaarkkitehtuuri) |
+| `/api/cities/[slug]` | GET | Kaupungin yleiskatsaus (hinnat talotyypeittäin, top/cheapest alueet) |
+| `/api/marketplace/*` | * | Markkinapaikkasignaalit, AI-haku, yhteenvedot — **UI piilotettu GTM:ää varten** |
 
 ## Ympäristömuuttujat
 
@@ -234,8 +236,9 @@ NEXT_PUBLIC_POSTHOG_HOST=              # PostHog reverse proxy (/ingest)
 
 ### Hinta-arvioalgoritmi (rakennuskohtainen)
 ```
-estimated_price = base_price × age_factor × energy_factor × water_factor × floor_factor × size_factor × neighborhood_factor
-(* water ja neighborhood faktorit vaimennetaan vanhoille rakennuksille, ks. dampenPremium)
+raw_estimate = base_price × age_factor × energy_factor × water_factor × floor_factor × size_factor × neighborhood_factor
+estimated_price = raw_estimate × price_range_correction(raw_estimate)
+(* neighborhood faktori vaimennetaan vanhoille rakennuksille, ks. dampenPremium)
 ```
 Katso tarkka kuvaus: **Hinta-arvioiden tarkkuuden ylläpito** -osiossa alempana.
 
@@ -499,7 +502,8 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 | Sijainti | Käyttö | Muokkaa kun |
 |----------|--------|-------------|
 | `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
-| `supabase/migrations/022_sync_price_factors.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**: recalibrated age, no water dampening, size factor params. Korvaa 019:n. | Mikä tahansa faktori muuttuu |
+| `supabase/migrations/022_sync_price_factors.sql` | Tietokanta — korvattu 034:llä | - |
+| `supabase/migrations/034_fix_okt_fallback_and_clamp.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**: OKT fallback 1.00/0.75, nbhd clamp 0.50, price-range S-curve, sample_count ≥ 2. Korvaa 022:n. | Mikä tahansa faktori muuttuu |
 | `supabase/migrations/016_recalibrated_age_factors.sql` | Korvattu 022:lla | - |
 | `supabase/migrations/017_recalibrated_water_factors.sql` | Korvattu 022:lla | - |
 | `supabase/migrations/015_energy_size_factors.sql` | Tietokanta — energy/size sarakkeet + match_ryhti_energy_apartment_batch RPC | Energy/size sarakkeet muuttuvat |
@@ -547,7 +551,8 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
   3. Final fallback: 1.0
   - **EI municipality-median-fallbackia** nbhd-faktoreille — harvan datan kanssa se vääristää (esim. Tampere KT median 1.12 vain 3 alueesta). Municipality median käytetään VAIN base price -fallbackissa.
 - **Luottamustasot:** high (≥5 listingsiä), medium (3-4), low (1-2), default (ei dataa)
-- **Clamping:** factor rajataan välille [0.70, 1.50]
+- **Lookup minimum:** sample_count ≥ 2 (lasketettu 3:sta parempaa Tampere-kattavuutta varten)
+- **Clamping:** factor rajataan välille [0.50, 1.50] (laajennettu 0.70:stä halvempien alueiden korjaamista varten)
 - **Päivitys:** Kerää uudet Etuovi-ilmoitukset → `_etuovi_staging` → aja `09-compute-neighborhood-factors.ts`
 
 ### OKT_FALLBACK — single source of truth
@@ -602,13 +607,14 @@ Katso [`TODO.md`](TODO.md) → Later/Ideas ja algoritmin tunnetut rajoitukset:
 ### Hinta-arvioalgoritmin tarkka kuvaus
 
 ```
-estimated_price = base_price × age_factor × energy_factor × water_factor × floor_factor × size_factor × neighborhood_factor
+raw_estimate = base_price × age_factor × energy_factor × water_factor × floor_factor × size_factor × neighborhood_factor
+estimated_price = raw_estimate × price_range_correction(raw_estimate)
 ```
 
 **Base price** = €/m² (postinumero + vuosi + talotyyppi)
 - Kerrostalo/rivitalo: StatFin PxWeb API
 - Omakotitalo: **KHR-pohjainen** (MML kauppahintarekisteri mediaani / avg asuntoala per postinumero, 270 aluetta, 2000–2026)
-- Omakotitalo fallback (jos ei KHR-dataa): rivitalo × OKT_FALLBACK.fromRivitalo (1.10) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.90)
+- Omakotitalo fallback (jos ei KHR-dataa): rivitalo × OKT_FALLBACK.fromRivitalo (1.00) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.75)
 
 **Age factor** (U-käyrä, recalibrated 2026-04-01):
 ```
@@ -659,8 +665,17 @@ uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) lasket
 - `age_factor 0.85` → ei vaimennusta, `age_factor 0.70` → 50% vaimennus
 - Kaava: `dampened = 1.0 + (raw - 1.0) * (1.0 - dampening)` missä `dampening = 0.5 * min(1.0, (0.85 - age_factor) / 0.15)`
 - Discount-faktorit (< 1.0) eivät vaimene — vanhat rakennukset halvemmilla alueilla pitävät täyden alennuksen
-- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `022_sync_price_factors.sql`
+- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `034_fix_okt_fallback_and_clamp.sql`
 - Vaimennetaan: neighborhood (markkina-sentimentti). EI vaimenneta: water (pysyvä fyysinen ominaisuus), energy, size, floor (rakennuksen sisäiset)
+
+**Price-range correction** (S-curve, added 2026-04-10):
+- ≤1500 €/m²: 0.92 (strong discount — cheap areas systematically overestimated)
+- 1500–2000 €/m²: linear interpolation 0.92→1.00
+- 2000–6000 €/m²: 1.00 (neutral zone — no correction)
+- 6000–8000 €/m²: linear interpolation 1.00→1.06
+- >8000 €/m²: 1.06 (boost — premium areas systematically underestimated)
+- Applied to final raw estimate AFTER all factors, BEFORE rounding
+- Reason: StatFin base prices compress the spread (blend old+new transactions)
 
 **Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää
 
@@ -668,7 +683,16 @@ uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) lasket
 
 Sovelluksella on kaksi pääkäyttötapausta:
 1. **Selaus** — rakennusten hintatietojen ja aluetilastojen tutkiminen
-2. **Markkinapaikka** — ostajien ja myyjien yhdistäminen
+2. **Markkinapaikka** — ostajien ja myyjien yhdistäminen *(UI piilotettu GTM-julkaisua varten, backend-infrastruktuuri paikallaan)*
+
+### GTM-julkaisun tila (2026-04)
+
+GTM-versiossa UI on riisuttu keskittymään selaus-käyttötapaukseen:
+- **Poistettu UI:sta:** Markkinapaikkasignaalit (BuildingPanel), AI-haku (Header), UserMenu/autentikaatio, omat ilmoitukset
+- **Korvattu:** UserMenu → HelpCircle-linkki FAQ-sivulle. AI-hakuvaihtoehto hakukentästä → haun vinkkidropdown (kaupungit, postinumerot, osoitteet)
+- **Lisätty:** Kaupunkipaneeli sivupalkkiin (CityPanel) — haettaessa kaupunkia, hintayhteenveto avautuu kartalle
+- **Backend paikallaan:** Marketplace API:t, AuthContext, AISearchContext — valmiina uudelleenkytkentään
+- **FAQ päivitetty:** Markkinapaikkasisältö poistettu, fokus algoritmissa ja datalähteissä. Lähdeosio: MML Maastotietokanta (CC BY 4.0), ei OpenStreetMap.
 
 ### Monetisaatiostrategia (Freemium → Lead Gen → Listing)
 
@@ -678,7 +702,7 @@ Sovelluksella on kaksi pääkäyttötapausta:
 | **2. Lead Generation** | Osto-/myyntisignaalit, yhteydenottopyyntöjen välitys | Signaalien näkeminen (määrät) | Yhteydenotto kiinnostuneisiin, myynti-ilmoituksen jättö |
 | **3. Listing Platform** | Täysi markkinapaikka ilmoituksilla | Selaus | Premium-listaus, korostettu näkyvyys, agenttituki |
 
-### Markkinapaikkaarkkitehtuuri (Marketplace Signals)
+### Markkinapaikkaarkkitehtuuri (Marketplace Signals) — UI piilotettu, backend paikallaan
 
 **Taulut** (migraatio 027):
 - `user_profiles` — laajentaa Supabase auth.users (display_name, avatar_url, phone_verified)
@@ -704,21 +728,30 @@ Sovelluksella on kaksi pääkäyttötapausta:
 | `/api/marketplace/search` | POST | Ei | Rakennushaku filtterien perusteella (paginoitu, klusterit) |
 | `/api/marketplace/generate-summary` | POST | Ei | AI-generoitu myynti-/ostoteksti (Claude Haiku 4.5) |
 
-### AI-haku (AISearchContext)
+### AI-haku (AISearchContext) — UI piilotettu, backend paikallaan
 
 - **2-vaiheinen flow:** 1) Claude Haiku parsii luonnollisen kielen → strukturoidut filtterit + chipit, 2) palvelin hakee rakennukset filtterien perusteella
 - **Filtterit:** area_codes, municipality, property_type, room_count, min/max_sqm, min/max_price_per_sqm, construction_year, amenity-etäisyydet, floor_count, sort_by
 - **Klusterointi:** 1km grid-pohjainen ryhmittely kartalle
-- **Integraatio:** Header-hakukenttä triggaa AI-haun kun query näyttää luonnolliselta kieleltä (≥5 merkkiä, sisältää välilyönnin)
-- **Konteksti:** `app/contexts/AISearchContext.tsx` — hallitsee hakutilan, chipit, tulokset
+- **UI-integraatio poistettu:** Header-hakukenttä ei enää triggaa AI-hakua. Tilalle haun vinkkidropdown (kaupungit, postinumerot, osoitteet).
+- **Konteksti:** `app/contexts/AISearchContext.tsx` — hallitsee hakutilan, chipit, tulokset. Provider edelleen mountattuna, mutta UI ei käytä.
 
-### Autentikaatio
+### Autentikaatio — UI piilotettu, backend paikallaan
 
 - **Supabase Auth:** Google OAuth + email/password
 - **AuthContext** (`app/contexts/AuthContext.tsx`): `useAuth()` → user, session, loading, signOut
 - **Supabase browser client:** `app/lib/supabaseBrowserClient.ts`
-- **UserMenu** (`app/components/UserMenu.tsx`): kirjautuminen/ulos, avatar, dropdown
-- **Omat ilmoitukset** -sivu: `/omat-ilmoitukset` — käyttäjän omat signaalit
+- **UserMenu** (`app/components/UserMenu.tsx`): korvattu HelpCircle-linkillä Header.tsx:ssä
+- **Omat ilmoitukset** -sivu: `/omat-ilmoitukset` — piilotettu (ei navigaatiolinkkiä)
+
+### Kaupunkipaneeli (CityPanel)
+
+- **Komponentti:** `app/components/sidebar/CityPanel.tsx` — hakee `/api/cities/[slug]`, näyttää kaupungin hintatiedot
+- **Sisältö:** Hintakortit talotyypeittäin (mediaani €/m²), kalleimmat/edullisimmat 5 naapurustoa, linkki kaupunkisivulle
+- **Interaktio:** Klikkaamalla naapurustoa paneelissa → siirtyy aluetilastoihin (setSelectedCity(null) + setSelectedArea)
+- **Integraatio:** Header `handleSelectCity` → `setSelectedCity(citySlug)` + `setIsSidebarOpen(true)` + `flyTo`
+- **MapContext:** `selectedCity: CitySlugConfig | null` — uusi tila, Sidebar renderöi CityPanel kun `hasSelectedCity && !hasSelectedArea`
+- **Hakuvinkki:** Kun hakukenttä on fokusoituna mutta tyhjä, näytetään dropdown: "Kokeile hakea Helsinki / 00100 / Mannerheimintie 1"
 
 ## Mobiiliresponsiiviys
 
@@ -738,7 +771,7 @@ Sovelluksella on kaksi pääkäyttötapausta:
 ### Mobiili-layout
 - **Header:** Year selector piilotettu mobiilissa (`hidden md:block`), oletusvuosi = uusin
 - **Haku:** Placeholder `"Hae..."` (lyhyt, mahtuu mobiiliin). Expandable search icon → full-width input
-- **Sidebar (area stats):** Bottom Sheet (`Sheet` component), max-height 80vh, backdrop blur, drag handle
+- **Sidebar (area stats / city panel):** Bottom Sheet (`Sheet` component), max-height 80vh, backdrop blur, drag handle
 - **Building panel:** Bottom Sheet mobiilissa (sama kuin area stats), floating card desktopissa
 - **`hideClose` pattern:** BuildingPanel saa `hideClose` propin kun se on Sheet-komponentissa (Sheet:llä on oma sulkupainike)
 - **Legend:** `bottom-4` mobiilissa, `bottom-[4.5rem]` desktopissa. Piilotetaan kun sheet on auki.
