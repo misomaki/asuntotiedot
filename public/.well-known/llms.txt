@@ -1,0 +1,7 @@
+# Neliohinnat.fi — Finnish Housing Price Map
+
+> Interactive map application showing estimated price per square meter for every residential building in Finland. Free, open data, no login required.
+
+Website: https://www.neliohinnat.fi
+Documentation: https://www.neliohinnat.fi/faq
+Full context: https://www.neliohinnat.fi/llms.txt

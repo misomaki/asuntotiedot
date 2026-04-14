@@ -10,15 +10,10 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: ['/api/', '/auth/', '/asetukset', '/omat-ilmoitukset', '/design-comparison', '/brand-preview', '/style-exploration'],
       },
-      // Block AI training crawlers (mirror Cloudflare managed rules)
-      { userAgent: 'GPTBot', disallow: ['/'] },
-      { userAgent: 'ClaudeBot', disallow: ['/'] },
-      { userAgent: 'CCBot', disallow: ['/'] },
-      { userAgent: 'Amazonbot', disallow: ['/'] },
-      { userAgent: 'Applebot-Extended', disallow: ['/'] },
+      // Allow AI search crawlers (GPTBot, ClaudeBot) for citation in AI answers.
+      // Block only pure training/scraping bots that don't drive traffic.
       { userAgent: 'Bytespider', disallow: ['/'] },
       { userAgent: 'meta-externalagent', disallow: ['/'] },
-      // NOTE: Google-Extended intentionally NOT blocked — needed for Google AI Overviews
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
   }

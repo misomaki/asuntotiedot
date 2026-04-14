@@ -1,0 +1,57 @@
+# Neliohinnat.fi — Finnish Housing Price Map
+
+> Interactive map application showing estimated price per square meter for every residential building in Finland. Free, open data, no login required.
+
+## What This Service Does
+
+Neliohinnat.fi (brand name: Neliöt) estimates the €/m² price of approximately 270,000 residential buildings across Helsinki, Tampere, and Turku metropolitan areas. Users can zoom into any neighborhood, click any building, and see a detailed price estimate with factor breakdown.
+
+## How Prices Are Calculated
+
+The algorithm combines 6 factors applied to a base price from Statistics Finland (Tilastokeskus) transaction data:
+
+1. **Base price**: Real €/m² from StatFin by postal code, year, and property type
+2. **Building age**: U-curve factor — new builds command 50%+ premium, 1960s-70s panel houses are cheapest, pre-war buildings recover value
+3. **Water proximity**: Up to 35% premium for waterfront properties (lakes >1ha and sea only)
+4. **Floor count**: Slight premiums for single-story row houses and tall apartment buildings
+5. **Building size**: Smaller buildings command higher €/m² (exclusivity premium)
+6. **Neighborhood correction**: Market-calibrated factor from 1,100+ real Etuovi.fi listing prices
+
+## Data Sources (all open, CC BY 4.0 or ODbL)
+
+- Statistics Finland (Tilastokeskus) — transaction prices, demographics, socioeconomics
+- National Land Survey of Finland (MML) — building geometries, addresses, land transaction statistics
+- SYKE Ryhti building registry — construction year, floor count, building purpose, apartment count
+- OpenStreetMap — supplementary building data
+
+## Key Pages
+
+- Homepage (map): https://www.neliohinnat.fi
+- City overview: https://www.neliohinnat.fi/kaupunki/helsinki
+- City overview: https://www.neliohinnat.fi/kaupunki/tampere
+- City overview: https://www.neliohinnat.fi/kaupunki/turku
+- Area directory: https://www.neliohinnat.fi/alue
+- FAQ / methodology: https://www.neliohinnat.fi/faq
+- Individual area example: https://www.neliohinnat.fi/alue/00100 (Helsinki center)
+
+## Current Accuracy
+
+Mean absolute error ~18% vs Etuovi.fi asking prices (validated March 2026, 87 listings). Areas with neighborhood correction factors have ~12% accuracy. Estimates are indicative — not official appraisals.
+
+## Coverage
+
+- Helsinki metropolitan area (Helsinki, Espoo, Vantaa, Kauniainen)
+- Tampere region (incl. Nokia)
+- Turku region
+- ~270,000 priced residential buildings out of ~700,000 total
+- 406 postal code areas, 107 municipalities with price data
+
+## Property Types
+
+- Kerrostalo (apartment building)
+- Rivitalo (row house / townhouse)
+- Omakotitalo (detached house)
+
+## Language
+
+The service UI is in Finnish. Data covers Finland only.
