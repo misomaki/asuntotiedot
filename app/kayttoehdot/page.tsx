@@ -30,7 +30,7 @@ export default function TermsOfServicePage() {
           '[&_li]:mb-1',
         )}>
           <p className="text-xs text-[#999] font-mono mb-6">
-            Päivitetty: 5.4.2026
+            Päivitetty: 13.4.2026
           </p>
 
           <h2>1. Palvelun kuvaus</h2>
@@ -52,33 +52,15 @@ export default function TermsOfServicePage() {
             Kiinteistökaupassa suosittelemme aina ammattimaisen kiinteistöarvioijan käyttöä.
           </p>
 
-          <h2>3. Tilin luominen</h2>
-          <p>
-            Tilin luominen on vapaaehtoista. Ilman tiliä voit käyttää karttaa ja tarkastella hinta-arvioita.
-            Tili vaaditaan markkinapaikkasignaalien (osto/myynti-ilmoitusten) jättämiseen.
-          </p>
-          <p>
-            Olet vastuussa tilisi tietoturvasta. Ilmoita epäillyistä tietoturvaloukkauksista
-            välittömästi osoitteeseen tietosuoja@neliohinnat.fi.
-          </p>
-
-          <h2>4. Markkinapaikkasignaalit</h2>
-          <p>
-            Osto-kiinnostukset ja myynti-ilmoitukset ovat alustavia ilmauksia eivätkä sido
-            osapuolia juridisesti. Neliöt ei toimi kiinteistönvälittäjänä eikä vastaa
-            käyttäjien välisistä sopimuksista.
-          </p>
-
-          <h2>5. Hyväksyttävä käyttö</h2>
+          <h2>3. Hyväksyttävä käyttö</h2>
           <p>Sitoudut olemaan:</p>
           <ul>
             <li>Käyttämättä palvelua laittomiin tarkoituksiin</li>
-            <li>Julkaisematta harhaanjohtavia osto- tai myynti-ilmoituksia</li>
             <li>Ylikuormittamatta palvelua automaattisilla kyselyillä</li>
             <li>Kopioimatta dataa kaupalliseen uudelleenjakeluun</li>
           </ul>
 
-          <h2>6. Datalähteet ja tekijänoikeudet</h2>
+          <h2>4. Datalähteet ja tekijänoikeudet</h2>
           <p>Palvelu käyttää seuraavia avoimia datalähteitä:</p>
           <ul>
             <li>Tilastokeskus (StatFin, Paavo) — CC BY 4.0</li>
@@ -87,25 +69,25 @@ export default function TermsOfServicePage() {
             <li>Maanmittauslaitos — CC BY 4.0</li>
           </ul>
 
-          <h2>7. Vastuunrajoitus</h2>
+          <h2>5. Vastuunrajoitus</h2>
           <p>
             Palvelu tarjotaan &ldquo;sellaisena kuin se on&rdquo; ilman takuita.
             Emme vastaa palvelun keskeytyksistä, virheistä tai tietojen tarkkuudesta.
             Vastuumme rajoittuu sovellettavan lain sallimissa rajoissa.
           </p>
 
-          <h2>8. Muutokset</h2>
+          <h2>6. Muutokset</h2>
           <p>
             Voimme päivittää näitä ehtoja. Olennaisista muutoksista ilmoitamme palvelun kautta.
             Jatkamalla palvelun käyttöä hyväksyt päivitetyt ehdot.
           </p>
 
-          <h2>9. Sovellettava laki</h2>
+          <h2>7. Sovellettava laki</h2>
           <p>
             Näihin ehtoihin sovelletaan Suomen lakia. Riidat ratkaistaan Helsingin käräjäoikeudessa.
           </p>
 
-          <h2>10. Yhteystiedot</h2>
+          <h2>8. Yhteystiedot</h2>
           <p>
             Kysymyksissä ota yhteyttä: <strong>tietosuoja@neliohinnat.fi</strong>
           </p>
