@@ -534,7 +534,7 @@ export default async function CityPage({ params }: PageProps) {
               '@context': 'https://schema.org',
               '@type': 'City',
               name: city.name,
-              url: `https://neliohinnat.fi/kaupunki/${slug}`,
+              url: `https://www.neliohinnat.fi/kaupunki/${slug}`,
               address: {
                 '@type': 'PostalAddress',
                 addressLocality: city.name,
@@ -556,8 +556,8 @@ export default async function CityPage({ params }: PageProps) {
               '@context': 'https://schema.org',
               '@type': 'BreadcrumbList',
               itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://neliohinnat.fi' },
-                { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://neliohinnat.fi/kaupungit' },
+                { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://www.neliohinnat.fi' },
+                { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://www.neliohinnat.fi/kaupungit' },
                 { '@type': 'ListItem', position: 3, name: city.name },
               ],
             }),

@@ -33,7 +33,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export { viewport } from './viewport'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neliohinnat.fi'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.neliohinnat.fi'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

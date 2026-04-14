@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { getDataProvider } from '@/app/lib/dataProvider'
 import { getAllCitySlugs } from '@/app/lib/citySlugs'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neliohinnat.fi'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.neliohinnat.fi'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const provider = getDataProvider()
@@ -46,13 +46,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${BASE_URL}/kayttoehdot`,
-      lastModified: new Date('2026-04-05'),
+      lastModified: new Date('2026-04-13'),
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${BASE_URL}/tietosuoja`,
-      lastModified: new Date('2026-04-05'),
+      lastModified: new Date('2026-04-13'),
       changeFrequency: 'yearly',
       priority: 0.3,
     },

@@ -206,7 +206,7 @@ export default async function AreaPage({ params }: PageProps) {
               '@context': 'https://schema.org',
               '@type': 'Place',
               name: `${area.name} (${area.area_code})`,
-              url: `https://neliohinnat.fi/alue/${area.area_code}`,
+              url: `https://www.neliohinnat.fi/alue/${area.area_code}`,
               address: {
                 '@type': 'PostalAddress',
                 postalCode: area.area_code,
@@ -225,10 +225,10 @@ export default async function AreaPage({ params }: PageProps) {
               '@context': 'https://schema.org',
               '@type': 'BreadcrumbList',
               itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://neliohinnat.fi' },
-                { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://neliohinnat.fi/kaupungit' },
-                { '@type': 'ListItem', position: 3, name: area.municipality, item: `https://neliohinnat.fi/kaupunki/${area.municipality?.toLowerCase()}` },
-                { '@type': 'ListItem', position: 4, name: `${area.name} (${area.area_code})`, item: `https://neliohinnat.fi/alue/${area.area_code}` },
+                { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://www.neliohinnat.fi' },
+                { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://www.neliohinnat.fi/kaupungit' },
+                { '@type': 'ListItem', position: 3, name: area.municipality, item: `https://www.neliohinnat.fi/kaupunki/${area.municipality?.toLowerCase()}` },
+                { '@type': 'ListItem', position: 4, name: `${area.name} (${area.area_code})`, item: `https://www.neliohinnat.fi/alue/${area.area_code}` },
               ],
             }),
           }}
