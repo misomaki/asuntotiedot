@@ -299,9 +299,10 @@ export function inferPropertyType(
 
   // 3. Floor count + apartment count heuristic
   if (floorCount !== null && floorCount >= 3) return 'kerrostalo'
-  if (floorCount === 2) return 'rivitalo'
-  // 1-floor with 2+ apartments → paritalo/rivitalo (e.g. single-story row houses, paritalot)
-  if (floorCount === 1 && apartmentCount != null && apartmentCount >= 2) return 'rivitalo'
+  // 2+ apartments at any small floor count → paritalo/rivitalo. This takes
+  // precedence over floor_count alone so that 2-story single-family homes
+  // (apartment_count=1) don't get mislabeled as rivitalo.
+  if (apartmentCount != null && apartmentCount >= 2) return 'rivitalo'
 
   // 4. Footprint heuristic — large buildings without metadata are rivitalo, not OKT.
   // A typical Finnish omakotitalo has footprint < 200m². Buildings ≥ 300m² are
@@ -310,6 +311,7 @@ export function inferPropertyType(
   if (footprintAreaSqm != null && footprintAreaSqm >= 300) return 'rivitalo'
 
   // 5. Default — most Finnish buildings without metadata are small houses
+  // (including 2-story OKTs with apartment_count=1).
   return 'omakotitalo'
 }
 
