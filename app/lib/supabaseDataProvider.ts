@@ -389,7 +389,6 @@ export class SupabaseDataProvider implements DataProvider {
     let areaCode = ''
     let areaName = ''
     let basePrice: number | null = null
-    let isFallbackPrice = false
     let neighborhoodFactor = 1.0
     let neighborhoodFactorConfidence: 'high' | 'medium' | 'low' | 'default' = 'default'
 
@@ -409,7 +408,6 @@ export class SupabaseDataProvider implements DataProvider {
         areaName = areaResult.data.name
       }
       basePrice = basePriceResult?.price ?? null
-      isFallbackPrice = basePriceResult?.isFallback ?? false
       neighborhoodFactor = nbhdResult.factor
       neighborhoodFactorConfidence = nbhdResult.confidence
     }
