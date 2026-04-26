@@ -43,14 +43,6 @@ const FAQ_JSON_LD = {
     },
     {
       '@type': 'Question',
-      name: 'Miten osto- ja myyntisignaalit toimivat?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Ostajana klikkaat rakennusta kartalla ja merkitset kiinnostuksesi. Myyjänä lisäät asuntosi osoitteen asetuksissa ja merkitset sen myyntiin yhdellä napilla. Signaalit näkyvät kartalla anonyymisti.',
-      },
-    },
-    {
-      '@type': 'Question',
       name: 'Mistä data tulee?',
       acceptedAnswer: {
         '@type': 'Answer',

@@ -2,8 +2,8 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getDataProvider } from '@/app/lib/dataProvider'
+import { getCityBySlug } from '@/app/lib/citySlugs'
 import {
-  formatPricePerSqm,
   formatNumber,
   formatPercent,
   getPropertyTypeLabel,
@@ -33,9 +33,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const primaryPrice = area.prices.find(p => p.property_type === 'kerrostalo')
     ?? area.prices.find(p => p.property_type === 'rivitalo')
     ?? area.prices[0]
-  const priceStr = primaryPrice
-    ? formatPricePerSqm(primaryPrice.price_per_sqm_median ?? primaryPrice.price_per_sqm_avg ?? 0)
+  const priceNum = primaryPrice
+    ? Math.round(primaryPrice.price_per_sqm_median ?? primaryPrice.price_per_sqm_avg ?? 0)
     : null
+  const priceStr = priceNum ? formatNumber(priceNum) : null
 
   const title = `${area.name} (${area.area_code}) – Asuntohinnat ${priceStr ? priceStr + ' €/m²' : ''} | Neliöt`
   const description = `${area.name}, ${area.municipality}: asuntojen hinta-arviot, hintakehitys vuodesta 2018 lähtien, väestötiedot, tulotaso, koulutus ja palvelut. ${priceStr ? `Keskihinta ${priceStr} €/m².` : ''} Postinumero ${area.area_code}.`
@@ -56,6 +57,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: 'website',
       url: `/alue/${area.area_code}`,
+    },
+    twitter: {
+      title,
+      description,
     },
     alternates: {
       canonical: `/alue/${area.area_code}`,
@@ -80,6 +85,9 @@ export default async function AreaPage({ params }: PageProps) {
   const primaryPriceValue = primaryPrice
     ? Math.round(primaryPrice.price_per_sqm_median ?? primaryPrice.price_per_sqm_avg ?? 0)
     : null
+
+  // Resolve city slug for breadcrumb — only link if municipality maps to a known city
+  const citySlug = area.municipality ? getCityBySlug(area.municipality.toLowerCase())?.slug : undefined
 
   return (
     <div className="min-h-screen bg-[#FFFBF5]">
@@ -106,7 +114,11 @@ export default async function AreaPage({ params }: PageProps) {
           <span>/</span>
           <Link href="/kaupungit" className="hover:underline">Kaupungit</Link>
           <span>/</span>
-          <Link href={`/kaupunki/${area.municipality?.toLowerCase()}`} className="hover:underline">{area.municipality}</Link>
+          {citySlug ? (
+            <Link href={`/kaupunki/${citySlug}`} className="hover:underline">{area.municipality}</Link>
+          ) : (
+            <span>{area.municipality}</span>
+          )}
           <span>/</span>
           <span className="text-[#1a1a1a]">{area.name}</span>
         </nav>
@@ -227,8 +239,10 @@ export default async function AreaPage({ params }: PageProps) {
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://www.neliohinnat.fi' },
                 { '@type': 'ListItem', position: 2, name: 'Kaupungit', item: 'https://www.neliohinnat.fi/kaupungit' },
-                { '@type': 'ListItem', position: 3, name: area.municipality, item: `https://www.neliohinnat.fi/kaupunki/${area.municipality?.toLowerCase()}` },
-                { '@type': 'ListItem', position: 4, name: `${area.name} (${area.area_code})`, item: `https://www.neliohinnat.fi/alue/${area.area_code}` },
+                ...(citySlug
+                  ? [{ '@type': 'ListItem', position: 3, name: area.municipality, item: `https://www.neliohinnat.fi/kaupunki/${citySlug}` }]
+                  : []),
+                { '@type': 'ListItem', position: citySlug ? 4 : 3, name: `${area.name} (${area.area_code})`, item: `https://www.neliohinnat.fi/alue/${area.area_code}` },
               ],
             }),
           }}

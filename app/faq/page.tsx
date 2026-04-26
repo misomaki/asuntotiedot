@@ -414,7 +414,7 @@ export default function FAQPage() {
                 heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               )}
             >
-              Löydä koti, jota et<br className="hidden md:block" /> tiennyt etsiväsi.
+              Asuntohinnat kartalla —<br className="hidden md:block" /> avoimesti ja läpinäkyvästi
             </h1>
             <p
               className={cn(

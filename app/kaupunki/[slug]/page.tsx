@@ -236,6 +236,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${city.name} – Asuntohinnat | Neliöt`,
       description,
     },
+    twitter: {
+      title,
+      description,
+    },
     alternates: {
       canonical: `/kaupunki/${slug}`,
     },

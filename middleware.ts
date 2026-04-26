@@ -7,7 +7,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on all routes except static files and images
-    '/((?!_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Run on all routes except static files, images, and ISR/static pages
+    // ISR pages (alue, kaupunki, faq, etc.) must NOT go through auth middleware
+    // or Next.js treats them as dynamic and disables CDN caching
+    '/((?!_next/static|_next/image|favicon.ico|icon.svg|alue|kaupunki|kaupungit|faq|kayttoehdot|tietosuoja|sitemap|llms|ingest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|txt|xml)$).*)',
   ],
 }
