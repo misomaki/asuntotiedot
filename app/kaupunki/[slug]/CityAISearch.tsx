@@ -159,7 +159,7 @@ export function CityAISearch({ cityName, areaCodes }: Props) {
                 <thead>
                   <tr className="border-b-2 border-[#1a1a1a]/10 bg-[#FFFBF5]">
                     <th className="text-left px-4 py-2.5 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">Osoite</th>
-                    <th className="text-right px-4 py-2.5 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">\u20ac/m\u00b2</th>
+                    <th className="text-right px-4 py-2.5 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider">Hinta-arvio</th>
                     <th className="text-right px-4 py-2.5 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider max-md:hidden">Vuosi</th>
                     <th className="text-right px-4 py-2.5 font-display font-bold text-xs text-muted-foreground uppercase tracking-wider max-md:hidden">Kerroksia</th>
                   </tr>

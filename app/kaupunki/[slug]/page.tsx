@@ -426,7 +426,7 @@ export default async function CityPage({ params }: PageProps) {
 
         {/* AI Search */}
         <section className="mb-10">
-          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-2">Etsi asuntoja {city.name}sta</h2>
+          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-2">Etsi asuntoja</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Kuvaile millaista asuntoa etsit — tekoäly hakee sopivat kohteet.
           </p>
