@@ -35,7 +35,7 @@ const BUILDING_ZOOM_THRESHOLD = 13
 /** Cache-bust version — increment after recomputing building prices.
  *  Also used in Source id to force react-map-gl to recreate the source
  *  when `reuseMaps` keeps the MapLibre instance alive across mounts. */
-const TILE_VERSION = 'v16'
+const TILE_VERSION = 'v17'
 
 /** Properties attached to municipality features */
 interface HoveredMunicipalityProperties {
