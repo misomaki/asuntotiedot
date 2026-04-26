@@ -256,33 +256,82 @@ async function fetchMunicipalityAvgPrice(
   }
 }
 
+async function fetchNearbyInterpolatedPrice(
+  areaId: string,
+  propertyType: string
+): Promise<{ price: number; source: string } | null> {
+  const { data, error } = await supabase.rpc('get_nearby_area_prices', {
+    p_area_id: areaId,
+    p_property_type: propertyType,
+    p_year: REFERENCE_YEAR,
+  })
+
+  if (error || !data || data.length < 2) return null
+
+  let numerator = 0
+  let denominator = 0
+  for (const row of data as { price: number; distance_m: number }[]) {
+    const weight = 1.0 / row.distance_m
+    numerator += Number(row.price) * weight
+    denominator += weight
+  }
+
+  if (denominator === 0) return null
+  return {
+    price: numerator / denominator,
+    source: `${propertyType}@nearby_idw(${data.length}nbrs)`,
+  }
+}
+
 async function lookupBasePrice(
   areaId: string,
   propertyType: string,
   municipality: string
-): Promise<{ price: number; source: string } | null> {
+): Promise<{ price: number; source: string; isFallback: boolean } | null> {
   // Phase 1: Area-level lookup
   const areaPrice = await fetchLatestPrice(areaId, propertyType)
-  if (areaPrice) return areaPrice
+  if (areaPrice) return { ...areaPrice, isFallback: false }
 
   if (propertyType === 'omakotitalo') {
     const rivitaloPrice = await fetchLatestPrice(areaId, 'rivitalo')
-    if (rivitaloPrice) return { price: rivitaloPrice.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@area` }
+    if (rivitaloPrice) return { price: rivitaloPrice.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@area`, isFallback: false }
 
     const kerrostaloPrice = await fetchLatestPrice(areaId, 'kerrostalo')
-    if (kerrostaloPrice) return { price: kerrostaloPrice.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@area` }
+    if (kerrostaloPrice) return { price: kerrostaloPrice.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@area`, isFallback: false }
+  }
+
+  if (propertyType === 'rivitalo') {
+    const kerrostaloPrice = await fetchLatestPrice(areaId, 'kerrostalo')
+    if (kerrostaloPrice) return { price: kerrostaloPrice.price * 0.85, source: `kerrostalo×0.85@area`, isFallback: false }
+  }
+
+  // Phase 1.5: Nearby postal code interpolation (IDW)
+  const nearbyPrice = await fetchNearbyInterpolatedPrice(areaId, propertyType)
+  if (nearbyPrice) return { ...nearbyPrice, isFallback: true }
+
+  if (propertyType === 'omakotitalo') {
+    const nearbyRivitalo = await fetchNearbyInterpolatedPrice(areaId, 'rivitalo')
+    if (nearbyRivitalo) return { price: nearbyRivitalo.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@nearby_idw`, isFallback: true }
+
+    const nearbyKerrostalo = await fetchNearbyInterpolatedPrice(areaId, 'kerrostalo')
+    if (nearbyKerrostalo) return { price: nearbyKerrostalo.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@nearby_idw`, isFallback: true }
+  }
+
+  if (propertyType === 'rivitalo') {
+    const nearbyKerrostalo = await fetchNearbyInterpolatedPrice(areaId, 'kerrostalo')
+    if (nearbyKerrostalo) return { price: nearbyKerrostalo.price * 0.85, source: `kerrostalo×0.85@nearby_idw`, isFallback: true }
   }
 
   // Phase 2: Municipality-level fallback
   const munPrice = await fetchMunicipalityAvgPrice(municipality, propertyType)
-  if (munPrice) return { ...munPrice, source: munPrice.source.replace('@', '@mun_') }
+  if (munPrice) return { ...munPrice, source: munPrice.source.replace('@', '@mun_'), isFallback: true }
 
   if (propertyType === 'omakotitalo') {
     const munRivitalo = await fetchMunicipalityAvgPrice(municipality, 'rivitalo')
-    if (munRivitalo) return { price: munRivitalo.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@municipality` }
+    if (munRivitalo) return { price: munRivitalo.price * OKT_FALLBACK.fromRivitalo, source: `rivitalo×${OKT_FALLBACK.fromRivitalo}@municipality`, isFallback: true }
 
     const munKerrostalo = await fetchMunicipalityAvgPrice(municipality, 'kerrostalo')
-    if (munKerrostalo) return { price: munKerrostalo.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@municipality` }
+    if (munKerrostalo) return { price: munKerrostalo.price * OKT_FALLBACK.fromKerrostalo, source: `kerrostalo×${OKT_FALLBACK.fromKerrostalo}@municipality`, isFallback: true }
   }
 
   return null
@@ -354,15 +403,18 @@ async function main() {
 
     let basePrice: number | null = null
     let basePriceSource = 'not found'
+    let isFallback = false
 
     if (areaInfo) {
       const result = await lookupBasePrice(areaInfo.id, propertyType, municipality)
       if (result) {
         basePrice = result.price
         basePriceSource = result.source
+        isFallback = result.isFallback
       }
     } else if (municipality) {
       // No area found, try municipality fallback directly
+      isFallback = true
       const result = await fetchMunicipalityAvgPrice(municipality, propertyType)
       if (result) {
         basePrice = result.price
@@ -408,7 +460,7 @@ async function main() {
       ? basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor
       : null
     const ourEstimate = rawEstimate !== null
-      ? Math.round(rawEstimate * computePriceRangeCorrection(rawEstimate))
+      ? Math.round(rawEstimate * computePriceRangeCorrection(rawEstimate, isFallback))
       : null
 
     const deltaPct = ourEstimate !== null

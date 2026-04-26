@@ -216,7 +216,11 @@ export function computeSizeFactor(
  * The correction is applied to the final raw estimate (base × all factors)
  * BEFORE rounding to avoid compounding with other factors.
  */
-export function computePriceRangeCorrection(rawEstimate: number): number {
+export function computePriceRangeCorrection(rawEstimate: number, isFallback?: boolean): number {
+  // When base price is from a fallback source (nearby interpolation or municipality median),
+  // don't apply low-end discount — it compounds the error on already-uncertain data
+  if (isFallback && rawEstimate <= 2000) return 1.00
+
   if (rawEstimate <= 1500) return 0.92      // strong discount for very cheap
   if (rawEstimate <= 2000) {
     // Linear interpolation: 0.92 at 1500 → 1.00 at 2000

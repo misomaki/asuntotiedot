@@ -389,6 +389,7 @@ export class SupabaseDataProvider implements DataProvider {
     let areaCode = ''
     let areaName = ''
     let basePrice: number | null = null
+    let isFallbackPrice = false
     let neighborhoodFactor = 1.0
     let neighborhoodFactorConfidence: 'high' | 'medium' | 'low' | 'default' = 'default'
 
@@ -407,7 +408,8 @@ export class SupabaseDataProvider implements DataProvider {
         areaCode = areaResult.data.area_code
         areaName = areaResult.data.name
       }
-      basePrice = basePriceResult
+      basePrice = basePriceResult?.price ?? null
+      isFallbackPrice = basePriceResult?.isFallback ?? false
       neighborhoodFactor = nbhdResult.factor
       neighborhoodFactorConfidence = nbhdResult.confidence
     }
@@ -479,31 +481,49 @@ export class SupabaseDataProvider implements DataProvider {
     }
   }
   /**
-   * Look up base price with omakotitalo fallback + municipality fallback.
-   * Phase 1: area-level (omakotitalo → rivitalo×1.10 → kerrostalo×0.90)
-   * Phase 2: municipality-level average (same cascade)
-   * Validated 2026-03: OKT prices are typically above RT in same area.
+   * Look up base price with omakotitalo fallback + nearby interpolation + municipality fallback.
+   * Phase 1: area-level (omakotitalo → rivitalo×1.00 → kerrostalo×0.75)
+   * Phase 1.5: IDW interpolation from nearest postal codes (max 5 within 10km)
+   * Phase 2: municipality-level median (same cascade)
+   * Returns { price, isFallback } — isFallback=true when Phase 1.5 or 2 resolved.
    */
   private async lookupBasePrice(
     areaId: string,
     propertyType: string
-  ): Promise<number | null> {
+  ): Promise<{ price: number; isFallback: boolean } | null> {
     // Phase 1: Area-level lookup
     const price = await this.fetchLatestPrice(areaId, propertyType)
-    if (price !== null) return price
+    if (price !== null) return { price, isFallback: false }
 
     if (propertyType === 'omakotitalo') {
       const rivitaloPrice = await this.fetchLatestPrice(areaId, 'rivitalo')
-      if (rivitaloPrice !== null) return rivitaloPrice * OKT_FALLBACK.fromRivitalo
+      if (rivitaloPrice !== null) return { price: rivitaloPrice * OKT_FALLBACK.fromRivitalo, isFallback: false }
 
       const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
-      if (kerrostaloPrice !== null) return kerrostaloPrice * OKT_FALLBACK.fromKerrostalo
+      if (kerrostaloPrice !== null) return { price: kerrostaloPrice * OKT_FALLBACK.fromKerrostalo, isFallback: false }
     }
 
     // Rivitalo fallback: kerrostalo × 0.85 (rivitalo typically 10-20% below KT in same area)
     if (propertyType === 'rivitalo') {
       const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
-      if (kerrostaloPrice !== null) return kerrostaloPrice * 0.85
+      if (kerrostaloPrice !== null) return { price: kerrostaloPrice * 0.85, isFallback: false }
+    }
+
+    // Phase 1.5: Nearby postal code interpolation (IDW)
+    const nearbyPrice = await this.fetchNearbyInterpolatedPrice(areaId, propertyType)
+    if (nearbyPrice !== null) return { price: nearbyPrice, isFallback: true }
+
+    if (propertyType === 'omakotitalo') {
+      const nearbyRivitalo = await this.fetchNearbyInterpolatedPrice(areaId, 'rivitalo')
+      if (nearbyRivitalo !== null) return { price: nearbyRivitalo * OKT_FALLBACK.fromRivitalo, isFallback: true }
+
+      const nearbyKerrostalo = await this.fetchNearbyInterpolatedPrice(areaId, 'kerrostalo')
+      if (nearbyKerrostalo !== null) return { price: nearbyKerrostalo * OKT_FALLBACK.fromKerrostalo, isFallback: true }
+    }
+
+    if (propertyType === 'rivitalo') {
+      const nearbyKerrostalo = await this.fetchNearbyInterpolatedPrice(areaId, 'kerrostalo')
+      if (nearbyKerrostalo !== null) return { price: nearbyKerrostalo * 0.85, isFallback: true }
     }
 
     // Phase 2: Municipality-level fallback
@@ -512,7 +532,7 @@ export class SupabaseDataProvider implements DataProvider {
     if (!municipalityAreaIds) return null
 
     const munPrice = await this.fetchMunicipalityMedianPrice(municipalityAreaIds, propertyType)
-    if (munPrice !== null) return munPrice
+    if (munPrice !== null) return { price: munPrice, isFallback: true }
 
     if (propertyType === 'omakotitalo') {
       // Fetch rivitalo and kerrostalo in parallel — they are independent lookups
@@ -520,8 +540,8 @@ export class SupabaseDataProvider implements DataProvider {
         this.fetchMunicipalityMedianPrice(municipalityAreaIds, 'rivitalo'),
         this.fetchMunicipalityMedianPrice(municipalityAreaIds, 'kerrostalo'),
       ])
-      if (munRivitalo !== null) return munRivitalo * OKT_FALLBACK.fromRivitalo
-      if (munKerrostalo !== null) return munKerrostalo * OKT_FALLBACK.fromKerrostalo
+      if (munRivitalo !== null) return { price: munRivitalo * OKT_FALLBACK.fromRivitalo, isFallback: true }
+      if (munKerrostalo !== null) return { price: munKerrostalo * OKT_FALLBACK.fromKerrostalo, isFallback: true }
     }
 
     return null
@@ -584,6 +604,37 @@ export class SupabaseDataProvider implements DataProvider {
 
     if (!data) return null
     return Number(data.price_per_sqm_median ?? data.price_per_sqm_avg)
+  }
+
+  /**
+   * Phase 1.5: IDW interpolation from nearest postal codes.
+   * Uses get_nearby_area_prices RPC (max 5 neighbors within 10km).
+   * Returns interpolated price or null if fewer than 2 neighbors found.
+   */
+  private async fetchNearbyInterpolatedPrice(
+    areaId: string,
+    propertyType: string
+  ): Promise<number | null> {
+    const currentYear = new Date().getFullYear()
+    const { data, error } = await this.supabase.rpc('get_nearby_area_prices', {
+      p_area_id: areaId,
+      p_property_type: propertyType,
+      p_year: currentYear,
+    })
+
+    if (error || !data || data.length < 2) return null
+
+    // IDW: weighted average (weight = 1/distance)
+    let numerator = 0
+    let denominator = 0
+    for (const row of data as { price: number; distance_m: number }[]) {
+      const weight = 1.0 / row.distance_m
+      numerator += Number(row.price) * weight
+      denominator += weight
+    }
+
+    if (denominator === 0) return null
+    return numerator / denominator
   }
 
   /**

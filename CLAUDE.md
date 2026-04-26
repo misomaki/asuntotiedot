@@ -503,7 +503,8 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 |----------|--------|-------------|
 | `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
 | `supabase/migrations/022_sync_price_factors.sql` | Tietokanta — korvattu 034:llä | - |
-| `supabase/migrations/034_fix_okt_fallback_and_clamp.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**: OKT fallback 1.00/0.75, nbhd clamp 0.50, price-range S-curve, sample_count ≥ 2. Korvaa 022:n. | Mikä tahansa faktori muuttuu |
+| `supabase/migrations/034_fix_okt_fallback_and_clamp.sql` | Tietokanta — korvattu 038:llä | - |
+| `supabase/migrations/038_nearby_interpolation.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**: Phase 1.5 IDW interpolation, S-curve fallback guard, latest-year fix. Korvaa 034:n. | Mikä tahansa faktori muuttuu |
 | `supabase/migrations/016_recalibrated_age_factors.sql` | Korvattu 022:lla | - |
 | `supabase/migrations/017_recalibrated_water_factors.sql` | Korvattu 022:lla | - |
 | `supabase/migrations/015_energy_size_factors.sql` | Tietokanta — energy/size sarakkeet + match_ryhti_energy_apartment_batch RPC | Energy/size sarakkeet muuttuvat |
@@ -612,9 +613,13 @@ estimated_price = raw_estimate × price_range_correction(raw_estimate)
 ```
 
 **Base price** = €/m² (postinumero + vuosi + talotyyppi)
+- **Phase 1:** Area-level lookup (postinumero + talotyyppi, uusin vuosi). OKT cascade: omakotitalo → rivitalo×1.00 → kerrostalo×0.75. RT cascade: rivitalo → kerrostalo×0.85.
+- **Phase 1.5:** Nearby postal code interpolation (IDW, max 5 naapuria 10km säteellä, min 2 vaaditaan). Käytetään kun postinumerolla ei ole hintadataa. `get_nearby_area_prices()` RPC + `areas.centroid` GIST-indeksi. Sama OKT/RT-cascade.
+- **Phase 2:** Municipality median fallback (PERCENTILE_CONT, vain uusin vuosi per alue). Sama OKT/RT-cascade.
 - Kerrostalo/rivitalo: StatFin PxWeb API
 - Omakotitalo: **KHR-pohjainen** (MML kauppahintarekisteri mediaani / avg asuntoala per postinumero, 270 aluetta, 2000–2026)
 - Omakotitalo fallback (jos ei KHR-dataa): rivitalo × OKT_FALLBACK.fromRivitalo (1.00) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.75)
+- **`isFallback`-lippu:** Phase 1.5 ja Phase 2 asettavat `isFallback=true` → S-curve low-end discount (0.92) ohitetaan
 
 **Age factor** (U-käyrä, recalibrated 2026-04-01):
 ```
@@ -665,19 +670,20 @@ uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) lasket
 - `age_factor 0.85` → ei vaimennusta, `age_factor 0.70` → 50% vaimennus
 - Kaava: `dampened = 1.0 + (raw - 1.0) * (1.0 - dampening)` missä `dampening = 0.5 * min(1.0, (0.85 - age_factor) / 0.15)`
 - Discount-faktorit (< 1.0) eivät vaimene — vanhat rakennukset halvemmilla alueilla pitävät täyden alennuksen
-- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `034_fix_okt_fallback_and_clamp.sql`
+- Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `038_nearby_interpolation.sql`
 - Vaimennetaan: neighborhood (markkina-sentimentti). EI vaimenneta: water (pysyvä fyysinen ominaisuus), energy, size, floor (rakennuksen sisäiset)
 
-**Price-range correction** (S-curve, added 2026-04-10):
+**Price-range correction** (S-curve, added 2026-04-10, fallback guard added 2026-04-26):
 - ≤1500 €/m²: 0.92 (strong discount — cheap areas systematically overestimated)
 - 1500–2000 €/m²: linear interpolation 0.92→1.00
 - 2000–6000 €/m²: 1.00 (neutral zone — no correction)
 - 6000–8000 €/m²: linear interpolation 1.00→1.06
 - >8000 €/m²: 1.06 (boost — premium areas systematically underestimated)
+- **Fallback guard:** When `isFallback=true` (Phase 1.5 or Phase 2 base price) AND `rawEstimate ≤ 2000`: correction = 1.00 (neutral). Low-end discount skipped because fallback prices are already uncertain — additional discount compounds the error.
 - Applied to final raw estimate AFTER all factors, BEFORE rounding
 - Reason: StatFin base prices compress the spread (blend old+new transactions)
 
-**Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää
+**Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää. **Fixed 2026-04-26:** SQL nyt suodattaa uusimpaan vuoteen per alue ennen PERCENTILE_CONT (aiemmin sekoitti kaikkien vuosien hinnat, mikä laimensi mediaania).
 
 ## Liiketoimintamalli ja monetisaatio
 

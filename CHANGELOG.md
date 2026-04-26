@@ -3,6 +3,7 @@
 > Auto-updated by Claude Code hook after each commit.
 
 ## %Y->
+- `3cb6b7c` fix: bust building tile cache after floor_count + price recompute (%Y->- (HEAD -> main))
 - `d0e0b58` fix: SEO audit — fix critical and high-priority issues (%Y->- (HEAD -> main))
 - `bc4b194` fix: restore floor_count=2 for 2-story OKTs reverted by mig 036 (%Y->- (HEAD -> main, origin/main))
 - `874f1c5` fix: correct floor_count=2 clamp and OKT→rivitalo misclassification (%Y->- (HEAD -> main, origin/claude/fix-data-errors-hJw2v))
