@@ -6,7 +6,6 @@ import { getCityBySlug, CITY_SLUGS } from '@/app/lib/citySlugs'
 import { getDataProvider } from '@/app/lib/dataProvider'
 import { getSupabaseAdmin } from '@/app/lib/supabaseClient'
 import { formatNumber } from '@/app/lib/formatters'
-import { CityAISearch } from './CityAISearch'
 
 export const revalidate = 86400 // ISR: revalidate every 24h
 
@@ -387,7 +386,7 @@ export default async function CityPage({ params }: PageProps) {
 
   if (!data) notFound()
 
-  const { city, areaCount, prices, topAreas, cheapestAreas, trendingUp, trendingDown, allAreas } = data
+  const { city, areaCount, prices, topAreas, cheapestAreas, trendingUp, trendingDown } = data
 
   return (
     <div className="min-h-screen bg-[#FFFBF5]">
@@ -424,14 +423,7 @@ export default async function CityPage({ params }: PageProps) {
           </p>
         </section>
 
-        {/* AI Search */}
-        <section className="mb-10">
-          <h2 className="text-xl font-display font-bold text-[#1a1a1a] mb-2">Etsi asuntoja</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Kuvaile millaista asuntoa etsit — tekoäly hakee sopivat kohteet.
-          </p>
-          <CityAISearch cityName={city.name} areaCodes={allAreas.map(a => a.area_code)} />
-        </section>
+        {/* AI Search — hidden for GTM launch */}
 
         {/* Price overview */}
         <section className="mb-10">
