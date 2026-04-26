@@ -523,7 +523,7 @@ export default async function CityPage({ params }: PageProps) {
             className="neo-press inline-flex items-center gap-2 bg-[#1a1a1a] text-white font-display font-bold text-base px-6 py-3 rounded-full border-2 border-[#1a1a1a] hover:bg-pink hover:text-white transition-colors"
           >
             <MapPin size={18} />
-            Tutki {city.name}a kartalla
+            Tutki kartalla
           </Link>
           <p className="text-xs text-muted-foreground mt-3">
             Karttanäkymässä näet yksittäisten rakennusten hinta-arviot
