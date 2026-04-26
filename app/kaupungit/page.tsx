@@ -129,10 +129,43 @@ export default async function CitiesPage() {
         </div>
       </main>
 
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://www.neliohinnat.fi' },
+              { '@type': 'ListItem', position: 2, name: 'Kaupungit' },
+            ],
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: 'Suomen suurimpien kaupunkien asuntohinnat',
+            url: 'https://www.neliohinnat.fi/kaupungit',
+            numberOfItems: cities.length,
+            itemListElement: cities.map((city, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: city.name,
+              url: `https://www.neliohinnat.fi/kaupunki/${city.slug}`,
+            })),
+          }),
+        }}
+      />
+
       {/* Footer */}
       <footer className="border-t-2 border-[#1a1a1a]/10 bg-[#FFFBF5] py-6">
         <div className="max-w-4xl mx-auto px-4 text-xs text-muted-foreground">
-          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: OpenStreetMap &amp; MML</p>
+          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: MML Maastotietokanta (CC BY 4.0)</p>
         </div>
       </footer>
     </div>

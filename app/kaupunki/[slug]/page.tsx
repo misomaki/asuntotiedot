@@ -567,13 +567,42 @@ export default async function CityPage({ params }: PageProps) {
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Dataset',
+              name: `Asuntohinnat — ${city.name}`,
+              description: `Asuntojen neliöhinnat ${city.name}n seudulla. ${areaCount} naapurustoa. Tiedot Tilastokeskuksen toteutuneisiin kauppahintoihin perustuen.`,
+              url: `https://www.neliohinnat.fi/kaupunki/${slug}`,
+              inLanguage: 'fi',
+              license: 'https://creativecommons.org/licenses/by/4.0/',
+              isAccessibleForFree: true,
+              creator: { '@id': 'https://www.neliohinnat.fi/#organization' },
+              temporalCoverage: '2009/2024',
+              spatialCoverage: {
+                '@type': 'Place',
+                name: city.name,
+                geo: { '@type': 'GeoCoordinates', latitude: city.center[1], longitude: city.center[0] },
+                address: { '@type': 'PostalAddress', addressLocality: city.name, addressCountry: 'FI' },
+              },
+              variableMeasured: [
+                prices.kerrostalo.median && { '@type': 'PropertyValue', name: 'Kerrostalo — mediaanineliöhinta', unitText: 'EUR/m²', value: prices.kerrostalo.median },
+                prices.rivitalo.median && { '@type': 'PropertyValue', name: 'Rivitalo — mediaanineliöhinta', unitText: 'EUR/m²', value: prices.rivitalo.median },
+                prices.omakotitalo.median && { '@type': 'PropertyValue', name: 'Omakotitalo — mediaanineliöhinta', unitText: 'EUR/m²', value: prices.omakotitalo.median },
+              ].filter(Boolean),
+              citation: 'Tilastokeskus StatFin — Asuntojen hinnat (CC BY 4.0)',
+            }),
+          }}
+        />
       </main>
 
       {/* Footer */}
       <footer className="border-t-2 border-[#1a1a1a]/10 bg-[#FFFBF5] py-6">
         <div className="max-w-5xl mx-auto px-4 text-xs text-muted-foreground">
-          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: OpenStreetMap & MML | Osoitteet: MML</p>
-          <p className="mt-1">Hinta-arviot ovat suuntaa-antavia eivätkä korvaa virallista arviota.</p>
+          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: MML Maastotietokanta (CC BY 4.0) | Osoitteet: MML</p>
+          <p className="mt-1">Hinta-arviot ovat suuntaa-antavia eivätkä korvaa virallista arviota. Tilastotiedot: 2024.</p>
         </div>
       </footer>
     </div>

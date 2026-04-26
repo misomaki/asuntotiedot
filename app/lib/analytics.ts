@@ -80,6 +80,19 @@ export function trackFaqAccordion(props: {
   posthog.capture("faq_accordion_toggled", props);
 }
 
+// --- Feedback events ---
+
+export function trackPriceFeedback(props: {
+  buildingId: string;
+  address: string | null;
+  areaCode: string | null;
+  estimatedPrice: number | null;
+  rating: "accurate" | "too_high" | "too_low";
+  comment?: string;
+}) {
+  posthog.capture("price_feedback", props);
+}
+
 // --- Future: conversion events ---
 
 export function trackSignup(props: {

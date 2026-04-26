@@ -6,13 +6,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.neliohinnat.fi
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const provider = getDataProvider()
-  const geojson = await provider.getAreasGeoJSON(2024, 'kerrostalo')
-  const features = geojson?.features ?? []
 
-  const areaCodes = features
-    .map(f => f.properties?.area_code as string)
-    .filter(Boolean)
-    .sort()
+  // Fetch all 3 property types to capture areas that only have RT/OKT data
+  const [ktGeo, rtGeo, oktGeo] = await Promise.all([
+    provider.getAreasGeoJSON(2024, 'kerrostalo'),
+    provider.getAreasGeoJSON(2024, 'rivitalo'),
+    provider.getAreasGeoJSON(2024, 'omakotitalo'),
+  ])
+
+  const codeSet = new Set<string>()
+  for (const geo of [ktGeo, rtGeo, oktGeo]) {
+    for (const f of geo?.features ?? []) {
+      const code = f.properties?.area_code as string
+      if (code) codeSet.add(code)
+    }
+  }
+  const areaCodes = [...codeSet].sort()
 
   const citySlugs = getAllCitySlugs()
   // Use a fixed date representing last data update — not new Date() which Googlebot ignores

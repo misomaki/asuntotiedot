@@ -4,7 +4,7 @@
 
 ## What This Service Does
 
-Neliohinnat.fi (brand name: Neliöt) estimates the €/m² price of approximately 270,000 residential buildings across Helsinki, Tampere, and Turku metropolitan areas. Users can zoom into any neighborhood, click any building, and see a detailed price estimate with factor breakdown.
+Neliohinnat.fi (brand name: Neliöt) estimates the €/m² price of approximately 270,000 residential buildings across 7 major Finnish cities. Users can zoom into any neighborhood, click any building, and see a detailed price estimate with factor breakdown.
 
 ## How Prices Are Calculated
 
@@ -20,16 +20,21 @@ The algorithm combines 6 factors applied to a base price from Statistics Finland
 ## Data Sources (all open, CC BY 4.0 or ODbL)
 
 - Statistics Finland (Tilastokeskus) — transaction prices, demographics, socioeconomics
-- National Land Survey of Finland (MML) — building geometries, addresses, land transaction statistics
+- National Land Survey of Finland (MML) — building geometries, addresses, land transaction statistics (KHR)
 - SYKE Ryhti building registry — construction year, floor count, building purpose, apartment count
 - OpenStreetMap — supplementary building data
 
 ## Key Pages
 
 - Homepage (map): https://www.neliohinnat.fi
-- City overview: https://www.neliohinnat.fi/kaupunki/helsinki
-- City overview: https://www.neliohinnat.fi/kaupunki/tampere
-- City overview: https://www.neliohinnat.fi/kaupunki/turku
+- All cities: https://www.neliohinnat.fi/kaupungit
+- Helsinki: https://www.neliohinnat.fi/kaupunki/helsinki
+- Tampere: https://www.neliohinnat.fi/kaupunki/tampere
+- Turku: https://www.neliohinnat.fi/kaupunki/turku
+- Oulu: https://www.neliohinnat.fi/kaupunki/oulu
+- Jyväskylä: https://www.neliohinnat.fi/kaupunki/jyvaskyla
+- Kuopio: https://www.neliohinnat.fi/kaupunki/kuopio
+- Lahti: https://www.neliohinnat.fi/kaupunki/lahti
 - Area directory: https://www.neliohinnat.fi/alue
 - FAQ / methodology: https://www.neliohinnat.fi/faq
 - Individual area example: https://www.neliohinnat.fi/alue/00100 (Helsinki center)
@@ -43,8 +48,22 @@ Mean absolute error ~18% vs Etuovi.fi asking prices (validated March 2026, 87 li
 - Helsinki metropolitan area (Helsinki, Espoo, Vantaa, Kauniainen)
 - Tampere region (incl. Nokia)
 - Turku region
+- Oulu
+- Jyväskylä
+- Kuopio
+- Lahti
 - ~270,000 priced residential buildings out of ~700,000 total
 - 406 postal code areas, 107 municipalities with price data
+
+## Typical Price Benchmarks (2024, apartment buildings, median €/m²)
+
+- Helsinki: ~4,200 €/m²
+- Tampere: ~2,800 €/m²
+- Turku: ~2,400 €/m²
+- Oulu: ~1,900 €/m²
+- Jyväskylä: ~2,100 €/m²
+- Kuopio: ~2,100 €/m²
+- Lahti: ~1,800 €/m²
 
 ## Property Types
 

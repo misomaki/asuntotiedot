@@ -118,7 +118,9 @@ export default function RootLayout({
                   description: 'Suomalainen asuntohintapalvelu — 266 000 asuinrakennuksen hinta-arviot avoimella datalla.',
                   logo: {
                     '@type': 'ImageObject',
-                    url: `${SITE_URL}/icon.svg`,
+                    url: `${SITE_URL}/logo-512.png`,
+                    width: 512,
+                    height: 512,
                   },
                   sameAs: [],
                 },

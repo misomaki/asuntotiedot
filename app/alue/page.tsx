@@ -138,10 +138,25 @@ export default async function AreasIndexPage() {
         </div>
       </main>
 
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Neliöt', item: 'https://www.neliohinnat.fi' },
+              { '@type': 'ListItem', position: 2, name: 'Alueet' },
+            ],
+          }),
+        }}
+      />
+
       {/* Footer */}
       <footer className="border-t-2 border-[#1a1a1a]/10 bg-[#FFFBF5] py-6">
         <div className="max-w-5xl mx-auto px-4 text-xs text-muted-foreground">
-          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: MML Maastotietokanta (CC BY 4.0)</p>
+          <p>Lähde: Tilastokeskus (CC BY 4.0) | Rakennukset: MML Maastotietokanta (CC BY 4.0) | Tilastotiedot: 2024.</p>
         </div>
       </footer>
     </div>

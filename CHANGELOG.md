@@ -3,6 +3,15 @@
 > Auto-updated by Claude Code hook after each commit.
 
 ## %Y->
+- `d0e0b58` fix: SEO audit — fix critical and high-priority issues (%Y->- (HEAD -> main))
+- `bc4b194` fix: restore floor_count=2 for 2-story OKTs reverted by mig 036 (%Y->- (HEAD -> main, origin/main))
+- `874f1c5` fix: correct floor_count=2 clamp and OKT→rivitalo misclassification (%Y->- (HEAD -> main, origin/claude/fix-data-errors-hJw2v))
+- `be5ee9b` feat: enable AI discoverability — unblock GPTBot/ClaudeBot, add llms.txt (%Y->- (HEAD -> main, origin/main))
+- `57114f2` fix: use www.neliohinnat.fi as canonical URL for GSC compatibility (%Y->- (HEAD -> main, origin/main))
+- `81878aa` chore: strip marketplace/auth refs from legal pages for GTM (%Y->- (HEAD -> main, origin/main))
+- `bc75fed` fix: prevent Ryhti from downgrading OKT floor counts (%Y->- (HEAD -> main))
+- `6f00d2a` fix: sync OKT fallback, widen neighborhood clamp, add price-range correction (%Y->- (HEAD -> main))
+- `a070eb5` feat: SEO overhaul — structured data, OG image, security headers, ISR caching (%Y->- (HEAD -> main))
 - `b5e152a` fix: handle auto-confirmed signups — redirect instead of showing email screen (%Y->- (HEAD -> main, origin/main))
 
 ## 2026-04

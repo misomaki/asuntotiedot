@@ -26,7 +26,12 @@ import {
   Heart,
   Baby,
   LandPlot,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
+  Send,
 } from 'lucide-react'
+import { trackPriceFeedback } from '@/app/lib/analytics'
 import type { BuildingWithPrice } from '@/app/types'
 
 /**
@@ -85,7 +90,7 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
   }
 
   if (isLoading || (!building && !fetchFailed)) {
-    return <BuildingPanelSkeleton onClose={handleClose} />
+    return <BuildingPanelSkeleton onClose={handleClose} hideClose={hideClose} />
   }
 
   if (!building) {
@@ -348,6 +353,16 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
       {/* ── Nearby services (Lähipalvelut) ── */}
       <NearbyServices building={building} />
 
+      {/* ── Price feedback ── */}
+      {hasPrice && (
+        <PriceFeedback
+          buildingId={selectedBuilding!}
+          address={building.address}
+          areaCode={building.area_code}
+          estimatedPrice={price}
+        />
+      )}
+
       {/* ── Disclaimer ── */}
       <p className="text-xs text-muted-foreground/70 leading-snug">
         Arvio perustuu Tilastokeskuksen tilastohintoihin ja rakennuksen ominaisuuksiin. Suuntaa-antava.
@@ -473,7 +488,7 @@ function FactorRow({
   )
 }
 
-function BuildingPanelSkeleton({ onClose }: { onClose: () => void }) {
+function BuildingPanelSkeleton({ onClose, hideClose }: { onClose: () => void; hideClose?: boolean }) {
   return (
     <div className="space-y-4">
       {/* Header — matches: text-base title + text-xs subtitle */}
@@ -482,14 +497,16 @@ function BuildingPanelSkeleton({ onClose }: { onClose: () => void }) {
           <Skeleton className="h-[22px] w-44" />
           <Skeleton className="h-[14px] w-32" />
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Sulje"
-        >
-          <X size={16} />
-        </button>
+        {!hideClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-shrink-0 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Sulje"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Price card — matches: rounded-xl border-2 with px-4 pt-3 pb-2.5 + toggle row */}
@@ -521,6 +538,127 @@ function BuildingPanelSkeleton({ onClose }: { onClose: () => void }) {
 
       {/* Disclaimer */}
       <Skeleton className="h-[14px] w-4/5" />
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Price feedback widget
+// ---------------------------------------------------------------------------
+
+type FeedbackRating = 'accurate' | 'too_high' | 'too_low'
+
+function PriceFeedback({
+  buildingId,
+  address,
+  areaCode,
+  estimatedPrice,
+}: {
+  buildingId: string
+  address: string | null
+  areaCode: string | null
+  estimatedPrice: number | null
+}) {
+  const [rating, setRating] = useState<FeedbackRating | null>(null)
+  const [comment, setComment] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  function handleSubmit(selectedRating: FeedbackRating) {
+    setRating(selectedRating)
+    trackPriceFeedback({
+      buildingId,
+      address,
+      areaCode,
+      estimatedPrice,
+      rating: selectedRating,
+      comment: comment.trim() || undefined,
+    })
+    setSubmitted(true)
+  }
+
+  function handleCommentSubmit() {
+    if (!rating || !comment.trim()) return
+    trackPriceFeedback({
+      buildingId,
+      address,
+      areaCode,
+      estimatedPrice,
+      rating,
+      comment: comment.trim(),
+    })
+    setSubmitted(true)
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-3 py-2.5 text-center animate-fade-in">
+        <p className="text-xs text-muted-foreground">Kiitos palautteesta!</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-3 py-2.5 space-y-2 animate-fade-in">
+      <p className="text-xs text-muted-foreground font-medium">Osuiko hinta-arvio?</p>
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={() => handleSubmit('too_low')}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 py-2 text-xs',
+            'hover:bg-pink-baby/30 hover:border-[#1a1a1a]/20 transition-colors cursor-pointer',
+            rating === 'too_low' && 'bg-pink-baby/40 border-[#1a1a1a]/20',
+          )}
+        >
+          <ThumbsDown size={13} />
+          <span>Liian matala</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSubmit('accurate')}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 py-2 text-xs',
+            'hover:bg-mint/10 hover:border-[#1a1a1a]/20 transition-colors cursor-pointer',
+            rating === 'accurate' && 'bg-mint/20 border-[#1a1a1a]/20',
+          )}
+        >
+          <Minus size={13} />
+          <span>Osui</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSubmit('too_high')}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 py-2 text-xs',
+            'hover:bg-pink-baby/30 hover:border-[#1a1a1a]/20 transition-colors cursor-pointer',
+            rating === 'too_high' && 'bg-pink-baby/40 border-[#1a1a1a]/20',
+          )}
+        >
+          <ThumbsUp size={13} />
+          <span>Liian korkea</span>
+        </button>
+      </div>
+      {rating && !submitted && (
+        <div className="flex gap-1.5 animate-fade-in">
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Mikä olisi oikea hinta? (vapaaehtoinen)"
+            className="flex-1 rounded-lg border border-[#1a1a1a]/10 bg-transparent px-2.5 py-1.5 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#1a1a1a]/30"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCommentSubmit()
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleCommentSubmit}
+            className="rounded-lg border border-[#1a1a1a]/10 px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
+          >
+            <Send size={13} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
