@@ -727,7 +727,7 @@ function MarketplaceSignals({ buildingId }: { buildingId: string }) {
 
   if (!signals) return null
 
-  const interestCount = signals.interest_count + (interested ? 0 : 0) // already included via optimistic update
+  const interestCount = signals.interest_count
 
   return (
     <div className="rounded-xl border-2 border-[#1a1a1a] overflow-hidden animate-fade-in">
