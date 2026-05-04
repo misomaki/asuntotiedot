@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCityBySlug } from '@/app/lib/citySlugs'
 import { getDataProvider } from '@/app/lib/dataProvider'
+export const dynamic = 'force-dynamic'
 
 interface AreaPrice {
   area_code: string
