@@ -8,7 +8,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCityBySlug } from '@/app/lib/citySlugs'
 import { getDataProvider } from '@/app/lib/dataProvider'
-export const dynamic = 'force-dynamic'
 
 interface AreaPrice {
   area_code: string
@@ -154,6 +153,6 @@ export async function GET(
   }
 
   return NextResponse.json(result, {
-    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=600' },
+    headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=600' },
   })
 }

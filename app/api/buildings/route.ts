@@ -44,6 +44,6 @@ export async function GET(request: NextRequest) {
   )
 
   return NextResponse.json(geojson, {
-    headers: { 'Cache-Control': 'public, s-maxage=300' },
+    headers: { 'Cache-Control': 'public, max-age=300, s-maxage=300' },
   })
 }

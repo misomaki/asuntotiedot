@@ -49,7 +49,11 @@ export async function GET(request: NextRequest) {
     const provider = getDataProvider()
     const prices = await provider.getPriceTrend(areaCode, typeParam)
 
-    return NextResponse.json(prices)
+    return NextResponse.json(prices, {
+      headers: {
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+      },
+    })
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Internal server error'
