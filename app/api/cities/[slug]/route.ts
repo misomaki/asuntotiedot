@@ -154,6 +154,6 @@ export async function GET(
   }
 
   return NextResponse.json(result, {
-    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=600' },
+    headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=600' },
   })
 }

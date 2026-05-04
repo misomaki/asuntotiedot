@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'public, s-maxage=3600',
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
     })
   } catch (error: unknown) {

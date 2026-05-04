@@ -40,7 +40,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       )
     }
 
-    return NextResponse.json(area)
+    return NextResponse.json(area, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    })
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Internal server error'

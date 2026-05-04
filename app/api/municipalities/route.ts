@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(geojson, {
       headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
       },
     })
   } catch (error: unknown) {
