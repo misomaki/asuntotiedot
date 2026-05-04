@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, LogOut, ChevronDown, HelpCircle, Settings } from 'lucide-react'
+import { User, LogOut, ChevronDown, HelpCircle, Settings, Bell } from 'lucide-react'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import { cn } from '@/app/lib/utils'
@@ -173,7 +173,7 @@ export function UserMenu() {
           {menuLinks}
           <button
             type="button"
-            onClick={() => { setIsOpen(false); router.push('/asetukset') }}
+            onClick={() => { setIsOpen(false); router.push('/omat-ilmoitukset') }}
             className={cn(
               'w-full px-3 text-left',
               'flex items-center gap-2',
@@ -183,6 +183,22 @@ export function UserMenu() {
               'animate-slide-up'
             )}
             style={{ animationDelay: '20ms', animationFillMode: 'both' }}
+          >
+            <Bell size={isDesktop ? 12 : 14} className="text-[#999]" />
+            Omat ilmoitukset
+          </button>
+          <button
+            type="button"
+            onClick={() => { setIsOpen(false); router.push('/asetukset') }}
+            className={cn(
+              'w-full px-3 text-left',
+              'flex items-center gap-2',
+              isDesktop ? 'py-2 text-xs' : 'py-3 text-sm',
+              'text-[#1a1a1a] font-body',
+              'hover:bg-pink-baby transition-colors',
+              'animate-slide-up'
+            )}
+            style={{ animationDelay: '40ms', animationFillMode: 'both' }}
           >
             <Settings size={isDesktop ? 12 : 14} className="text-[#999]" />
             Asetukset
@@ -205,7 +221,7 @@ export function UserMenu() {
               'hover:bg-pink-baby transition-colors',
               'animate-slide-up'
             )}
-            style={{ animationDelay: '40ms', animationFillMode: 'both' }}
+            style={{ animationDelay: '60ms', animationFillMode: 'both' }}
           >
             <LogOut size={isDesktop ? 12 : 14} className="text-[#999]" />
             Kirjaudu ulos

@@ -11,8 +11,8 @@ import { CITIES, CityConfig } from '@/app/lib/cities'
 import { CITY_SLUGS } from '@/app/lib/citySlugs'
 import { cn } from '@/app/lib/utils'
 import { searchAddresses, type GeocodingResult } from '@/app/lib/geocoding'
-import { HelpCircle } from 'lucide-react'
 import { trackAreaClick, trackCityClick, trackAddressClick, trackFilterChange, trackSearch } from '@/app/lib/analytics'
+import { UserMenu } from '@/app/components/UserMenu'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -782,20 +782,8 @@ export function Header() {
               )}
             </div>
 
-            {/* Info link */}
-            <Link
-              href="/faq"
-              aria-label="Tietoa palvelusta"
-              className={cn(
-                'neo-press',
-                'h-10 md:h-9 w-10 md:w-9 rounded-lg border-2 border-[#1a1a1a] bg-bg-primary',
-                'shadow-hard-sm hover:bg-pink-baby transition-colors',
-                'flex items-center justify-center',
-                'flex-shrink-0'
-              )}
-            >
-              <HelpCircle size={isDesktop ? 14 : 16} className="text-[#1a1a1a]" />
-            </Link>
+            {/* User menu (auth + omat ilmoitukset + FAQ) */}
+            <UserMenu />
           </div>
         </div>
 

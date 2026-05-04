@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useMapContext } from '@/app/contexts/MapContext'
+import { useAuth } from '@/app/contexts/AuthContext'
 import { cn } from '@/app/lib/utils'
 import { formatNumber, formatPriceRange, getPropertyTypeLabel } from '@/app/lib/formatters'
 import { computePriceRange, inferPropertyType } from '@/app/lib/priceEstimation'
@@ -30,6 +32,9 @@ import {
   ThumbsDown,
   Minus,
   Send,
+  Bell,
+  Check,
+  LogIn,
 } from 'lucide-react'
 import { trackPriceFeedback } from '@/app/lib/analytics'
 import type { BuildingWithPrice } from '@/app/types'
@@ -285,6 +290,9 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
           </>
         )}
       </div>
+
+      {/* ── Marketplace signals ── */}
+      <MarketplaceSignals buildingId={selectedBuilding!} />
 
       {/* ── Building attributes — 2-col grid ── */}
       <div className="grid grid-cols-2 gap-2">
@@ -659,6 +667,124 @@ function PriceFeedback({
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Marketplace signals
+// ---------------------------------------------------------------------------
+
+interface Signals {
+  interest_count: number
+  sell_intent_count: number
+  has_sell_intent: boolean
+}
+
+function MarketplaceSignals({ buildingId }: { buildingId: string }) {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [signals, setSignals] = useState<Signals | null>(null)
+  const [interested, setInterested] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    setInterested(false)
+    setSignals(null)
+    fetch(`/api/marketplace/signals?buildingId=${buildingId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setSignals(data as Signals | null))
+      .catch(() => {})
+  }, [buildingId])
+
+  async function handleInterest() {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      if (interested) {
+        await fetch(`/api/marketplace/interest?buildingId=${buildingId}`, { method: 'DELETE' })
+        setInterested(false)
+        setSignals((prev) => prev ? { ...prev, interest_count: Math.max(0, prev.interest_count - 1) } : prev)
+      } else {
+        await fetch('/api/marketplace/interest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ building_id: buildingId }),
+        })
+        setInterested(true)
+        setSignals((prev) => prev ? { ...prev, interest_count: prev.interest_count + 1 } : prev)
+      }
+    } catch {
+      // ignore network errors silently
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (!signals) return null
+
+  const interestCount = signals.interest_count + (interested ? 0 : 0) // already included via optimistic update
+
+  return (
+    <div className="rounded-xl border-2 border-[#1a1a1a] overflow-hidden animate-fade-in">
+      {/* Header row */}
+      <div className="px-3 py-2 flex items-center gap-2 bg-yellow/20">
+        <Bell size={13} className="text-muted-foreground flex-shrink-0" />
+        <span className="text-xs font-display font-bold uppercase tracking-wider text-foreground">
+          Ostokiinnostuksia
+        </span>
+        <span className="ml-auto text-xs font-mono font-bold text-foreground">
+          {interestCount > 0 ? interestCount : '–'}
+        </span>
+      </div>
+
+      {/* Sell intent indicator */}
+      {signals.has_sell_intent && (
+        <div className="px-3 py-1.5 bg-mint/10 border-t border-[#1a1a1a]/10 flex items-center gap-1.5">
+          <span className="text-xs text-mint font-medium">Omistajalla myynti-ilmoitus</span>
+        </div>
+      )}
+
+      {/* CTA button */}
+      <div className="px-3 py-2.5 border-t border-[#1a1a1a]/10">
+        {interested ? (
+          <button
+            type="button"
+            onClick={handleInterest}
+            disabled={isSubmitting}
+            className={cn(
+              'w-full flex items-center justify-center gap-1.5',
+              'rounded-lg border-2 border-mint bg-mint/10 text-mint',
+              'px-3 py-2 text-xs font-medium transition-colors',
+              'hover:bg-mint/20 cursor-pointer',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+          >
+            <Check size={13} />
+            Kiinnostus ilmoitettu — peruuta
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleInterest}
+            disabled={isSubmitting}
+            className={cn(
+              'w-full flex items-center justify-center gap-1.5',
+              'rounded-lg border-2 border-[#1a1a1a] bg-yellow text-[#1a1a1a]',
+              'px-3 py-2 text-xs font-medium transition-colors',
+              'hover:bg-yellow/80 neo-press cursor-pointer',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+          >
+            {!user && <LogIn size={13} />}
+            {isSubmitting ? 'Tallennetaan...' : user ? 'Olen kiinnostunut tästä' : 'Kirjaudu ja ilmoita kiinnostuksesi'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }
