@@ -571,29 +571,38 @@ function PriceFeedback({
   const [comment, setComment] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(selectedRating: FeedbackRating) {
-    setRating(selectedRating)
+  function saveFeedback(selectedRating: FeedbackRating, text?: string) {
     trackPriceFeedback({
       buildingId,
       address,
       areaCode,
       estimatedPrice,
       rating: selectedRating,
-      comment: comment.trim() || undefined,
+      comment: text || undefined,
     })
+    fetch('/api/feedback/price', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        building_id: buildingId,
+        address,
+        area_code: areaCode,
+        estimated_price_per_sqm: estimatedPrice,
+        rating: selectedRating,
+        comment: text || undefined,
+      }),
+    }).catch(() => {})
+  }
+
+  function handleSubmit(selectedRating: FeedbackRating) {
+    setRating(selectedRating)
+    saveFeedback(selectedRating)
     setSubmitted(true)
   }
 
   function handleCommentSubmit() {
     if (!rating || !comment.trim()) return
-    trackPriceFeedback({
-      buildingId,
-      address,
-      areaCode,
-      estimatedPrice,
-      rating,
-      comment: comment.trim(),
-    })
+    saveFeedback(rating, comment.trim())
     setSubmitted(true)
   }
 
