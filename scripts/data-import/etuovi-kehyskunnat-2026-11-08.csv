@@ -1,0 +1,3416 @@
+neighborhood|city|type|year|pricePerSqm|price|size|address
+"Taka-Lauttala|Nokia|K|2023|3429|84000|24.5|Tokeenkatu 2
+Myllyhaka|Nokia|K|1969|722|59891|83|Myllärinkatu 6
+Hasselbacka|Nokia|R|1990|2473|136000|55|Vaaraniementie 3
+Vihola|Nokia|R|2000|2256|229000|101.5|Vitikankatu 1 E
+Sammalisto|Nokia|R|2015|2695|225000|83.5|Pikkumäenkatu 14
+Harjuniitty|Nokia|R|2007|2733|220000|80.5|Erkinkallenkatu 1
+Tottijärvi|Nokia|O|2023|3540|439000|124|Lukkarintie 8
+Lähdeniitty|Nokia|R|2025|3682|324000|88|Aksunkatu 2 F 30
+Lähdeniitty|Nokia|R|2025|3386|298000|88|Aksunkatu 2 E 26
+Lähdeniitty|Nokia|R|2025|3474|264000|76|Aksunkatu 2 E 25
+Vihola|Nokia|R|1985|2957|139000|47|Vaaraniementie 8 B
+Vihola|Nokia|R|1989|2896|139000|48|Vaaraniementie 4 A
+Alhoniitty|Nokia|K|1972|1483|129000|87|Lauttakorventie 7 E
+Koskenmäki|Nokia|K|1975|1000|75000|75|Puutteenkuja 1 E
+Ketolanmäki|Nokia|O|1957|1872|175000|93.5|Ilveskatu 18
+Viiki|Nokia|O|1967|2624|465000|177.2|Saviselänkatu
+Kohdetta myyAtte MiikkulainenIdestaminkatu 29 A 13|Nokia|K|2026|4877|399900|82|Idestaminkatu 29 A 13
+Kohdetta myyAtte MiikkulainenIdestaminkatu 29 A 19|Nokia|K|2026|5128|279500|54.5|Idestaminkatu 29 A 19
+Kohdetta myyAtte MiikkulainenIdestaminkatu 29 A 12|Nokia|K|2026|4837|326500|67.5|Idestaminkatu 29 A 12
+Taka-Lauttala|Nokia|R|1986|2329|184000|79|Tanhuankatu 20 B
+Keskusta|Nokia|K|1956|1414|108900|77|Kylmänojankatu 4
+Keskusta|Nokia|R|1990|2148|174000|81|Hinttalankatu 3
+Keskusta|Nokia|K|2022|590|29188|49.5|Poutuntie 2c
+Keskusta|Nokia|K|2023|3315|121000|36.5|Kolunkatu 1b
+Siuro|Nokia|O|2012|2514|264000|105|Ruutanankatu 4 A
+Linnavuori|Nokia|K|1945|522|29500|56.5|Linnavuorentie 27
+Hauroinen|Nokia|R|2001|2207|245000|111|Rantahaankatu 7
+Lähdeniitty|Nokia|R|2016|2863|229000|80|Paljakkakatu 5
+Keskusta|Nokia|K|1966|2463|197000|80|Souranderintie 22 D
+Nokia|Nokia|R|1990|2309|209000|90.5|Raatikonkatu 4
+Sammalisto|Nokia|O|2026|3430|415000|121|Naulonlenkki 4
+Viiki|Nokia|R|2018|3413|314000|92|Valborginkatu 2
+Harjuniitty|Nokia|O|2019|3529|540000|153|Otavankatu 2
+Vihola|Nokia|K|2018|3577|93000|26|Viholankatu 8
+Keskusta|Nokia|K|2006|2769|180000|65|Kyyninkatu 3 A
+Tottijärvi|Nokia|O|1945|1606|159000|99|Tottijärventie 7
+Koskenmäki|Nokia|O|1952|2433|219000|90|Koskenmäenkatu 54
+Koskenmäki|Nokia|O|1952|2759|229000|83|Saarnikatu 11
+Hasselbacka|Nokia|R|1990|2688|129000|48|Vaaraniementie 5 A
+Alinen|Nokia|R|1989|2225|178000|80|Tukireitti 10-12
+Siuro|Nokia|O|2022|5264|579000|110|Jokisjärventie 315
+Myllyhaka|Nokia|K|1973|1757|50960|29|Halimaantie 6
+Keskusta|Nokia|K|2003|2622|156000|59.5|Alinenkatu 37 A
+Ketolanmäki|Nokia|K|2024|540|36480|67.5|Annilankatu 1
+Myllyhaka|Nokia|K|1973|1046|68000|65|Halimaantie 2
+Lähdeniitty|Nokia|O|1978|1425|154000|108.1|Talvitie 5
+Siuro|Nokia|O|1957|1267|190000|150|Vehnäkuja 4
+Sammalisto|Nokia|R|2024|3400|323000|95|Kaapinsuonkuja 3 A
+Viiki|Nokia|R|2027|3587|269000|75|Valborginkatu 1a B
+Kankaantaka|Nokia|R|2005|2387|284000|119|Kulmalankatu 12 A 1
+Siuro|Nokia|O|1960|747|68000|91|Purotie 1
+Ketolanmäki|Nokia|K|1972|590|49000|83|Ketolanmäenkatu 6
+Tervasuo|Nokia|R|2004|2223|229000|103|Ahovalkamantie 8
+Välimaa|Nokia|R|2010|2797|179000|64|Koivusalonkatu 6
+Kankaantaka|Nokia|R|1982|1375|187000|136|Vihnuskatu 40
+Tottijärvi|Nokia|O|2017|5892|819000|139|Honkiniementie 36
+Sorva|Nokia|O|2023|3048|378000|124|Rintalantie 9
+Maatiala|Nokia|R|1956|2129|298000|140|Maatialantie 32 A
+Keskusta|Nokia|K|2022|3087|142000|46|Tuuliharjunkatu 8 A
+Harjuniitty|Nokia|O|2021|4246|484000|114|Kotkankatu 20
+Harjuniitty|Nokia|R|1395|3238|395000|122|Koronankatu 1
+Viiki|Nokia|R|2027|3337|317000|95|Valborginkatu 1a A
+Alinen|Nokia|O|1988|1168|139000|119|Karttakatu 6
+Linnavuori|Nokia|R|1981|1146|90000|78.5|Karapolvi 6 F
+Kankaantaka|Nokia|K|1959|1302|69800|53.6|Kankaantaankatu 29
+Taka-Lauttala|Nokia|K|2023|3180|159000|50|Tokeenkatu 2a
+Vihola|Nokia|R|2001|2241|223000|99.5|Rusthollarinkatu 4 c
+Kankaantaka|Nokia|K|1978|982|84000|85.5|Kalkuntie 5
+Vihola|Nokia|R|1989|2242|148000|66|Kinttupolku 6 A
+Linnavuori|Nokia|O|2011|2009|219000|109|Marskintie 10
+Harjuniitty|Nokia|R|2021|3340|255500|76.5|Kosmoksenkatu 3
+keskusta|Nokia|K|2003|2644|137500|52|Hinttalankatu 14
+Myllyhaka|Nokia|O|2008|1888|319000|169|Penttilänkatu 11
+Keskusta|Nokia|K|2000|2754|179000|65|Kyyninkatu 18
+Vihola|Nokia|K|2005|2386|167000|70|Talonpojankatu 1
+Siuro|Nokia|K|1972|775|43000|55.5|Färmintie 12
+Viiki|Nokia|O|2020|3187|349000|109.5|Valborginkatu 4
+Keskusta|Nokia|K|1966|1583|114000|72|Poutuntie 7 F
+Sammalisto|Nokia|O|2017|2806|449000|160|Turvekatu 8
+Korvola|Nokia|O|2006|3050|305000|100|Lammashaantie 9
+Viiki|Nokia|K|2020|3742|116000|31|Valborginkatu 3
+Lähdeniitty|Nokia|R|2026|3419|424000|124|Sivakkakatu 6 B 3
+Lähdeniitty|Nokia|R|2026|3419|424000|124|Sivakkakatu 6 B 4
+Lähdeniitty|Nokia|R|2026|3355|416000|124|Sivakkakatu 4 A 2
+Alhoniitty|Nokia|R|1980|2172|164000|75.5|Jokipolventie 1
+Lähdeniitty|Nokia|R|2024|3273|288000|88|Aksunkatu 4 C
+Vihola|Nokia|R|1990|2310|134000|58|Annankatu 1 A
+Puroniitty|Nokia|R|2023|3388|249000|73.5|Tokeenkatu 6
+Harjuniitty|Nokia|R|2026|3480|348000|100|Kiertoradankatu 28
+Kattilainen|Nokia|O|2015|3042|438000|144|Haapaveräjäntie 6
+Myllyhaka|Nokia|K|1968|1151|42000|36.5|Korpikatu 1
+Ketteenniemi|Nokia|O|2014|4194|650000|155|Ketteenniementie 85
+Koskenmäki|Nokia|R|1919|2309|127000|55|Koskenmäenkatu 14 B
+Keho|Nokia|R|2005|2232|279000|125|Manttaalimutka 18 B
+Linnavuori|Nokia|K|1945|867|19500|22.5|Linnavuorentie 25
+Kohdetta myyAri FinniläHaavistontie 7|Nokia|O|1930|1550|279000|180|Haavistontie 7
+Linnavuori|Nokia|K|1945|693|35000|50.5|Linnavuorentie 25 A
+Lähdeniitty|Nokia|R|2026|3210|398000|124|Sivakkakatu 4 A 1
+Aaroninkorpi|Nokia|K|1975|1352|119000|88|Petäjäpolku 9
+Harjuniitty|Nokia|O|1980|1610|248000|154|Harjuniitynkatu 29
+Keho|Nokia|O|1962|1817|169000|93|Annilankatu 34
+Kankaantaka|Nokia|K|1958|2471|63000|25.5|Ilkantie 7
+Lehtimäki|Nokia|R|1991|2483|185000|74.5|Palokaivontie 8
+Keskusta|Nokia|K|1977|1589|89000|56|Korkeemäenkatu 12
+Keskusta|Nokia|K|2023|3387|254000|75|Tuuliharjunkatu 6
+Harjuniitty|Nokia|R|2027|3031|385000|127|Planeetankatu 4
+Siuro|Nokia|O|1934|1168|174000|149|Isosaarenkatu 1
+Asemantaka|Nokia|O|1958|2444|220000|90|Ketolankatu 16
+Siuro|Nokia|O|1991|2333|280000|120|Ketovältinkatu 6
+Keskusta|Nokia|K|2003|2813|135000|48|Härkitie 12b
+Harjuniitty|Nokia|O|1977|1609|259000|161|Pajulinnunpolku 7
+Keskusta|Nokia|K|2020|3764|239000|63.5|Välikatu 13 A
+Harjuniitty|Nokia|R|2020|3067|345000|112.5|Seulastenkatu 11 A 2
+Aaroninkorpi|Nokia|R|1989|2396|109000|45.5|Korpikatu 16
+Harjuniitty|Nokia|R|2020|3288|314000|95.5|Kuunkatu 6 b
+Keskusta|Nokia|K|2020|3600|99000|27.5|Kauppakatu 8
+Harjuniitty|Nokia|O|1982|2356|269000|114.2|Telkänpolku 2
+Keskusta|Nokia|K|1977|1667|105000|63|Kavolinkatu 7
+Kankaantaka|Nokia|R|1978|1416|199000|140.5|Nahkolankatu 11
+Vihola|Nokia|K|2007|2531|124000|49|Talonpojankatu 2
+Viiki|Nokia|O|2020|4177|495000|118.5|Kruusintie 15
+Lähdekorpi|Nokia|O|1950|2042|245000|120|Lähdekorventie 28
+Linnavuori|Nokia|R|1977|733|55000|75|Marskintie 13 as
+Keskusta|Nokia|K|1976|1505|79000|52.5|Välimäenkatu 9 A
+Taivalkunta|Nokia|O|2001|1800|198000|110|Taivalkunnantie 752
+Lähdeniitty|Nokia|O|2016|3970|395000|99.5|Suuntakatu 2
+Koskenmäki|Nokia|O|1974|1832|229000|125|Luhtatie 14
+Ilkan alue|Nokia|K|1983|1787|109000|61|Pajakallionkatu 5
+Vihola|Nokia|K|2001|2615|119000|45.5|Rusthollarinkatu 2
+Koskenmäki|Nokia|O|1946|3674|349000|95|Ristiveräjänkatu 33
+Alinen|Nokia|R|1990|2000|158000|79|Tukireitti 8 B
+Siuro|Nokia|K|1973|757|42000|55.5|Pentintie 11
+Vihola|Nokia|O|2003|2403|525000|218.5|Ilvankatu 7
+Keskusta|Nokia|K|2023|2989|139000|46.5|Tuuliharjunkatu 6 A
+Kankaantaka|Nokia|R|1973|1840|184000|100|Muurahaispolku 1
+Vihnus|Nokia|R|2003|2069|269000|130|Vihnusjärvenkatu 3 B
+Vihola|Nokia|K|2018|3233|139000|43|Viholankatu 8 B
+Harjuniitty|Nokia|O|1978|2256|264000|117|Pajulinnunpolku 4
+Ilkan alue|Nokia|O|1982|2143|239000|111.5|Perkiönkatu 38
+Sotka|Nokia|O|2005|2224|318000|143|Soutajankatu 1
+Taka-Lauttala|Nokia|R|2002|1875|225000|120|Haperokatu 6
+Kartanonranta|Nokia|K|2026|4881|329500|67.5|Idestaminkatu 29 A17
+Kartanonranta|Nokia|K|2026|4872|265500|54.5|Idestaminkatu 29 A9
+Kankaantaka|Nokia|O|1957|795|105000|132|Suitselankatu 6
+Myllyhaka|Nokia|K|1972|1354|88000|65|Halimaantie 4
+Keskusta|Nokia|K|2006|2292|149000|65|Kyyninkatu 3
+Kankaantaka|Nokia|K|1967|1517|88000|58|Vikkulankatu 8
+Myllyhaka|Nokia|K|1973|1369|89000|65|Halimaantie 2 B
+Vihola|Nokia|O|1980|2192|228000|104|Päivärinteentie 7
+Vihola|Nokia|O|2003|2455|440000|179.2|Ilvankatu 2a
+Alhoniitty|Nokia|O|1980|2276|355000|156|Tanhuankatu 37
+Keskusta|Nokia|K|2023|4047|259000|64|Poutuntie 4 A
+Keskusta|Nokia|K|1972|1902|175000|92|Yrittäjäkatu 30 B
+Taivalkunta|Nokia|R|2398|4020|398000|99|Alastalontie 136 B
+Taka-Lauttala|Nokia|O|2007|2131|424000|199|Vahakaskatu 2
+Myllyhaka|Nokia|R|1980|2077|162000|78|Mäntykatu 22-24
+Asemantaka|Nokia|O|2026|2790|385000|138|Arrankatu 6
+Asemantaka|Nokia|O|2026|2391|415000|173.6|Arrankatu 5
+Vihola|Nokia|O|2003|2837|590000|208|Ilvankatu 5
+Alinen|Nokia|R|1990|2358|145000|61.5|Tukireitti 8
+Keskusta|Nokia|K|2022|3376|157000|46.5|Tuuliharjunkatu 8
+Koskenmäki/Ristiveräjä|Nokia|O|1959|2500|225000|90|Pihapolku 6
+Siuro|Nokia|O|1999|1623|198000|122|Elopolku 4
+Keskusta|Nokia|K|2004|2966|172000|58|Hinttalankatu 11
+Taka-Lauttala|Nokia|R|2009|2186|259000|118.5|Kantosienenkatu 16
+Lähdeniitty|Nokia|R|1980|2038|159000|78|Villasuontie 9 B
+Harjuniitty|Nokia|O|1976|1833|219000|119.5|Rastaanpolku 3
+Keskusta|Nokia|K|2007|2479|145000|58.5|Härkitie 5
+Keskusta|Nokia|K|1969|1686|128000|75.9|Maununkatu 7
+Taivalkunta|Nokia|R|2398|4020|398000|99|Alastalontie 136 A
+Harjuniitty|Nokia|O|1975|2176|259000|119|Västäräkinpolku 1
+Kankaantaka|Nokia|R|1977|1880|220000|117|Ratapolku 1
+Harjuniitty|Nokia|R|1285|2879|285000|99|Helmipöllönkatu 9 A
+Harjuniitty|Nokia|R|1976|1711|59900|35|Pääskyntie 7
+Kankaantaka|Nokia|K|1958|2009|109500|54.5|Ilkantie 7 B
+Harjuniitty|Nokia|O|1953|1581|185000|117|Jyränmaankatu 24
+Harjuniitty|Nokia|O|2026|2934|399000|136|Kiertoradankatu 10
+Kartanonranta|Nokia|K|2026|5055|275500|54.5|Idestaminkatu 29 A4
+Viinikanniemi|Nokia|O|2027|3120|780000|250|Kultasiivenranta 11
+Koskenmäki|Nokia|O|1976|2309|269000|116.5|Luhtatie 21
+Ilkan Alue|Nokia|K|1986|1440|90000|62.5|Perkiönkatu 1 B
+Aaroninkorpi|Nokia|O|1974|1421|189000|133|Jokipolventie 20
+Kankaantaka|Nokia|R|2006|2338|199900|85.5|Heikkiläntie 6 E
+keskusta|Nokia|R|2000|2699|220000|81.5|Kahvimyllynkatu 2D15
+Siuro|Nokia|O|1969|1887|183000|97|Suvitaival 12
+Vihola|Nokia|R|2003|2296|287000|125|Rusthollarinkatu 6
+Harjuniitty|Nokia|R|2025|3322|299000|90|Kuunkatu 16 A
+Harjuniitty|Nokia|R|2020|3212|318000|99|Meteorinkatu 5 A 1
+Keskusta|Nokia|K|1956|1528|165000|108|Souranderintie 18 A
+Keskusta|Nokia|K|1951|1753|135000|77|Kyyninkatu 9
+Linnavuori|Nokia|O|2011|2707|310000|114.5|Väinämöisentie 9
+Ilkan Alue|Nokia|K|1985|1406|109000|77.5|Pajakallionkatu 10 C
+Kankaantaka|Nokia|O|1942|956|86000|90|Kankaantaankatu 42
+Koskenmäki|Nokia|R|1989|2244|175000|78|Mantereenkuja 1 A
+Harjuniitty|Nokia|R|2025|3477|250000|71.9|Kosmoksenkatu 4 A 3
+Harjuniitty|Nokia|R|2025|3273|290000|88.6|Kosmoksenkatu 4 B 6
+Harjuniitty|Nokia|R|2025|3889|210000|54|Kosmoksenkatu 6 B 22
+Siuro|Nokia|R|1981|1253|114000|91|Tonttilankuja 4
+Sammalisto|Nokia|O|2008|2663|479000|179.9|Metsäpirtinkatu 14
+Kankaantaka|Nokia|K|1960|1828|98000|53.6|Kankaantaankatu 31
+Alhoniitty|Nokia|K|0|1048|76000|72.5|Lauttakorventie 7 G
+Keskusta|Nokia|O|1920|1867|168000|90|Kerhokatu 23
+Harjuniitty|Nokia|O|2027|4010|399000|99.5|Pyrstötähdenkatu 1
+Taivalkunta|Nokia|O|1902|1862|365000|196|Kassilantie 21
+Sarkola|Nokia|O|2010|2351|315000|134|Kivikarintie 1
+Linnavuori|Nokia|K|1945|593|43000|72.5|Linnavuorentie 21 B
+Lähdeniitty|Nokia|R|1979|1748|139000|79.5|Vasatie 10
+Myllyhaka|Nokia|K|2016|565|31370|55.5|Rounionkatu 49
+Harjuniitty|Nokia|R|2022|3580|179000|50|Supernovankatu 3
+Siuro|Nokia|R|1989|1933|116000|60|Marttilankatu 3
+Kankaantaka|Nokia|O|1942|1840|219000|119|Vainionkatu 14
+Linnavuori|Nokia|K|1945|925|74000|80|Linnavuorentie 29
+Kavolinmäki|Nokia|K|1974|1908|124000|65|Kavolinkatu 1 A
+Keho|Nokia|R|1983|2034|179000|88|Kirkkosaarentie 13
+Keskusta|Nokia|K|1971|1503|109000|72.5|Kavolinkatu 4
+Linnavuori|Nokia|O|1953|890|89000|100|Huhtalevontie 22
+Keskusta|Nokia|K|2023|4625|129500|28|Poutuntie 4
+Keskusta|Nokia|K|2020|3213|98000|30.5|Kauppakatu 8 A
+Harjuniitty|Nokia|O|1976|1970|198000|100.5|Kivitaskunpolku 2
+Harjuniitty|Nokia|O|1975|1582|189000|119.5|Rantasipinpolku 7
+Asemantaka|Nokia|O|1965|1938|188000|97|Ketolankatu 15
+Ketolanmäki|Nokia|K|1969|1701|159000|93.5|Kiviahteentie 2 A
+Keskusta|Nokia|K|1966|1597|115000|72|Poutuntie 5 C
+KETOLANMÄKI|Nokia|O|1962|2432|180000|74|Ilveskatu 3
+Harjuniitty|Nokia|O|1951|1964|275000|140|Siuronvaltatie 295
+Keskusta|Nokia|K|1957|1980|99000|50|Kylmänojankatu 6 6 A
+Ruskeepää|Nokia|K|1979|1221|94000|77|Kalhunkatu 1
+Keskusta|Nokia|K|2020|3880|97000|25|Välikatu 13 A 8, 37100 Nokia
+Asemantaka|Nokia|O|2025|3647|310000|85|Arrankatu 4
+Siuro|Nokia|K|1972|703|39000|55.5|Färmintie 14
+Siuro|Nokia|O|1979|2031|199000|98|Isosaarenkatu 6
+Kankaantaka|Nokia|R|2003|2262|119900|53|Vikkulankatu 49 B
+Kankaantaka|Nokia|R|1975|2049|168000|82|Pajakatu 16
+Siuro|Nokia|O|1890|1707|239000|140|Pysäkkitie 152
+Siuro|Nokia|R|1991|1865|159500|85.5|Ippilänkatu 5
+Keskusta|Nokia|K|2001|2234|143000|64|Hinttalankatu 9
+Alhoniitty|Nokia|K|2021|3321|88000|26.5|Nansonkatu 7
+Keho|Nokia|O|1989|2202|229000|104|Manttaalimutka 8
+Harjuniitty|Nokia|R|2021|3414|239000|70|Supernovankatu 5 A
+Alhoniitty|Nokia|K|1972|1200|36000|30|Lauttakorventie 5-7
+Keskusta|Nokia|K|1956|1672|153854|92|Souranderintie 18
+Vihola|Nokia|R|1985|2035|87500|43|Ojanteentie 2
+Vihola|Nokia|K|2018|3605|155000|43|Viholankatu 10 A
+Asemantaka|Nokia|O|2025|3505|375000|107|Pantionkatu 10
+Keskisen alue|Nokia|O|1989|2115|330000|156|Lähdemutka 14
+Haavisto|Nokia|O|1959|1033|174000|168.5|Kaivokatu 3 A
+Viiki|Nokia|K|2012|3662|368000|100.5|Virtasalmentie 23
+Keskusta|Nokia|R|1983|2374|184000|77.5|Korkeemäenkatu 15
+Ketolanmäki|Nokia|O|2001|1970|388000|197|Kiviahteentie 6
+Keskusta|Nokia|K|2013|2741|159000|58|Harjukatu 17
+Kankaantaka|Nokia|O|1971|1017|178000|175|Suitselankatu 11
+Haavisto|Nokia|O|1974|1800|189000|105|Sepänkatu 2
+Ilkan alue|Nokia|K|1984|1282|84000|65.5|Pajakallionkatu 10
+Nokia|Nokia|K|1961|1549|151000|97.5|Kylmänojankatu 2
+Haavisto|Nokia|O|1950|2189|289000|132|Kallioisentie 12
+Koskenmäki|Nokia|K|1966|962|89000|92.5|Rinnekatu 31
+Harjuniitty|Nokia|R|2022|3000|378000|126|Aurinkotuulenkatu 14
+Keskusta|Nokia|K|1954|1302|56000|43|Kauppakatu 4
+Vihola|Nokia|O|1997|943|149000|158|Päivärinteentie 11
+Ketolanmäki|Nokia|K|1973|1523|99000|65|Ketolanmäenkatu 8 C
+Taka-Lauttala|Nokia|K|2023|3882|99000|25.5|Tokeenkatu 2 A
+Ilkan Alue|Nokia|K|1991|1228|97000|79|Perkiönkatu 3
+Keskusta|Nokia|K|1978|1825|125000|68.5|Maununkatu 6 A
+Alisenjärvi|Nokia|R|1985|2325|93000|40|Hahlokatu 4
+Kartanonranta|Nokia|K|2026|4775|243500|51|Idestaminkatu 29 A6
+Harjuniitty|Nokia|O|1940|2063|165000|80|Harjuniitynkatu 12
+Koskenmäki|Nokia|K|1974|835|48000|57.5|Puutteenkuja 3
+Siuro|Nokia|K|1972|1009|56000|55.5|Pentintie 13
+Ilkan alue|Nokia|K|1984|1215|96000|79|Pajakallionkatu 3 C
+Kartanonranta|Nokia|K|2026|4706|385900|82|Idestaminkatu 29 A8
+Kolunkatu 1|Nokia|K|2023|3547|266000|75|Kolunkatu 1
+Kartanonranta|Nokia|K|2026|4418|174500|39.5|Idestaminkatu 29 A5
+Kartanonranta|Nokia|K|2026|4999|409900|82|Idestaminkatu 29 A23
+Linnavuori|Nokia|K|1959|622|46000|74|Marskintie 9
+Lähdekorpi|Nokia|O|1948|2200|264000|120|Lähdekorventie 13
+Nokia|Nokia|K|1973|1216|62000|51|Halimaantie 2 A
+Linnavuori|Nokia|K|1980|1157|39900|34.5|Miharintie 38
+Linturinne|Kangasala|O|1976|2550|318000|124.7|Peiponkuja 1
+Lamminrahka|Kangasala|K|2025|576|33132|57.5|Mossin puistokatu 26
+Vatiala|Kangasala|O|2020|6012|980000|163|Hepokatintie 17
+Harjunsalo|Kangasala|K|2018|3057|133000|43.5|Vääränkalliontie 1
+Lamminrahka|Kangasala|K|2023|4623|245000|53|Rissonkatu 52
+Kaivanto|Kangasala|R|1971|1522|137000|90|Kieheläntie 19
+Suorama|Kangasala|K|1972|1165|49500|42.5|Paatsamankuja 5 F
+Vatiala|Kangasala|R|2022|3500|339500|97|Vatialantie 26 B
+Suorama|Kangasala|K|1984|889|68000|76.5|Isolukontie 4
+Keskusta|Kangasala|K|1971|1120|103000|92|Kangasalantie 1069
+Suorama|Kangasala|R|2022|3297|368000|111.6|Vadelmakuja 2
+Ruutana|Kangasala|O|2004|2397|429000|179|Lakotie 15
+Ruutana|Kangasala|R|1993|2305|219000|95|Laureenintie 28 C
+Keskusta|Kangasala|K|2019|4075|436000|107|Einar Ilmonin tie 1
+Pikonkangas|Kangasala|R|2006|2949|233000|79|Korpitie 8
+Huutijärvi|Kangasala|K|1999|1369|69800|51|Tommilantie
+Raudanmaa|Kangasala|O|2024|3773|498000|132|Kaitaantie 40
+Sahalahti|Kangasala|O|1976|1208|145000|120|Kellarikuja 1
+Tarpila|Kangasala|R|2021|624|43986|70.5|Paljetie 18 E 19
+Keskusta|Kangasala|R|1983|1848|219000|118.5|Myllystenpohjantie 29
+Vatiala|Kangasala|R|2024|3627|272000|75|Junatie 33 A
+Lamminrahka|Kangasala|R|2026|4516|399680|88.5|Rissonkatu 50 B 50
+Lamminrahka|Kangasala|R|2026|4030|249830|62|Rissonkatu 50 B 49
+Lamminrahka|Kangasala|K|2026|4374|349900|80|Rissonkatu 50 A 9
+Lamminrahka|Kangasala|K|2026|3787|124978|33|Rissonkatu 50 A 5
+Lamminrahka|Kangasala|K|2026|4583|249800|54.5|Rissonkatu 50 A 29
+Lamminrahka|Kangasala|K|2026|3729|264740|71|Rissonkatu 50 A 23
+Lamminrahka|Kangasala|K|2026|3930|229900|58.5|Rissonkatu 50 A 2
+Lamminrahka|Kangasala|K|2026|4526|239900|53|Rissonkatu 50 A 15
+Vatiala|Kangasala|O|2008|2715|467000|172|Loukkaantie 3
+Ruutana|Kangasala|R|1991|2190|138000|63|Kevätniitynkuja 10 B
+Ilkko|Kangasala|R|2020|3421|195000|57|Suvisalontie 12 As 3
+Lemetty|Kangasala|R|1976|1629|79000|48.5|Kulkustie 3 B
+Lamminrahka|Kangasala|K|2023|555|26925|48.5|Rissonkatu 90
+Suinula|Kangasala|O|1981|1444|179000|124|Kivihuhdantie 51
+Keskusta|Kangasala|K|2004|2569|149000|58|Pillitie 3 A
+Keskusta|Kangasala|K|2005|2614|115000|44|Pillitie 1 B
+Ponsa|Kangasala|O|1920|1156|185000|160|Vuoristontie 9
+Ranta-Koivisto|Kangasala|O|1972|1207|198000|164|Seljatie 5
+Suinula|Kangasala|O|1990|2536|279000|110|Korkealehdontie 22
+Vatiala|Kangasala|K|2017|2662|94500|35.5|Karin-Heikin tie 2-6 E
+Lamminrahka|Kangasala|K|2024|586|26976|46|Kuurankatu 2
+Suinula|Kangasala|O|1955|957|110000|115|Onkijärventie 18
+Tarpila|Kangasala|R|2021|583|49843|85.5|Paljetie 18 B 08
+Metsäkulma|Kangasala|R|1999|2474|189000|76.4|Otsolantie 9
+Suorama|Kangasala|K|1966|1890|102060|54|Metsälauvalantie 8
+Raudanmaa|Kangasala|O|1930|2414|169000|70|Mutikontie 91
+Kangasalan asema|Kangasala|O|2016|3702|365000|98.6|Asemantie 356
+Keskusta|Kangasala|K|2019|4105|117000|28.5|Einar Ilmonin Tie 1 A
+Harjunsalo|Kangasala|K|2016|544|25024|46|Vadelmakuja 1
+Koivisto|Kangasala|O|2010|3110|409000|131.5|Korpiniityntie 2 A
+Holvasti|Kangasala|K|2022|4093|88000|21.5|Mannakorventie 13 A
+Vatiala|Kangasala|K|2018|3291|209000|63.5|Niittyvillankuja 3 A
+Suorama|Kangasala|R|1982|2012|169000|84|Kenttäpolku 1
+Nattari|Kangasala|K|1979|1182|57900|49|Kamajankuja 4
+Lamminrahka|Kangasala|O|2024|4192|384000|91.6|Taikakuja 2
+Vatiala|Kangasala|K|2017|3072|149000|48.5|Karin-Heikin tie 2-6
+Vatiala|Kangasala|O|1968|1500|129000|86|Mannakorventie 6
+Suorama|Kangasala|K|1970|1504|85000|56.5|Harjunsalontie 1 A
+Harjunsalo|Kangasala|K|1977|1517|88000|58|Vääränkalliontie 8 E
+Ranta-Koivisto|Kangasala|R|1974|1721|179000|104|Annalantie 4
+Nattari|Kangasala|K|1981|1646|107000|65|Seunalankuja 1
+Nattari|Kangasala|K|1978|1681|58000|34.5|Seunalankuja 5
+Suorama|Kangasala|K|2016|2757|108900|39.5|Ristitie 2 A
+Sahalahti|Kangasala|R|1991|1223|96000|78.5|Suorannantie 5 A
+Ilkko|Kangasala|R|2020|3679|195000|53|Suvisalontie 12
+Keskusta|Kangasala|K|2007|2718|159000|58.5|Urheilutie 2-4 B
+Suorama|Kangasala|R|1983|1895|163000|86|Kuussalontie 4
+Huutijärvi/Mäyrävuori|Kangasala|O|1997|2408|449000|186.5|Ylävainiontie 2
+Sahalahti|Kangasala|R|1990|1190|69000|58|Outtulahdentie 3-5
+Kangasala|Kangasala|K|1972|1155|67000|58|Paatsamankuja 5
+Lamminrahka|Kangasala|K|2023|4793|139000|29|Rissonkatu 54
+Nattari|Kangasala|K|1979|1444|109000|75.5|Kamajankuja 4 D
+Mäyrävuori|Kangasala|R|1980|1799|134000|74.5|Metsästäjäntie 11
+Pikkola|Kangasala|O|1969|4167|528000|126.7|Katajatie 47
+Nattari|Kangasala|O|1961|2394|249000|104|Lenkkitie 25
+Sahalahti|Kangasala|O|1998|3333|295000|88.5|Raikulahdentie 21
+Vatiala|Kangasala|R|2006|3032|329000|108.5|Ketoneilikankuja 1-3 K
+Harjunsalo|Kangasala|R|1974|1538|163000|106|Näsiänkuja 5
+Ranta-Koivisto|Kangasala|R|2021|3590|149000|41.5|Annalantie 3 F
+Keskusta|Kangasala|K|1991|2130|115000|54|Eevantie 3-5 A
+Keskusta|Kangasala|R|1963|2311|245000|106|Katajatie 65
+Metsäkulma|Kangasala|O|2001|2679|434000|162|Mesikuja 10
+Pikonlinna|Kangasala|O|1917|2644|1190000|450|Pikonlinnantie 49
+Sahalahti|Kangasala|O|2006|1784|239000|134|Kyöttiläntie 11
+Keskusta|Kangasala|K|2004|2795|239000|85.5|Pillitie 3
+Ruutana|Kangasala|R|1989|2048|129000|63|Laureenintie 3 C
+Vatiala|Kangasala|R|2005|2985|294000|98.5|Ketoneilikankuja 2
+Vatiala|Kangasala|R|2017|3295|159800|48.5|Karin-Heikin tie 2-6
+Suorama|Kangasala|R|1978|1626|139000|85.5|Variksenmarjantie 1 F
+Suorama|Kangasala|R|2004|2539|245000|96.5|Kasvitarhantie 12 A
+Keskusta|Kangasala|K|2000|2651|224000|84.5|Liisantie 3
+Rekiälä|Kangasala|K|2018|3036|85000|28|Viputie 2 A
+Vatiala|Kangasala|K|2022|3304|152000|46|Junatie 36 A
+Ranta-Koivisto|Kangasala|R|1972|1897|149900|79|Pihlajatie 1 A
+Suorama|Kangasala|R|2000|2447|230000|94|Kuussalontie 3
+Keskusta|Kangasala|K|1996|2531|124000|49|Finnentie 9
+Pikkola|Kangasala|K|1972|1029|89000|86.5|Mäntyveräjäntie 7 A
+Suorama|Kangasala|R|2000|2471|189000|76.5|Kuussalontie 3 B
+Keskusta|Kangasala|R|2022|3078|314000|102|Antintie 8
+Liuttu|Kangasala|K|1973|1853|139000|75|Toikantie 6 C
+keskusta|Kangasala|K|2002|2813|128000|45.5|Toivontie 2
+Keskusta|Kangasala|K|1965|1549|79000|51|Ruutanantie 5 C
+Suorama|Kangasala|K|2018|537|28728|53.5|Aakkulantie 29
+Kiveliö|Kangasala|K|2023|4230|129000|30.5|Mannakorventie 17 A
+Mäyrävuori|Kangasala|R|1986|2033|124000|61|Jahtimiehentie 5
+Suorama|Kangasala|R|2008|2698|259000|96|Aakkulantie 9 C
+Ruutana|Kangasala|O|1954|1877|229000|122|Ruutanantie 812
+Vatiala|Kangasala|R|2027|3425|298000|87|Varikontie 12 B
+Kerppola|Kangasala|O|2015|3846|575000|149.5|Kartiskasalmentie 4
+Lamminrahka|Kangasala|K|2023|6091|134000|22|Rissonkatu 54 A
+Huutijärvi|Kangasala|O|1980|1596|182000|114|Alavainiontie 1
+Vatiala|Kangasala|K|2020|3440|129000|37.5|Toosintie 2
+Vatiala|Kangasala|O|1954|2238|235000|105|Puutteenmäentie 33
+Pikonkangas|Kangasala|O|1945|1215|249000|205|Puutarhurintie 15
+Nattari|Kangasala|K|1980|1460|146000|100|Seunalankuja 3 A
+Suorama|Kangasala|O|1980|1637|185000|113|Suopursuntie 27
+Keskusta|Kangasala|O|1936|2112|549000|260|Kiertotie 2
+Ruutana|Kangasala|R|2022|3316|189000|57|Jokirannantie 5
+Huutijärvi|Kangasala|K|1999|1238|99000|80|Tommilantie 3 A
+Tursola|Kangasala|O|1959|1197|158000|132|Papinojantie 116
+Vatiala|Kangasala|R|2004|2678|328000|122.5|Valkovuokonkuja 10
+Lentola|Kangasala|K|2023|3592|88000|24.5|Vällintie 1
+Mäyrävuori|Kangasala|R|1989|1835|189000|103|Mäyrävuorentie 1 A 6
+Vatiala|Kangasala|R|2027|3387|398000|117.5|Varikontie 12 A1
+Vatiala|Kangasala|R|2027|3617|349000|96.5|Varikontie 12 C15
+Suorama|Kangasala|K|2002|2168|129000|59.5|Kuussalontie 5
+Pikonlinna|Kangasala|K|2013|3286|138000|42|Armas Branderin katu 16 A
+Majaalahti|Kangasala|O|2001|1810|219000|121|Majaalahdentie 281
+Harjunsalo|Kangasala|O|1971|1488|180000|121|Kanervakuja 5
+Suorama|Kangasala|O|1975|2042|243000|119|Lukonpolku 3
+Lentola|Kangasala|K|2005|2465|124500|50.5|Artturintie 6 A
+Kangasala|Kangasala|R|2025|4080|299900|73.5|Einar Ilmonin tie 5
+Liuttu|Kangasala|R|1974|2283|129000|56.5|Sillansalmentie 11-13
+Harjunsalo|Kangasala|K|1970|1938|63000|32.5|Harjunsalontie 1
+Ranta-Koivisto|Kangasala|R|1972|2092|249000|119|Pihlajatie 5 A
+Lentola|Kangasala|R|2016|2774|233000|84|Kangasalantie 700
+Pikkola|Kangasala|R|2027|3750|262500|70|Varstakuja 5 A 3
+Pikkola|Kangasala|R|2027|3800|304000|80|Varstakuja 3 A 3
+Pikkola|Kangasala|R|2027|3863|367000|95|Luhtakuja 8, 36200 Kangasala
+Pikonkangas|Kangasala|R|2005|2188|189000|86.4|Harventajantie 21 B
+Lamminrahka|Kangasala|R|2024|3387|359000|106|Haltijankaari 5 D
+Pikonkangas|Kangasala|O|1975|1829|139000|76|Katajatie 34
+Kangasala|Kangasala|O|2004|2380|595000|250|Mertaniementie 19
+Suorama|Kangasala|K|1976|1026|78000|76|Vääränkalliontie 12 A
+Suorama|Kangasala|K|2021|525|25732|49|Aakkulantie 27
+Sahalahti / Helmikkala|Kangasala|O|1981|628|75000|119.5|Ahotie 5
+Liuksiala|Kangasala|O|2008|2418|469000|194|Varsamäentie 148
+Suorama|Kangasala|K|1966|935|50000|53.5|Suoramantie 2
+Harjunsalo|Kangasala|K|2017|3419|159000|46.5|Harjunsalontie 2 C
+Pikkola|Kangasala|O|1130|1383|130000|94|Lyhdekuja 1
+Kuhmalahti|Kangasala|O|1987|645|69000|107|Uittomiehentie 8
+Liuttu|Kangasala|R|1989|2158|239500|111|Toosintie 15-17 A
+Sahalahti|Kangasala|R|1984|1330|119000|89.5|Masonlahdentie 12 F
+Asema|Kangasala|O|0|1076|93000|86.4|Rantaniementie 10
+Pikonlinna|Kangasala|O|2016|2772|499000|180|Lukkolankatu 26
+Kuhmalahti|Kangasala|O|1954|986|69000|70|Kukkamäentie 22
+Vesaniemi|Kangasala|O|1998|4961|698000|140.7|Vesijärventie 27
+Ruutana|Kangasala|R|1991|2532|195000|77|Kevätniitynkuja 10 C
+Keskusta|Kangasala|K|2005|3253|148000|45.5|Kuohunharjuntie 45
+Keskusta|Kangasala|K|2005|2689|160000|59.5|Pillitie 1
+Vatiala|Kangasala|K|2022|4651|100000|21.5|Mannakorventie 13
+Liuttu|Kangasala|K|1971|1797|106000|59|Rantakuja 1
+Pikkola|Kangasala|R|2027|3827|199000|52|Varstakuja 5 A 8
+Pikkola|Kangasala|R|2027|3850|365750|95|Varstakuja 3 A 1
+Haapaniemi|Kangasala|O|0|1238|99000|80|Tanhuanpääntie 35
+Pikonlinna|Kangasala|R|2022|3483|249000|71.5|Rikulankatu 4
+Pikonkangas|Kangasala|O|1978|2765|329000|119|Katajatie 11
+Vatiala|Kangasala|R|2027|3461|379000|109.5|Varikontie 12 C16
+Tursola|Kangasala|R|2018|3578|322000|90|Noormarkuntie 8 B
+Tursola|Kangasala|O|2019|3969|389000|98|Lumikontie 19
+Ruutana|Kangasala|R|1989|1989|185000|93|Laureenintie 3 A
+Ruutana|Kangasala|R|1990|2032|189000|93|Laureenintie 3
+Keskusta|Kangasala|K|2019|3304|114000|34.5|Kirkkojärventie 6
+Mäntyveräjä|Kangasala|O|1978|2151|570000|265|Ruutanantie 31
+Pikonlinna|Kangasala|R|2021|3394|319000|94|Rikulankatu 1
+Pikonkangas|Kangasala|K|4124|3594|124000|34.5|Puusepäntie 46
+Keskusta|Kangasala|K|1971|2029|69000|34|Liisantie 1 C
+Raudanmaa|Kangasala|O|0|1417|85000|60|Ponsantie 1451
+Suorama|Kangasala|O|1962|2891|159000|55|Alasentie 94
+Ranta-Koivisto|Kangasala|O|1972|2444|292000|119.5|Pihlajatie 9
+Keskusta|Kangasala|O|1965|1297|319000|246|Kiertotie 12
+Nattari|Kangasala|K|1980|1550|155000|100|Seunalankuja 3
+Suorama|Kangasala|R|1983|1953|168000|86|Kuussalontie 4 G
+Suorama|Kangasala|R|2011|2899|229000|79|Vääränkallionkuja 5
+Pikkola|Kangasala|R|2027|3863|367000|95|Varstakuja 5 A 9
+Pikkola|Kangasala|R|2027|3871|271000|70|Varstakuja 5 A 7
+Pikkola|Kangasala|R|2027|3863|309000|80|Varstakuja 5 A 5
+Pikkola|Kangasala|R|2027|3750|195000|52|Varstakuja 5 A 2
+Pikkola|Kangasala|R|2027|3850|365750|95|Varstakuja 3 A 5
+Pikkola|Kangasala|R|2027|3750|356250|95|Varstakuja 5 A 1
+Pikkola|Kangasala|R|2027|3800|266000|70|Varstakuja 3 A 2
+Pikkola|Kangasala|R|2027|3800|266000|70|Varstakuja 3 A 4
+Harjunsalo|Kangasala|K|2018|2835|129000|45.5|Vääränkalliontie 1 A
+Vatiala|Kangasala|K|2015|2656|119500|45|Vatialantie 2
+Tursola|Kangasala|R|1973|2242|139000|62|Minkinreitti 8
+Suorama|Kangasala|K|1988|1620|115000|71|Hölkkäsuora 6
+Pikkola|Kangasala|K|1963|1902|58000|30.5|Katajatie 63 D
+Kangasala|Kangasala|O|1951|2031|199000|98|Sompiontie 6
+Nattari|Kangasala|O|0|1313|105000|80|Viertolantie 11
+Suorama|Kangasala|K|1984|873|69000|79|Isolukontie 4 B
+Suorama|Kangasala|K|1976|1448|84000|58|Vääränkalliontie 12
+Liuttu|Kangasala|K|1972|1938|62000|32|Liutuntie 13
+Mutikko|Kangasala|O|2008|3094|495000|160|Mutikontie 408
+Keskusta|Kangasala|R|1985|2207|239500|108.5|Urheilutie 1 A
+Keskusta|Kangasala|K|1996|2055|75000|36.5|Finnentie 9 A
+Keskusta|Kangasala|K|2016|3581|265000|74|Kuohunharjuntie 10 A
+Mäntyveräjä|Kangasala|O|1982|2020|299000|148|Hillerintie 6
+Lentola|Kangasala|O|1967|1048|239000|228|Pasinkuja 5b
+Vatiala|Kangasala|O|1960|2007|295000|147|Eerolantie 8
+Keskusta|Kangasala|K|2001|2605|168000|64.5|Torikatu 5 D
+Metsäkulma|Kangasala|O|2016|2870|419000|146|Hirvikummuntie 17
+Vatiala|Kangasala|O|1953|1472|368000|250|Junatie 28
+Pikkola|Kangasala|O|1977|1665|199000|119.5|Lyhdekuja 4
+Mäyrävuori|Kangasala|R|1994|1732|142000|82|Nuolikuja 24
+Suorama|Kangasala|K|1982|1259|99500|79|Vääränkalliontie 9 C
+Keskusta|Kangasala|R|1972|2203|239000|108.5|Ruutanantie 20
+Pikkola|Kangasala|K|1972|1433|69500|48.5|Mäntyveräjäntie 7 C
+Vatiala|Kangasala|R|2027|3387|398000|117.5|Varikontie 12 A
+Keskusta|Kangasala|K|2023|4517|117450|26|Myllystenpohjantie 3 A 17
+Keskusta|Kangasala|K|2023|4092|245500|60|Myllystenpohjantie 3 A 18
+Vatiala|Kangasala|K|1975|1647|126000|76.5|Nattarinkuja 6 A
+KESKUSTA|Kangasala|K|2003|2500|175000|70|Antintie 4
+Ranta-Koivisto|Kangasala|R|2025|3936|368000|93.5|Rääkkölänpolku 10 B
+Vatiala|Kangasala|K|2016|2973|110000|37|Karin-Heikin tie 2 B
+Ruutana|Kangasala|R|1990|2176|136000|62.5|Viserryskuja 10 A
+Sahalahti|Kangasala|O|0|613|49000|80|Kääniemi 34
+Linkosuo|Kangasala|K|2023|5535|119000|21.5|Mannakorventie 9
+Keskusta|Kangasala|R|1990|1754|249000|142|Tapulintie 9
+Lamminrahka|Kangasala|O|2026|3202|310000|96.8|Haltijankaari 43
+Suorama|Kangasala|K|1982|1241|98000|79|Vääränkalliontie 9 A
+Lamminrahka|Kangasala|O|2449|2806|449000|160|Haltijankaari 63
+Mäyrävuori|Kangasala|R|1981|2049|125000|61|Erämiehentie 2 D
+Suorama|Kangasala|K|2017|2580|101900|39.5|Ristitie 2 B
+Vatiala|Kangasala|K|2016|3154|130900|41.5|Karin-Heikin tie 2 A
+Vatiala|Kangasala|K|2017|3564|139000|39|Karin-Heikin tie 2 - 6
+Ilkko|Kangasala|R|2020|3750|165000|44|Suvisalontie 12 as
+Ruutana|Kangasala|O|1970|1627|179000|110|Välitie 40
+Huutijärvi|Kangasala|O|2009|2342|459000|196|Kuohunharjuntie 211
+Tursola|Kangasala|R|2016|2904|169900|58.5|Ruutanantie 53 C
+Haapaniemi|Kangasala|O|2016|3574|450000|125.9|Kaarina Maununtyttären tie 1247
+Ruutana|Kangasala|O|1976|849|124000|146|Notkotie 14
+Keskusta|Kangasala|K|1962|960|84000|87.5|Kangasalantie 1067
+Lamminrahka|Kangasala|R|2024|3289|319000|97|Taikakieppi 8 A
+Vatiala|Kangasala|K|1985|1863|149000|80|Seunalankuja 2
+Sahalahti|Kangasala|O|1980|1277|129000|101|Ahotie 10
+Keskusta|Kangasala|K|1963|1456|65500|45|Katajatie 63 A
+Kiveliö|Kangasala|O|1950|1767|159000|90|Kiesitie 7
+Huhmari|Kangasala|K|2023|4157|185000|44.5|Myllystenpohjantie 3 A
+Liuttu|Kangasala|K|1977|1508|89000|59|Toikantie 2 B
+Vatiala|Kangasala|O|2023|3683|442000|120|Grafiittikuja 6
+Keskusta|Kangasala|K|1985|1926|209000|108.5|Urheilutie 3 B
+Sahalahti|Kangasala|O|2007|1778|208000|117|Kankaantie 8
+Keskusta|Kangasala|K|2012|3408|259000|76|Kangasalantie 1108
+Ranta-Koivisto|Kangasala|K|1972|1241|49000|39.5|Annalantie 6 C
+Sahalahti|Kangasala|K|2016|1720|92000|53.5|Sälssinkuja 8 A
+Mäyrävuori|Kangasala|R|1981|1770|139800|79|Jahtimiehentie 1 C
+Haviala|Kangasala|O|1953|2327|249000|107|Rajatie 11
+Sahalahti|Kangasala|R|1982|1053|79000|75|Kurvis-Höllintie 5 A
+Huhmari|Kangasala|O|1968|899|179000|199|Huhmarintie 9
+Ohtola|Kangasala|O|1974|1392|199000|143|Hirvenojantie 12
+Vatiala|Kangasala|R|2027|3461|379000|109.5|Varikontie 12 A5
+Vatiala|Kangasala|R|2027|3623|279000|77|Varikontie 12 A4
+Vatiala|Kangasala|R|2027|3425|298000|87|Varikontie 12 A3
+Vatiala|Kangasala|R|2027|3617|349000|96.5|Varikontie 12 C13
+Pikonlinna|Kangasala|K|1976|1015|34000|33.5|Reumantie 1
+Nattari|Kangasala|K|1982|1190|119000|100|Nattarinkuja 1
+Kiveliö|Kangasala|K|2024|3599|89980|25|Mannakorventie 17
+Keskusta|Kangasala|K|2023|3000|270000|90|Myllystenpohjantie 3 lt 3
+Keskusta|Kangasala|K|2023|4710|117750|25|Myllystenpohjantie 3 B 39
+Keskusta|Kangasala|K|2023|4480|168000|37.5|Myllystenpohjantie 3 B 36
+Keskusta|Kangasala|K|2023|4710|117750|25|Myllystenpohjantie 3 B 38
+Keskusta|Kangasala|K|2023|4740|113750|24|Myllystenpohjantie 3 B 34
+Keskusta|Kangasala|K|2023|4242|254500|60|Myllystenpohjantie 3 B 37
+Keskusta|Kangasala|K|2023|4740|113750|24|Myllystenpohjantie 3 B 35
+Keskusta|Kangasala|K|2023|4480|168000|37.5|Myllystenpohjantie 3 B 33
+Keskusta|Kangasala|K|2023|4618|115450|25|Myllystenpohjantie 3 B 30
+Keskusta|Kangasala|K|2023|4618|115450|25|Myllystenpohjantie 3 B 29
+Keskusta|Kangasala|K|2023|4644|111450|24|Myllystenpohjantie 3 B 26
+Keskusta|Kangasala|K|2023|4644|111450|24|Myllystenpohjantie 3 B 25
+Keskusta|Kangasala|K|2023|4384|164400|37.5|Myllystenpohjantie 3 B 24
+Keskusta|Kangasala|K|2023|4092|245500|60|Myllystenpohjantie 3 B 28
+Keskusta|Kangasala|K|2023|4196|310500|74|Myllystenpohjantie 3 B 23
+Keskusta|Kangasala|K|2023|4384|164400|37.5|Myllystenpohjantie 3 B 27
+Keskusta|Kangasala|K|2023|4644|111450|24|Myllystenpohjantie 3 B 22
+Keskusta|Kangasala|K|2023|4333|318500|73.5|Myllystenpohjantie 3 A 30
+Keskusta|Kangasala|K|2023|4157|185000|44.5|Myllystenpohjantie 3 A 29
+Keskusta|Kangasala|K|2023|4480|168000|37.5|Myllystenpohjantie 3 A 28
+Keskusta|Kangasala|K|2023|4242|254500|60|Myllystenpohjantie 3 A 25
+Keskusta|Kangasala|K|2023|4606|119750|26|Myllystenpohjantie 3 A 26
+Keskusta|Kangasala|K|2023|4606|119750|26|Myllystenpohjantie 3 A 24
+Keskusta|Kangasala|K|2023|4197|308500|73.5|Myllystenpohjantie 3 A 23
+Keskusta|Kangasala|K|2023|4384|164400|37.5|Myllystenpohjantie 3 A 21
+Keskusta|Kangasala|K|2023|4076|181400|44.5|Myllystenpohjantie 3 A 22
+Mäntyveräjä|Kangasala|K|1970|1629|79000|48.5|Mäntyveräjäntie 3 D
+Hietasmäki|Ylöjärvi|R|1983|2228|127000|57|Hietastentie 6
+Vihattula|Ylöjärvi|O|2027|4756|780000|164|Vihattulantie 15 B
+Vihattula|Ylöjärvi|R|2027|4462|580000|130|Vihattulantie 15 A 1
+Siivikkala / Mettistö|Ylöjärvi|O|1999|3078|470000|152.7|Simeonintie 8
+Moisio|Ylöjärvi|R|1980|1861|174000|93.5|Tiuravuorentie 6 C
+Vuorentausta|Ylöjärvi|R|2026|3852|339000|88|Kauppakuja 2 B
+Kauraslampi|Ylöjärvi|R|1986|2053|78000|38|Kauraslammentie 2
+Laadunalue|Ylöjärvi|R|2004|2767|249000|90|Laaduntie 6 B
+Pihkaperä|Ylöjärvi|O|2007|2750|275000|100|Pihkaperäntie 217
+Siivikkala|Ylöjärvi|O|1956|731|74000|101.3|Siivikkalantie 41A
+Hietasmäki|Ylöjärvi|R|1981|1633|129000|79|Palokaivontie 16 B
+Manni|Ylöjärvi|O|1994|1414|205000|145|Nikkiläntie 5
+Haavisto|Ylöjärvi|R|2017|3227|284000|88|Lähdevainiontie 30 B
+Metsäkylä|Ylöjärvi|O|1949|2029|138000|68|Niilontie 1
+Metsäkylä|Ylöjärvi|R|2014|2718|159000|58.5|Rautiaisentie 2 D
+Metsäkylä|Ylöjärvi|O|2015|2966|519000|175|Teeriläntie 19
+Haavisto|Ylöjärvi|R|0|3215|299000|93|Kivikaarentie 33 A 1
+Vuorentausta|Ylöjärvi|O|1992|3648|715000|196|Käyräkuja 25
+Soppeenmäki|Ylöjärvi|R|2002|2181|169000|77.5|Takatanhuantie 24
+Viljakkala|Ylöjärvi|O|2004|2085|269000|129|Säkintie 11
+Vuorentausta|Ylöjärvi|R|1983|2265|77000|34|Harjutie 13
+Soppeenmäki|Ylöjärvi|K|1985|1745|89000|51|Koulutie 1 A
+Soppeenmäki|Ylöjärvi|K|1983|1950|58500|30|Murtomäentie 10
+Metsäkylä|Ylöjärvi|O|1981|1650|198000|120|Ruusintie 18
+Rotikko|Ylöjärvi|K|2014|2107|138000|65.5|Myllyntanhua 10
+Litukanrinne/Viljakkala|Ylöjärvi|O|2008|1637|239000|146|Litukanrinne 23
+Mutala|Ylöjärvi|O|1980|2489|229000|92|Pleunantie 33
+Ylöjärvi|Ylöjärvi|O|2005|2217|225000|101.5|Juhonraitti 5 B
+Asuntila|Ylöjärvi|R|2018|3047|259000|85|Koivuhaantie 2 B
+Haavisto|Ylöjärvi|K|2017|3075|163000|53|Lähdevainiontie 30
+Vuorentausta|Ylöjärvi|R|1982|1912|65000|34|Harjutie 1 A
+Metsäkylä|Ylöjärvi|O|1961|4348|287000|66|Aukustintie 19
+Julkujärvi|Ylöjärvi|R|2012|2830|150000|53|Puukiipijäntie 1 A
+Metsäkylä|Ylöjärvi|R|2023|3561|235000|66|Heikkiläntie 52 B
+Vuorentausta|Ylöjärvi|R|1979|1656|149000|90|Välimäenkuja 2 B
+Vahanta|Ylöjärvi|O|2012|7266|970000|133.5|Vahantaniementie 39
+Vuorentausta|Ylöjärvi|O|1966|1053|99000|94|Kauppakuja 5
+Siivikkala|Ylöjärvi|R|2018|3089|278000|90|Vasamankaari 4 A as
+Siivikkala|Ylöjärvi|R|2021|3339|369000|110.5|Mettistöntie 63
+Haavisto|Ylöjärvi|O|1981|1490|178000|119.5|Kyntötie 2
+Salorinne|Ylöjärvi|R|1986|2447|219000|89.5|Myllyhaantie 11
+Siivikkala|Ylöjärvi|R|1980|2200|198000|90|Kalapadontie 2 B
+Antaverkka|Ylöjärvi|O|1986|5392|399000|74|Härkilevontie 25
+Siivikkala|Ylöjärvi|O|1989|2333|315000|135|Kaukolantie 7
+Haavisto|Ylöjärvi|R|1989|2052|119000|58|Koivumäentie 51
+Kaurasmäki|Ylöjärvi|R|1984|2018|115000|57|Kaurasmäentie 17
+Haavisto|Ylöjärvi|O|1986|2082|229000|110|Elonkorjaajantie 4
+Viljakkala|Ylöjärvi|R|1985|753|55000|73|virkatie 4
+Keskusta|Ylöjärvi|K|2014|3218|177000|55|Rantajätkäntie 2
+Julkujärvi|Ylöjärvi|R|2023|3250|169000|52|Heikkiläntie 52 B 2
+Vuorentausta|Ylöjärvi|R|1984|1912|65000|34|Harjutie 19
+Keskusta|Ylöjärvi|R|2027|3693|349000|94.5|Rotikontie 10 B
+Asuntila|Ylöjärvi|R|2005|2677|249000|93|Koivuhaantie 15 A
+Soppeenmäki|Ylöjärvi|R|1980|2018|115000|57|Tyvitie 2 C
+Metsäkylä|Ylöjärvi|R|2026|3487|179600|51.5|Käkitie 4 B 4
+Metsäkylä|Ylöjärvi|R|2026|3427|291300|85|Käkitie 4 D 11
+Metsäkylä|Ylöjärvi|O|1981|2066|219000|106|Manuntie 10
+Keskusta|Ylöjärvi|R|2027|3693|349000|94.5|Rotikontie 10 A
+Haavisto|Ylöjärvi|R|2024|3289|273000|83|Hiilimiiluntie 2 C
+Soppeenmäki|Ylöjärvi|R|1983|1850|74000|40|Maunussuontie 10
+Asuntila|Ylöjärvi|O|2018|2915|239000|82|Mansikkatie 3 A
+Haavisto|Ylöjärvi|R|2027|3488|279000|80|Hyttikuja 1 D
+Metsäkylä|Ylöjärvi|O|2015|2851|355000|124.5|Sirritie 14
+Vuorentausta|Ylöjärvi|R|2014|3385|369000|109|Palstatie 12 A
+Siivikkala|Ylöjärvi|O|2023|4154|565000|136|Ahmantie 7
+Haavisto|Ylöjärvi|R|2027|3623|269900|74.5|Hyttikuja 1 C
+Julkujärvi|Ylöjärvi|R|1961|509|29000|57|Osantie 5
+Siivikkala|Ylöjärvi|R|1999|2726|289000|106|Siivikkalantie 33-35
+Siivikkala|Ylöjärvi|R|2023|3559|379000|106.5|Siivikkalantie 41 B
+Metsäkylä|Ylöjärvi|R|2015|3649|135000|37|Orvokintie 2 A
+Haavisto|Ylöjärvi|R|2021|3386|237000|70|Kastetie 3 A
+Siivikkala|Ylöjärvi|R|2022|2964|329000|111|Mettistöntie 62
+Kyrönlahti|Ylöjärvi|O|1912|2327|349000|150|Majavedentie 251
+Ylinen|Ylöjärvi|K|1966|1133|48700|43|Lammassaarentie 2
+Haavisto|Ylöjärvi|O|1981|3706|315000|85|Haavistontie 11 A
+Vuorentausta|Ylöjärvi|R|1980|1475|59000|40|Välimäenkuja 4
+Takamaa|Ylöjärvi|O|2005|2000|425000|212.5|Kilpijoentie 20
+Kuru / Koski|Ylöjärvi|O|1921|2483|149000|60|Mekkoholmantie 25
+Siltatie|Ylöjärvi|R|2027|3472|368000|106|Kivikaarentie 31 as 1
+Siltatie|Ylöjärvi|R|2027|3425|298000|87|Kivikaarentie 31 as 2
+Siltatie|Ylöjärvi|R|2027|3569|389000|109|Kivikaarentie 31 as 3
+Ylinen|Ylöjärvi|K|1968|1152|59900|52|Lammassaarentie 4
+Siivikkala|Ylöjärvi|R|2021|3924|206000|52.5|Kiiskintie 7 F
+Metsäkylä|Ylöjärvi|O|1986|1824|239000|131|Niilontie 5
+Kirkonseutu|Ylöjärvi|R|1986|2063|130000|63|Asemantie 12
+Kuusisto|Ylöjärvi|R|1980|1611|134500|83.5|Tiuravuorentie 6
+Haavisto|Ylöjärvi|K|2019|3244|139500|43|Pisaratie 1
+Siivikkala|Ylöjärvi|O|1982|1471|175000|119|Takotie 20
+Vuorentausta|Ylöjärvi|O|1974|2152|269000|125|Rinnetie 11
+Vuorentausta|Ylöjärvi|R|1979|1912|65000|34|Välimäenkuja 2 C
+Keijärvi|Ylöjärvi|O|1968|1017|119000|117|Kannistontie 5
+Keijärvi|Ylöjärvi|O|2008|2699|494000|183|Tildantie 27
+Kirkonseutu|Ylöjärvi|R|1995|1938|188000|97|Laaduntie 1 C
+Siivikkala|Ylöjärvi|O|1951|1440|229000|159|Siivikkalantie 62
+Kuru|Ylöjärvi|R|1990|632|39500|62.5|Pikisaarentie 2
+Asuntila|Ylöjärvi|R|2020|3211|297000|92.5|Mansikkatie 4
+Kuru|Ylöjärvi|O|1992|4124|499000|121|Sääksinnokantie 71
+Siivikkala|Ylöjärvi|R|1988|1984|125000|63|Leppästentie 17
+Metsäkylä|Ylöjärvi|R|2017|3028|215000|71|Peipontie 1 E
+Soppeenmäki|Ylöjärvi|K|1989|1695|89000|52.5|Työväentalontie 3
+Siivikkala|Ylöjärvi|O|1948|1500|225000|150|Kiertotie 35
+Soppeenmäki|Ylöjärvi|O|0|1588|189000|119|Tuovintie 7
+Kirkonseutu|Ylöjärvi|K|1975|1280|96000|75|Asemantie 9 A
+Keskusta|Ylöjärvi|K|2007|3325|138000|41.5|Keihäsniementie 8a
+Metsäkylä|Ylöjärvi|O|2008|2304|349000|151.5|Punarinnantie 3
+Asuntila|Ylöjärvi|O|1998|2774|344000|124|Metsäpirtintie 10
+Asuntila|Ylöjärvi|R|2021|3154|287000|91|Mansikkatie 5 D
+Lempiäniemi|Ylöjärvi|O|2012|6288|1245000|198|Otavanniemi 70
+Kuru|Ylöjärvi|O|2026|875|105000|120|Karjulankuja 4
+Hietasmäki|Ylöjärvi|R|2026|3720|398000|107|Kivitie 3 B 2
+Keskusta|Ylöjärvi|K|1989|1840|149000|81|Siukolantie 4
+Soppeenmäki|Ylöjärvi|K|1977|1841|139000|75.5|Seijantie 6
+Haavisto|Ylöjärvi|R|2013|2619|309000|118|Metsästäjäntie 1
+Soppeenmäki|Ylöjärvi|K|2001|2649|151000|57|Soppeentie 4
+Metsäkylä|Ylöjärvi|R|2017|2939|169000|57.5|Peipontie 1
+Haavisto|Ylöjärvi|R|2013|2619|237000|90.5|Samoojantie 2
+Metsäkylä|Ylöjärvi|O|2014|2900|435000|150|Lehtokertuntie 3
+Soppeenmäki|Ylöjärvi|R|1980|1787|134000|75|Tyvitie 2
+Kauraslampi|Ylöjärvi|R|1985|2306|143000|62|Kauraslammentie 4 D
+Metsäkylä|Ylöjärvi|R|1988|2111|209000|99|Niemenkuja 8B
+Kirkonseutu|Ylöjärvi|K|1986|1556|119000|76.5|Suojastentie 6B
+Kuru|Ylöjärvi|R|1987|597|43000|72|Pankkipolku 2 B 8
+Kuru|Ylöjärvi|O|1935|652|137000|210|Karjulantie 122
+Haavisto|Ylöjärvi|O|2023|3158|379000|120|Linnantanhua 6 A
+Vuorentausta|Ylöjärvi|R|1984|1871|108500|58|Rajakuja 8 B
+Haavisto|Ylöjärvi|R|2027|3623|269900|74.5|Hyttikuja 1 B
+Kuru|Ylöjärvi|R|1984|735|25000|34|Puravuorentie 7
+Haavisto|Ylöjärvi|R|2024|3656|239500|65.5|Hiilimiiluntie 2
+Kaihari / Ylinen|Ylöjärvi|O|1985|1246|175000|140.5|Oinonrinteentie 51
+Ylöjärvi|Ylöjärvi|K|1991|2016|124000|61.5|Mikkolantie 7
+Haavisto|Ylöjärvi|R|2027|3623|269900|74.5|Hyttikuja 1 A
+Viljakkala|Ylöjärvi|R|1984|533|21300|40|Pyörtänötie 1-7 b13
+Siivikkala|Ylöjärvi|R|1983|2564|209000|81.5|Siivikkalantie 7
+Vuorentausta|Ylöjärvi|R|1980|1806|195000|108|Matintie 4 B
+Julkujärvi|Ylöjärvi|O|2011|2980|298000|100|Lehtokurpantie 10
+Haavisto|Ylöjärvi|R|1988|1778|104000|58.5|Ristimäentie 9
+Soppeenmäki|Ylöjärvi|O|1956|2255|320000|141.9|Oravapoluntie 5
+Kuru|Ylöjärvi|O|1912|1840|287000|156|Karjulantie 162
+Siivikkala|Ylöjärvi|R|2015|3800|399000|105|Venlantie 1B
+Ylinen|Ylöjärvi|O|2003|1759|285000|162|Aarontie 36
+Kuru|Ylöjärvi|O|2013|2387|196000|82.1|Nurmentie 6
+Vuorentausta|Ylöjärvi|K|1959|1511|139000|92|Palstatie 3
+Kaurasmäki|Ylöjärvi|O|1979|2250|225000|100|Simotuntie 7
+Vuorentausta|Ylöjärvi|R|1975|1497|119000|79.5|Särkitie 8
+Manni|Ylöjärvi|O|1970|694|59000|85|Mikontie 10
+Haavisto|Ylöjärvi|R|1987|2465|159000|64.5|Kortteentie 3 B
+Metsäkylä|Ylöjärvi|O|1991|1710|289000|169|Paavonpolku 31
+Haavisto|Ylöjärvi|R|2026|3025|363000|120|Raudantakojantie 1A
+Hietasmäki|Ylöjärvi|R|1983|1578|142000|90|Hietastentie 8 C
+Siivikkala|Ylöjärvi|R|2015|3386|259000|76.5|Vasamankaari 6 D
+Vuorentausta|Ylöjärvi|R|2023|4598|246000|53.5|Käyräkuja 2
+Takamaa|Ylöjärvi|O|1969|1658|335000|202|Kalsintie 34
+Haavisto|Ylöjärvi|O|1987|2394|249000|104|Ajomiehentie 1
+Haavisto|Ylöjärvi|R|2026|3677|273900|74.5|Hyttikuja1 A1
+Haavisto|Ylöjärvi|R|2026|3488|279000|80|Hyttikuja1 D14
+Haavisto|Ylöjärvi|R|2026|3637|225500|62|Hyttikuja1 B6
+Haavisto|Ylöjärvi|R|2026|3623|269900|74.5|Hyttikuja1 A2
+Haavisto|Ylöjärvi|R|2026|3511|316000|90|Hyttikuja1 D13
+Haavisto|Ylöjärvi|R|2026|3702|229500|62|Hyttikuja1 B8
+Haavisto|Ylöjärvi|R|2026|3728|315000|84.5|Hyttikuja1 A4
+Kirkonseutu|Ylöjärvi|O|2009|2705|349000|129|Suojastentie 3a
+Siivikkala|Ylöjärvi|R|1980|1840|138000|75|Kalapadontie 2
+Kuru|Ylöjärvi|R|2010|1190|72000|60.5|Hevossaarentie 11
+Kirkonseutu|Ylöjärvi|K|1976|1917|69000|36|Siukolantie 6 C
+Vahanta|Ylöjärvi|O|2000|2058|319000|155|Haapalantie 10
+Metsäkylä|Ylöjärvi|R|2005|2394|225000|94|Ryöpäkäntie 14 A
+Siivikkala|Ylöjärvi|R|2024|4038|420000|104|Ahmantie 1
+Ylöjärvi|Ylöjärvi|O|1975|1108|119000|107.4|Kivikuruntie 1
+Kaurasmäki|Ylöjärvi|R|1977|1825|104000|57|Rantakiventie 3
+Keskusta|Ylöjärvi|K|1957|1400|49000|35|Soppeentie 50
+Siivikkala|Ylöjärvi|R|1979|1840|138000|75|Salorinteentie 1 B
+Lakiala|Ylöjärvi|O|2011|1950|390000|200|Metsäpeikontie 8
+Asuntila|Ylöjärvi|O|2002|1718|470000|273.5|Sarkatie 1
+Siivikkala|Ylöjärvi|O|2017|3490|548000|157|Myllypurontie 24
+Haavisto|Ylöjärvi|O|1987|2199|299000|136|Elonkorjaajantie 2
+Keijärvi|Ylöjärvi|O|1948|2306|369000|160|Vasamajärventie 133
+Soppeenmäki|Ylöjärvi|R|1983|2089|165000|79|Havutie 1
+Kuusisto|Ylöjärvi|R|1977|1587|119000|75|Vuorikiventie 2
+Vuorentausta|Ylöjärvi|R|1979|2067|155000|75|Välimäenkuja 2
+Vuorentausta|Ylöjärvi|O|1974|1469|238000|162|Hatolantie 18
+Asuntila|Ylöjärvi|R|2004|2011|179000|89|Aurinkorinteentie 2
+Ylinen|Ylöjärvi|K|1967|688|55000|80|Lammassaarentie 3
+Vuorentausta|Ylöjärvi|R|2021|3414|379000|111|Yrjöntie 7 A
+Vastamäki|Ylöjärvi|R|1972|872|109000|125|Kunnarinkuja 4 as 2
+Mutala|Ylöjärvi|O|2002|2686|548000|204|Mikkolaisentie 7
+Mutala|Ylöjärvi|O|1999|1979|279000|141|Kyöstiläntie 90
+Asuntila|Ylöjärvi|R|2005|1852|138000|74.5|Kalliorinteentie 2 C
+Vuorentausta|Ylöjärvi|O|1956|1111|100000|90|Hakavainionkuja 7
+Metsäkylä|Ylöjärvi|R|1986|1849|110000|59.5|Kassakuja 3
+Metsäkylä|Ylöjärvi|R|2026|3168|339000|107|Villentie 5 A
+Haavisto|Ylöjärvi|R|1992|2483|149000|60|Kortteentie 19 A 3
+Siivikkala|Ylöjärvi|R|1979|1970|195000|99|Kalapadontie 4
+Kirkonseutu|Ylöjärvi|K|1975|1156|89000|77|Siukolantie 8 B
+Vuorentausta|Ylöjärvi|R|1983|1738|69500|40|Harjutie 15
+Vihattula|Ylöjärvi|R|2027|4783|550000|115|Vihattulantie 15 A 2
+Metsäkylä|Ylöjärvi|O|1981|1528|169000|110.6|Ruusintie 14
+Viljakkala|Ylöjärvi|R|0|637|17200|27|Aittatie 3
+Keskusta|Ylöjärvi|K|2006|2675|215315|80.5|Keihäsniementie 10 B 17
+Hietasmäki|Ylöjärvi|O|1953|1768|198000|112|Sahatie 4
+Vuorentausta|Ylöjärvi|R|1981|1767|129000|73|Ylätie 4
+Metsäkylä|Ylöjärvi|O|1983|2514|264000|105|Hiilitie 3
+Vuorentausta|Ylöjärvi|O|1983|1550|186000|120|Pohjanpolku 15
+Manni|Ylöjärvi|R|1987|1402|89000|63.5|Keihästie 9-11 As
+Kirkonseutu|Ylöjärvi|K|1990|1922|99000|51.5|Rotikontie 3
+Vuorentausta|Ylöjärvi|R|1977|1878|169000|90|Välimäenkuja 6
+Ylöjärvi|Ylöjärvi|R|2015|3458|185000|53.5|Vasamankaari 2 C
+Siivikkala|Ylöjärvi|R|1983|1989|179000|90|Myllyhaantie 4 C
+Soppeenmäki|Ylöjärvi|R|1979|2326|84900|36.5|Saarnitie 2
+Siivikkala|Ylöjärvi|O|2005|2413|415000|172|Töyrytie 6 B
+Vuorentausta|Ylöjärvi|R|1983|2014|147000|73|Sivutie 3 A
+Siivikkala|Ylöjärvi|R|1983|1322|119000|90|Myllyhaantie 4
+Kuru|Ylöjärvi|O|2007|1093|199000|182|Karjulantie 341
+Hietasmäki|Ylöjärvi|R|1984|1903|118000|62|Hietastentie 10
+Kaurasmäki|Ylöjärvi|R|1975|1511|139000|92|Kalliotie 10
+Vuorentausta|Ylöjärvi|R|1973|1743|129000|74|Tuoviskuja 5
+Siivikkala|Ylöjärvi|O|1939|1250|175000|140|Siivikkalantie 91
+Siivikkala|Ylöjärvi|R|1980|1363|169000|124|Kasvihuoneentie 5 B
+Vuorentausta|Ylöjärvi|O|1976|895|119000|133|Tukiaisentie 7
+Keskusta|Ylöjärvi|K|2025|5530|276500|50|Loilantie 4 A20
+Keskusta|Ylöjärvi|K|2025|5211|286600|55|Loilantie 4 B42
+Keskusta|Ylöjärvi|K|2025|5620|281000|50|Loilantie 4 A25
+Keskusta|Ylöjärvi|K|2025|5211|286600|55|Loilantie 4 A15
+Keskusta|Ylöjärvi|K|2025|5099|252400|49.5|Loilantie 4 B46
+Keskusta|Ylöjärvi|K|2025|5008|247900|49.5|Loilantie 4 B40
+Keskusta|Ylöjärvi|K|2025|4020|199000|49.5|Loilantie 4 B34
+Keskusta|Ylöjärvi|K|2025|5099|252400|49.5|Loilantie 4 A23
+Keskusta|Ylöjärvi|K|2025|5184|256600|49.5|Loilantie 4 A28
+Keskusta|Ylöjärvi|K|2025|3798|319000|84|Loilantie 4 B33
+Keskusta|Ylöjärvi|K|2025|3798|319000|84|Loilantie 4 A4
+Haavisto|Ylöjärvi|R|1987|1975|79000|40|Ristimäentie 8
+Viljakkala|Ylöjärvi|R|2007|1140|69000|60.5|Elokaarentie 1
+Siivikkala|Ylöjärvi|O|1958|782|199000|254.5|Vasamantie 2
+Siivikkala|Ylöjärvi|R|1980|1451|209000|144|Kasvihuoneentie 5 A
+Ihainen|Ylöjärvi|O|1986|2264|369000|163|Ihaistentie 2
+Kuru|Ylöjärvi|O|2007|1875|285000|152|Penkkiläntie 932
+Siivikkala|Ylöjärvi|R|1979|1720|129000|75|Salorinteentie 1 C
+Siivikkala|Ylöjärvi|R|1985|2353|80000|34|Leppästentie 7 A2
+Asuntila|Ylöjärvi|O|2005|2551|324000|127|Idäntie 24
+Vuorentausta|Ylöjärvi|O|1975|1650|198000|120|Taksvärkkitie 22
+Ylinen|Ylöjärvi|K|0|1283|38500|30|Lammassaarentie 3 B19
+Sontu|Ylöjärvi|R|1991|1594|110000|69|Hiekkapolku 8b
+Haavisto|Ylöjärvi|R|2023|3386|199800|59|Hiilimiiluntie 2, 33480 Ylöjärvi
+Keskusta|Pirkkala|K|2026|616|32050|52|Viistokuja 6
+Suuppa|Pirkkala|K|2005|3000|129000|43|Suupankuja 3
+Vähäjärvi|Pirkkala|O|1983|1515|160000|105.6|Mesimarjakuja 3
+Haikka|Pirkkala|O|2005|3116|458000|147|Vanhatie 35 B
+Vähäjärvi|Pirkkala|K|1982|2162|73500|34|Ollikantie 16
+Vähäjärvi|Pirkkala|R|1989|2880|239000|83|Tattikuja 3
+Pere|Pirkkala|K|2010|4219|308000|73|Selininranta 3
+Sankila|Pirkkala|O|2002|2136|377000|176.5|Kenttätie 9
+Lepomoisio|Pirkkala|O|2026|4188|469000|112|Lepomoisiontie 8 A
+Kurikka|Pirkkala|R|2009|3535|274000|77.5|Leppäsenkulma 2 C
+Pakkalankulma|Pirkkala|O|1993|2000|299000|149.5|Kaartokuja 4
+Vähäjärvi|Pirkkala|R|1982|2592|219000|84.5|Vahverotie 1
+Turri|Pirkkala|K|2027|4553|229944|50.5|Soukonlahdenkaari 23 A 10
+Turri|Pirkkala|K|2027|4164|199863|48|Soukonlahdenkaari 23 A 22
+Turri|Pirkkala|K|2027|4479|129890|29|Soukonlahdenkaari 23 A 36
+Killo|Pirkkala|K|2017|3159|139000|44|Pähkinäpolku 2 B
+Kyösti|Pirkkala|K|1970|1663|148000|89|Kartanontie 16 C
+Pere|Pirkkala|R|2023|4073|448000|110|Lautatarhantie 2
+Takamaa|Pirkkala|R|1988|2625|210000|80|Takamaantie 8
+Pere|Pirkkala|R|2018|4077|318000|78|Lautatarhantie 3
+Loukonlahti|Pirkkala|K|2020|4168|248000|59.5|Läpikäytävänkuja 2 A
+Vähäjärvi|Pirkkala|O|1982|2644|238000|90|Muurainkuja 6
+Kyösti|Pirkkala|K|1978|688|65000|94.5|Kyöstintie 5-7
+Vähäjärvi|Pirkkala|O|1978|3221|335000|104|Harjutie 3
+Kranstolppa|Pirkkala|O|2007|2377|587000|247|Kranstolpantie 212
+Suuppa|Pirkkala|K|1977|2137|125000|58.5|Suupankuja 12-14 A
+Nuoliala|Pirkkala|K|2022|4800|120000|25|Läpikäytävänkuja 6
+Loukonlahti|Pirkkala|K|1973|1441|85000|59|Kreetankuja 4 B
+Turri|Pirkkala|K|2025|625|27495|44|Soukonlahdenkaari 25
+Pere|Pirkkala|K|2006|3899|269000|69|Isomäentie 9 A
+Loukonlahti|Pirkkala|K|1969|2154|168000|78|Kirkkokatu 13 A
+Solja|Pirkkala|K|2021|3809|379000|99.5|Kauppiaankatu 25 A
+Kurikka|Pirkkala|K|2007|3275|262000|80|Kullaantie 3
+Kurikka|Pirkkala|R|2009|3561|349000|98|Leppäsenkulma 2
+Turri|Pirkkala|K|2027|4102|159984|39|Soukonlahdenkaari 23 A 3
+Turri|Pirkkala|K|2027|4968|399960|80.5|Soukonlahdenkaari 23 A 29
+Turri|Pirkkala|K|2027|4329|274912|63.5|Soukonlahdenkaari 23 A 11
+Turri|Pirkkala|K|2025|542|38505|71|Torninjuuri 9b
+Suuppa /Kurikka|Pirkkala|K|2003|3236|178000|55|Kullaantie 4
+Tuohikorpi|Pirkkala|O|2015|4327|649000|150|Tuohikorpi 34
+Vähäjärvi|Pirkkala|R|1989|2759|229000|83|Tattikuja 3 B
+Pere|Pirkkala|K|2025|5355|249000|46.5|Partolantie 3
+Loukonlahti|Pirkkala|R|1983|2800|287000|102.5|Kirkkokatu 14
+Tuohikorpi|Pirkkala|O|2014|4488|579000|129|Tuohikorpi 12
+Kurikka|Pirkkala|R|2010|3798|338000|89|Metsämäenkaari 3 D
+Kyösti|Pirkkala|R|1983|2289|182000|79.5|Koivutie 24 D
+Solja|Pirkkala|K|2021|3699|270000|73|Kauppiaankatu 15 B
+Kyösti|Pirkkala|R|1972|2276|239000|105|Kartanonkuja 3
+Pere|Pirkkala|K|2025|5511|259000|47|Partolantie 3 B
+Loukonlahti|Pirkkala|K|1973|2951|139000|47.1|Kreetantie 7
+Loukonlahti|Pirkkala|K|1971|2623|198000|75.5|Kreetantie 7 B
+Toivio|Pirkkala|O|2010|3521|493000|140|Korvenojankuja 12
+Pere|Pirkkala|K|1938|3155|159000|50.4|Pereentie 25 as
+Haikka|Pirkkala|R|2013|3491|398000|114|Puistokatu 3
+Loukonlahti|Pirkkala|K|1970|2457|86000|35|Kirkkoveräjäntie 1
+Solja|Pirkkala|K|2021|661|27761|42|Puotikuja 11 As 33
+Rantaniitty|Pirkkala|R|2020|4774|635000|133|Huvilakatu 9
+Solja|Pirkkala|K|2021|607|25496|42|Puotikuja 11 As 23
+Suuppa|Pirkkala|K|2022|3845|248000|64.5|Koulutie 2
+Partola|Pirkkala|R|2006|3946|365000|92.5|Isomäentie 6 C
+Pere|Pirkkala|R|2023|4438|355000|80|Lautatarhantie 1
+Pakkalankulma|Pirkkala|O|2002|2603|544000|209|Mantantie 7
+Kurikka|Pirkkala|R|2010|3491|398000|114|Metsämäenkaari 2
+Solja|Pirkkala|K|2021|618|31821|51.5|Puotikuja 11 As 07
+Partola|Pirkkala|K|2010|2967|224000|75.5|Korkokuja 5
+Kyösti|Pirkkala|K|1967|1458|105000|72|Kyöstintie 2
+Niemenmaa|Pirkkala|K|1992|1958|139000|71|Kattilaistentie 22 B
+Partola|Pirkkala|K|2024|5588|285000|51|Partolantie 3 A
+Pere|Pirkkala|R|2024|4967|375000|75.5|Partolantie 3
+Pere|Pirkkala|K|2014|553|26003|47|Pereentie 1
+Kyösti|Pirkkala|R|2025|4277|509000|119|Koivutie 9 B
+Ylä-Haikka|Pirkkala|O|2001|2131|635000|298|Spårentie 2
+Niemenmaa|Pirkkala|R|2026|4629|449000|97|Kattilaistentie 18 A
+Suuppa|Pirkkala|K|2005|3104|239000|77|Suupankuja 3 B
+PIrkkalankylä|Pirkkala|O|2012|3150|315000|100|Kranaatinmäentie 83
+Loukonlahti|Pirkkala|R|1972|3205|234000|73|Kirkkoveräjäntie 9 A
+Vähäjärvi|Pirkkala|R|2020|3843|319000|83|Vuorikuja 1
+Pere|Pirkkala|K|2011|5663|589000|104|Selininranta 6
+Toivio|Pirkkala|O|1969|2698|259000|96|Salomaantie 15
+Solja|Pirkkala|K|2020|3983|239000|60|Ompelijankuja 2 A
+Takamaa|Pirkkala|R|2005|3405|269000|79|Täpläkehrääjä 2 F
+Lepomoisio|Pirkkala|R|2026|3989|379000|95|Vasamakuja 2 A2
+Kyösti|Pirkkala|R|1985|1826|199000|109|Lehtimäentie 4
+Loukonlahti|Pirkkala|K|1969|2229|105000|47.1|Kirkkoveräjäntie 8 B
+Partola|Pirkkala|K|2027|4731|281500|59.5|Tykkikuja 4
+Kurikka|Pirkkala|R|2022|3598|295000|82|Linnakiventie 1a B
+Solja|Pirkkala|R|2019|3593|318000|88.5|Leipurinkuja 15 A
+Turri|Pirkkala|K|2027|4819|399936|83|Soukonlahdenkaari 23 A 15
+Pere|Pirkkala|R|2019|4300|430000|100|Lautatarhantie 6
+Turri|Pirkkala|K|2027|4683|259885|55.5|Soukonlahdenkaari 23 A 34
+Turri|Pirkkala|K|2027|4334|179855|41.5|Soukonlahdenkaari 23 A 37
+Turri|Pirkkala|K|2027|4853|249933|51.5|Soukonlahdenkaari 23 A 46
+Solja|Pirkkala|K|2021|670|27142|40.5|Puotikuja 11 As 35
+Keskusta|Pirkkala|K|2023|4466|163000|36.5|Viistokuja 4 A
+Pere|Pirkkala|R|2023|4238|339000|80|Lautatarhantie 1 A
+Lepomoisio|Pirkkala|R|2026|4074|387000|95|Vasamakuja 2 A 1
+Kyösti|Pirkkala|R|1974|2139|169000|79|Perkiöntie 9
+Solja|Pirkkala|K|2023|6743|735000|109|Kauppiaankatu 13
+Pakkalankulma|Pirkkala|R|2021|4673|472000|101|Mantankuja 4 A
+Loukonlahti|Pirkkala|K|1969|2381|124990|52.5|Kirkkokatu 13
+Loukonlahti|Pirkkala|K|2023|4390|169000|38.5|Läpikäytävänkuja 8
+Loukonlahti|Pirkkala|K|1972|1865|180000|96.5|Kirkkoveräjäntie 3-5
+Pere|Pirkkala|K|1938|3545|195000|55|Pereentie 25
+Rantaniitty|Pirkkala|K|2027|4500|108000|24|Lentäjänkatu 24 A45
+Rantaniitty|Pirkkala|K|2027|4780|239000|50|Lentäjänkatu 24 A44
+Rantaniitty|Pirkkala|K|2027|4691|129000|27.5|Lentäjänkatu 24 A42
+Rantaniitty|Pirkkala|K|2027|4983|299000|60|Lentäjänkatu 24 A43
+Rantaniitty|Pirkkala|K|2027|5087|228900|45|Lentäjänkatu 24 A41
+Rantaniitty|Pirkkala|K|2027|5087|228900|45|Lentäjänkatu 24 A40
+Rantaniitty|Pirkkala|K|2027|4938|395000|80|Lentäjänkatu 24 A39
+Rantaniitty|Pirkkala|K|2027|4780|239000|50|Lentäjänkatu 24 A38
+Rantaniitty|Pirkkala|K|2027|4652|134900|29|Lentäjänkatu 24 A37
+Rantaniitty|Pirkkala|K|2027|4375|105000|24|Lentäjänkatu 24 A36
+Rantaniitty|Pirkkala|K|2027|4892|293500|60|Lentäjänkatu 24 A34
+Rantaniitty|Pirkkala|K|2027|4700|235000|50|Lentäjänkatu 24 A35
+Rantaniitty|Pirkkala|K|2027|4989|224500|45|Lentäjänkatu 24 A31
+Rantaniitty|Pirkkala|K|2027|4989|224500|45|Lentäjänkatu 24 A32
+Rantaniitty|Pirkkala|K|2027|4813|385000|80|Lentäjänkatu 24 A30
+Rantaniitty|Pirkkala|K|2027|4700|235000|50|Lentäjänkatu 24 A29
+Rantaniitty|Pirkkala|K|2027|4548|131900|29|Lentäjänkatu 24 A28
+Rantaniitty|Pirkkala|K|2027|4250|102000|24|Lentäjänkatu 24 A27
+Rantaniitty|Pirkkala|K|2027|4660|233000|50|Lentäjänkatu 24 A26
+Rantaniitty|Pirkkala|K|2027|4545|125000|27.5|Lentäjänkatu 24 A33
+Rantaniitty|Pirkkala|K|2027|4817|289000|60|Lentäjänkatu 24 A25
+Rantaniitty|Pirkkala|K|2027|4473|123000|27.5|Lentäjänkatu 24 A24
+Rantaniitty|Pirkkala|K|2027|4887|219900|45|Lentäjänkatu 24 A23
+Rantaniitty|Pirkkala|K|2027|4887|219900|45|Lentäjänkatu 24 A22
+Rantaniitty|Pirkkala|K|2027|4660|233000|50|Lentäjänkatu 24 A20
+Rantaniitty|Pirkkala|K|2027|4738|379000|80|Lentäjänkatu 24 A21
+Rantaniitty|Pirkkala|K|2027|4163|99900|24|Lentäjänkatu 24 A18
+Rantaniitty|Pirkkala|K|2027|4448|129000|29|Lentäjänkatu 24 A19
+Rantaniitty|Pirkkala|K|2027|4750|285000|60|Lentäjänkatu 24 A16
+Rantaniitty|Pirkkala|K|2027|4580|229000|50|Lentäjänkatu 24 A17
+Rantaniitty|Pirkkala|K|2027|4822|217000|45|Lentäjänkatu 24 A14
+Rantaniitty|Pirkkala|K|2027|4400|121000|27.5|Lentäjänkatu 24 A15
+Rantaniitty|Pirkkala|K|2027|4822|217000|45|Lentäjänkatu 24 A13
+Rantaniitty|Pirkkala|K|2027|4613|369000|80|Lentäjänkatu 24 A12
+Rantaniitty|Pirkkala|K|2027|4580|229000|50|Lentäjänkatu 24 A11
+Rantaniitty|Pirkkala|K|2027|4500|225000|50|Lentäjänkatu 24 A8
+Rantaniitty|Pirkkala|K|2027|4121|98900|24|Lentäjänkatu 24 A9
+Rantaniitty|Pirkkala|K|2027|4307|124900|29|Lentäjänkatu 24 A10
+Rantaniitty|Pirkkala|K|2027|4327|119000|27.5|Lentäjänkatu 24 A6
+Rantaniitty|Pirkkala|K|2027|4650|279000|60|Lentäjänkatu 24 A7
+Rantaniitty|Pirkkala|K|2027|4776|214900|45|Lentäjänkatu 24 A5
+Rantaniitty|Pirkkala|K|2027|4776|214900|45|Lentäjänkatu 24 A4
+Rantaniitty|Pirkkala|K|2027|4500|225000|50|Lentäjänkatu 24 A2
+Rantaniitty|Pirkkala|K|2027|4500|360000|80|Lentäjänkatu 24 A3
+Rantaniitty|Pirkkala|K|2027|4134|119900|29|Lentäjänkatu 24 A1
+Sankila|Pirkkala|O|2013|4040|699000|173|Rimpikuja 9
+Kurikka|Pirkkala|K|2004|4496|254000|56.5|Kullaantie 6
+Kyösti|Pirkkala|K|1954|1671|58500|35|Lehtimäentie 2 A
+Solja|Pirkkala|K|2021|4909|108000|22|kauppiaankatu 25
+Pere|Pirkkala|O|2024|5367|424000|79|Partolantie 3 C
+Pirkkalankylä|Pirkkala|R|2008|2271|159000|70|Valkilantie 4
+Kurikka|Pirkkala|R|1999|3320|249000|75|Pirttimäki 6
+Pere|Pirkkala|K|2010|4085|239000|58.5|Selininranta 5
+Solja|Pirkkala|K|2019|4878|239000|49|Leipurinkuja 8 A
+Naistenmatka|Pirkkala|O|2016|3724|499000|134|Tuohikontti 6
+Suuppa|Pirkkala|K|2023|4523|450000|99.5|Viistokuja 4
+Haikka|Pirkkala|O|1950|1747|469000|268.5|Keskuskatu 12
+Lepomoisio|Pirkkala|R|2026|3989|379000|95|Vasamakuja 2 A5
+Suuppa|Pirkkala|K|1977|2034|119000|58.5|Suupankuja 12-14 D
+Pere|Pirkkala|R|2019|3890|389000|100|Lautatarhantie 6 A
+Loukonlahti|Pirkkala|R|1988|2840|169000|59.5|Kreetankuja 1
+Pere|Pirkkala|K|2019|4656|149000|32|Pereensaarentie 6
+Koivisto|Pirkkala|O|2109|1090|109000|100|Kivitie 4
+Partola|Pirkkala|K|2009|3548|239500|67.5|Korkokuja 2 A
+Pere|Pirkkala|R|2016|4036|339000|84|Kutteritie 6 B 8
+Solja|Pirkkala|K|2024|4796|259000|54|Kauppiaankatu 11 B
+Kyösti|Pirkkala|K|1978|1005|95000|94.5|Kyöstintie 5-7 C
+Solja|Pirkkala|K|2021|3222|269000|83.5|Kauppiaankatu 15
+Vähäjärvi|Pirkkala|R|1981|2575|309000|120|Mustikkakuja 1
+Suuppa|Pirkkala|K|1974|2633|79000|30|Suupankuja 4-6
+Pere|Pirkkala|R|2021|4552|478000|105|Lautatarhantie 4 D
+Kurikka|Pirkkala|R|2022|3448|400000|116|Linnakiventie 1 B
+Kyösti / Lepomoisio|Pirkkala|O|1975|1630|195000|119.6|Kuusitie 14
+Pere|Pirkkala|R|2019|4141|323000|78|Lautatarhantie 6 C
+Sankila|Pirkkala|O|2024|5824|1095000|188|Färminkaari 10 A
+Sankila|Pirkkala|O|1997|2167|299000|138|Salimäentie 4
+Kyösti|Pirkkala|K|1954|2062|67000|32.5|Lehtimäentie 2a
+Solja|Pirkkala|K|2020|5233|109900|21|Leipurinkuja 6 A 18
+Nuoliala|Pirkkala|K|2017|3671|134000|36.5|Pähkinäpolku 2
+Kyösti|Pirkkala|K|1970|2069|60000|29|Kartanontie 16 B
+Suuppa|Pirkkala|K|1980|1691|159000|94|Patokuja 2A
+Solja|Pirkkala|K|2021|5409|119000|22|Kauppiaankatu 27
+Solja|Pirkkala|K|2020|5524|116000|21|Leipurinkuja 6
+Pere|Pirkkala|R|2000|4048|336000|83|Partolantie 2
+Laasonportti|Lempäälä|O|2010|2416|395000|163.5|Nousionrinne 26
+Kuokkala|Lempäälä|R|1992|2073|198000|95.5|Majauslahdentie 2
+Lempoinen|Lempäälä|K|2007|2404|137000|57|Piipontie 2 A
+Kulju|Lempäälä|R|1999|2731|198000|72.5|Myllykoluntie 5 C
+Haurala|Lempäälä|R|1985|2100|168000|80|Ylisitarintie 18
+Haurala|Lempäälä|R|1985|1738|139000|80|Ylisitarintie 14
+Kelho|Lempäälä|O|1956|1994|319000|160|Isokorventie 22
+Vuores|Lempäälä|R|2021|3759|359000|95.5|Leppikaijantie 4 as 1
+Höytämö|Lempäälä|R|1979|1627|179000|110|Simunantie 10
+Vuores|Lempäälä|R|2023|3980|195000|49|Vilhelminkuja 2, Lempäälä
+Kulju|Lempäälä|K|2020|4103|119000|29|Jahtikuja 2
+Hakkari|Lempäälä|R|2006|2593|258000|99.5|Keskuskatu 34 B
+Moisio|Lempäälä|O|2027|4273|461500|108|Puusepäntie 3 B
+Kulju|Lempäälä|O|2006|2645|439000|166|Linnajärventie 154
+Tuuliala|Lempäälä|O|1973|1762|215000|122|Sorsapolku 4
+Keskusta|Lempäälä|K|2001|2864|169000|59|Uotintie 6 A
+Moisio|Lempäälä|R|1987|2100|168000|80|Kivikukantie 1 D
+Hakkari|Lempäälä|O|1982|1438|345000|240|Pysäkkitie 3
+Vuores|Lempäälä|O|1979|2085|669000|320.8|Vanha Hervannantie 211
+Lempäälä|Lempäälä|O|1860|1481|240000|162|Kärppäläntie 50
+Paunu|Lempäälä|R|1988|2141|149900|70|Laurintie 6
+Höytämö|Lempäälä|R|2019|3058|419000|137|Kyynärönkulma 3 as 2
+Maakala|Lempäälä|R|2015|3113|249000|80|Maakalantie 32
+Kulju|Lempäälä|R|2015|3187|149800|47|Lukutuvankuja 2 B
+Moisio|Lempäälä|R|2020|3833|184000|48|Hanhitie 4
+Kulju|Lempäälä|R|2018|3311|149000|45|Ketunkulma 2
+Paunu|Lempäälä|R|1982|1871|116000|62|Kärpänkuja 6 As.
+Kuokkala|Lempäälä|O|1953|4346|678000|156|Katepalintie 3
+Kulju|Lempäälä|R|2004|2611|235000|90|Myllykoluntie 4 A
+Sääksjärvi|Lempäälä|K|2007|2430|130000|53.5|Toimelankaari 6 A
+Keskusta|Lempäälä|K|1970|2106|119000|56.5|Tampereentie 20
+Kuokkala|Lempäälä|R|1992|2824|216000|76.5|Koukkupolku 10b
+Sääksjärvi|Lempäälä|O|1975|1387|319000|230|Valentiinintie 1
+Lempäälä|Lempäälä|R|1987|1525|122000|80|Moisiolammentie 3
+Höytämö|Lempäälä|R|1977|1955|215000|110|Simunantie 4-6 B
+Haurala|Lempäälä|O|1957|3621|210000|58|Hauralantie 260
+Ryynikkä|Lempäälä|O|1249|1353|249000|184|Poikkitie 10
+Keskusta|Lempäälä|K|2007|2439|139000|57|Piipontie 2
+Moisio|Lempäälä|R|2021|3896|187000|48|Hanhitie 6 A
+Rautasema|Lempäälä|O|2009|3043|499000|164|Livanvuorentie 31
+Kulju|Lempäälä|O|1976|2384|298000|125|Linnajärventie 121
+Vettenmaa|Lempäälä|O|2007|4516|849000|188|Aaprolanniementie 58
+Saikka|Lempäälä|O|2026|4797|638000|133|Hilman Ruusupolku 23
+Moisio|Lempäälä|O|1987|1543|179000|116|Siskontie 9
+Sulkola|Lempäälä|O|1929|2050|287000|140|Piippukuja 17
+Sarvikas|Lempäälä|O|2011|3071|519000|169|Rantoistenpolku 6
+Maakala|Lempäälä|O|2011|4022|724000|180|Maakalantie 33
+Annisto|Lempäälä|O|2023|3368|485000|144|Kaskimäentie 13 as 1
+Laasonportti|Lempäälä|O|2011|2199|398000|181|Vitikankuja 1
+Haurala|Lempäälä|O|2022|3857|459000|119|Saara Lindin kuja 3
+Lempäälä|Lempäälä|K|1975|1704|129500|76|Majamäentie 5
+Koipijärvi|Lempäälä|R|2022|3440|289000|84|Vilhelminkuja 6
+Keskusta|Lempäälä|O|1967|1470|169000|115|Tampereentie 32
+Lempäälä|Lempäälä|O|1952|1961|154900|79|Lähteentie 17
+Höytämö|Lempäälä|O|2023|3790|559000|147.5|Kivekkääntie 2
+Maakala|Lempäälä|R|2016|539|26435|49|Maakalantie 22
+Kulju|Lempäälä|R|2004|2420|339000|140.1|Talvipuisto 4 A
+Vuores|Lempäälä|R|2022|3714|182000|49|Vilhelminkuja 4 B
+Sääksjärvi|Lempäälä|K|1971|1903|59000|31|Karhumäentie 10
+Kulju|Lempäälä|R|2005|3152|249000|79|Kuljun Asematie 1
+Sipilä|Lempäälä|O|1987|1687|248000|147|Hakatie 7
+Sääksjärvi|Lempäälä|O|1940|1792|224000|125|Pitkäahteentie 9
+Kulju|Lempäälä|O|1979|1793|269000|150|Kannistontie 21
+Vuores|Lempäälä|R|2022|3891|249000|64|Vilhelminkuja 4
+Höytämö|Lempäälä|O|2027|4147|535000|129|Välimäenranta 1
+Moisio|Lempäälä|R|2007|2571|270000|105|Salakkapolku 6 A 2
+Moisio|Lempäälä|O|2027|4273|461500|108|Puusepäntie 3 C
+Moisio|Lempäälä|O|2027|4322|466800|108|Puusepäntie 3 A
+Sääksjärvi|Lempäälä|O|1940|2867|215000|75|Sääksjärventie 19
+Sääksjärvi|Lempäälä|O|1977|1382|398000|288|Annalantie 1
+Kuokkala|Lempäälä|O|1980|2489|575000|231|Pirkkalantie 158
+Kulju|Lempäälä|O|2018|3268|585000|179|Kuljun Asematie 17 b
+Kulju|Lempäälä|O|2026|4205|492000|117|Harjastie 6 A 1
+Kulju|Lempäälä|O|2026|4207|448000|106.5|Linnajärventie 9 A 1
+Kulju|Lempäälä|O|2026|3765|439000|116.6|Kuussalontie 4
+Sääksjärvi|Lempäälä|O|1950|1744|279000|160|Lampitie 19
+Veräjäntausta|Lempäälä|O|1960|2516|239000|95|Puomitie 10
+Kiimakallio|Lempäälä|R|2019|4155|295000|71|Hirvimetsäntie 10 A
+Keskusta|Lempäälä|K|2003|2322|137000|59|Pastellintie 3 A
+Kulju|Lempäälä|O|2002|2225|227000|102|Menninkäisentie 10
+Kulju|Lempäälä|R|2004|2295|179000|78|Myllykoluntie 4
+Lempäälä|Lempäälä|R|2025|4488|359000|80|Välskärintie 1 As 2
+Sarapisto|Lempäälä|O|1975|2075|249000|120|Keskuskatu 11
+Moisio|Lempäälä|O|1958|1870|215000|115|Moisionaukea 8
+Kulju|Lempäälä|R|2019|3707|278000|75|Kuljuntie 32 C 6
+Kulju|Lempäälä|R|1999|2467|148000|60|Myllykoluntie 5 A
+Maakala|Lempäälä|R|2014|3238|259000|80|Maakalantie 28 A
+Niemenpää|Lempäälä|O|1992|1979|380000|192|Kartanonpolku 19
+Sulkola|Lempäälä|K|2017|2841|125000|44|Hopeakanavankatu 11
+Maakala|Lempäälä|R|2018|551|36354|66|Maakalantie 18
+Kulju|Lempäälä|R|2020|4151|220000|53|Punalakintie 7
+Sulkola|Lempäälä|K|2013|2990|145000|48.5|Hopeakanavankatu 13 A
+Höytämö|Lempäälä|O|2017|6968|1080000|155|Mustanniementie 3
+Vanattara|Lempäälä|O|1952|1600|64000|40|Lanteentie 12
+Lempäälä|Lempäälä|O|2008|2118|485000|229|Rantoistenpolku 2
+Kuokkala|Lempäälä|K|2019|3340|349000|104.5|Sarapistontie 1 A
+Kulju|Lempäälä|K|2013|2875|184000|64|Hirvimetsäntie 4
+Keskusta|Lempäälä|K|2007|2540|144800|57|Piipontie 2a
+Paunu|Lempäälä|R|1978|2317|139000|60|Kärpänkuja 3
+Lempäälä|Lempäälä|R|1977|1542|185000|120|Mestarintie 6
+Lempoinen|Lempäälä|R|1987|2254|142000|63|Kotitie 2
+Sääksjärvi|Lempäälä|R|1984|2403|149000|62|Hirvitie 5 as
+Uusi-Eurooppa|Lempäälä|O|1976|990|99000|100|Katajatie 5
+Haurala|Lempäälä|R|1985|1686|59000|35|Ylisitarintie 10
+Kulju|Lempäälä|O|1993|1286|198000|154|Väinöläntie 10
+Laasonportti|Lempäälä|R|2022|3263|349800|107.2|Vitsaskuja 4 As 1, 37500 Lempäälä
+Kulju|Lempäälä|O|1964|1553|233000|150|Kuljun Asematie 13
+Lempäälä|Lempäälä|O|1991|1746|234000|134|Saksinmäentie 2
+Kulju|Lempäälä|R|2012|3167|369000|116.5|Kukkolantie 3
+Harakkala|Lempäälä|K|1976|1667|55000|33|Harakkalantie 4
+Saikka|Lempäälä|O|2026|4058|629000|155|Tuusatie 4
+Kulju|Lempäälä|R|1947|522|60000|115|Tampereentie 358
+Moisio|Lempäälä|R|2023|3582|274000|76.5|Evakkotie 3
+Kulju|Lempäälä|O|1964|2453|368000|150|Tampereentie 306
+Hakkari|Lempäälä|O|1934|1989|179000|90|Pysäkkitie 13
+Sääksjärvi|Lempäälä|O|2003|2487|649000|261|Sääksjärventie 26
+Kuokkala|Lempäälä|O|2019|4914|629000|128|Kansakoulutie 12
+Nurmisaari|Lempäälä|O|2023|6080|1295000|213|Harjutie 18
+Ahtiala|Lempäälä|O|2006|2450|420000|171.4|Ahtialantie 167
+Hulikankulma|Lempäälä|O|2018|2357|489000|207.5|Koivukuja 6
+Lempäälä|Lempäälä|R|2026|3765|439000|116.6|Kuussalontie 4
+Harakkala|Lempäälä|K|1978|1536|86000|56|Lähdetie 3
+Vuores|Lempäälä|R|2023|3857|189000|49|Vilhelminkuja 2 B
+Sääksjärvi|Lempäälä|K|1967|1693|149000|88|Karhumäentie 4
+Kuokkala|Lempäälä|O|2007|2679|225000|84|Rantamäentie 10
+Moisio|Lempäälä|R|2006|2707|245000|90.5|Lohilantie 3
+Hakkari|Lempäälä|O|1929|2082|229000|110|Hakkarintie 10
+Keskusta|Lempäälä|K|2014|3000|153000|51|Kotipellonkatu 5
+Laasonportti|Lempäälä|R|2007|2100|339000|161.4|Putkistonniementie 6 B
+Ryynikkä|Lempäälä|R|1954|1275|139000|109|Ryynikäntie 25
+Ryynikkä|Lempäälä|K|1954|1275|139000|109|Ryynikäntie 25
+Ryynikkä|Lempäälä|O|1954|1275|139000|109|Ryynikäntie 25
+Lempäälä|Lempäälä|O|1947|1146|149000|130|Hauralantie 4
+Harakkala|Lempäälä|O|1970|2111|190000|90|Lastenkodintie 12
+Tuuliala|Lempäälä|O|1998|2134|749000|351|Harjutie 17
+Sipilä|Lempäälä|O|1991|1774|369000|208|Hakatie 23a
+Kuokkala|Lempäälä|O|1948|2570|699000|272|Rautioniementie 8
+Tuuliala|Lempäälä|O|1950|2489|448000|180|Särkipolku 1
+Hollo|Lempäälä|R|1989|2333|105000|45|Ratatie 1
+Kuljun Asemakylä|Lempäälä|O|1990|2211|229900|104|Koskelantie 11
+Haurala|Lempäälä|R|2023|4060|203000|50|Mirttisentie 1 A3
+Ryynikkä|Lempäälä|K|2021|572|37463|65.5|Manttaalitie 6
+Kulju|Lempäälä|R|1987|1738|139000|80|Peräkorventie 1 B
+Maakala|Lempäälä|R|2017|3363|269000|80|Maakalantie 36
+Haurala|Lempäälä|R|1980|1530|114000|74.5|Hauralantie 32
+Haurala|Lempäälä|R|1981|1595|126000|79|Väinämöisentie 1 AS
+Hakkari|Lempäälä|O|1963|2294|195000|85|Hakkarintie 11
+Lempäälä|Lempäälä|O|1945|768|129000|168|Rypyntie 14
+Moisio|Lempäälä|R|2018|3670|189000|51.5|Hattulanmäentie 11 A
+Ruskea-ahde|Lempäälä|O|1961|781|125000|160|Lehtopolku 4 B
+Sääksjärvi|Lempäälä|R|1975|2292|149000|65|Artturintie 1-15 D
+Lippo|Lempäälä|O|2020|2329|368000|158|Vattuvuorentie 9
+Sulkola|Lempäälä|K|2013|3354|109000|32.5|Hopeakanavankatu 13
+Keskusta|Lempäälä|K|2017|4014|204710|51|Hopeakanavankatu 11 A 38
+Haurala|Lempäälä|R|1977|2435|179000|73.5|Ruukintie 2 C
+Mattila|Lempäälä|O|2001|2512|324000|129|Niementie 26
+Koskenranta|Lempäälä|O|1947|1754|249000|142|Kostinpolku 3
+Lempäälä|Lempäälä|K|1970|1048|110000|105|Sirvalahdentie 2
+Veräjäntausta|Lempäälä|R|2019|5018|138000|27.5|Punalakintie 9 B
+Sulkola|Lempäälä|K|2019|3398|158000|46.5|Hopeakanavankatu 9
+keskusta|Lempäälä|K|1987|2517|73000|29|Kenttätie 4
+Paunu|Lempäälä|R|1983|1903|146500|77|Kärpänkuja 4 as.
+Kulju|Lempäälä|R|2019|4786|134000|28|Punalakintie 9 A
+Moisio|Lempäälä|R|2023|3565|369000|103.5|Evakkotie 3 A
+Lempoinen|Lempäälä|R|1990|2746|379000|138|Koskenranta 8-10
+Moisio|Lempäälä|R|1984|1165|99000|85|Moisiolammentie 10 D
+Vuores|Lempäälä|O|1981|813|295000|363|Annistonkaari 16
+Sääksjärvi|Lempäälä|K|1971|1313|63000|48|Tampereentie 414 J
+Väinölä|Lempäälä|O|1961|1656|298000|180|Mäkipääntie 12
+Kulju|Lempäälä|R|2026|4144|373000|90|Harjastie 6 C 4
+Kulju|Lempäälä|R|2026|4207|448000|106.5|Linnajärventie 9 A 1
+Kulju|Lempäälä|R|2026|4099|291000|71|Harjastie 6 C 2
+Kulju|Lempäälä|R|2026|4099|291000|71|Harjastie 6 C 3
+Kulju|Lempäälä|R|2026|4205|492000|117|Harjastie 6 A 1
+Kulju|Lempäälä|O|1998|2959|435000|147|Pirunlinnantie 129
+Lahdenkylä|Lempäälä|O|1984|4765|648000|136|Lahdenkyläntie 109
+Keskusta|Lempäälä|K|2019|3503|169900|48.5|Aavankatu 6
+Sääksjärvi|Lempäälä|K|1971|1513|87000|57.5|Karhumäentie 8 i 79
+Sulkola|Lempäälä|K|2023|5187|404607|78|Hopearaitti 5
+Sulkola|Lempäälä|K|2023|5616|261144|46.5|Hopearaitti 5 A 29
+Sulkola|Lempäälä|K|2023|5321|492193|92.5|Hopearaitti 5 A 25
+Maakala|Lempäälä|K|2023|5498|354593|64.5|Hopearaitti 5 A 31
+Piikkiö|Kaarina|R|2012|2449|226000|92.3|Saunio 4 A
+Auranlaakso|Kaarina|O|2014|5127|887000|173|Vinssikatu 22
+Littoinen|Kaarina|R|2021|4029|282000|70|Silvolankaari 13 C
+Piispanristi|Kaarina|K|2006|2550|139000|54.5|Kirjosieponkatu 6
+Raadelma|Kaarina|R|2005|3824|325000|85|Raatimiehenpolku 1 A
+Kultanummi|Kaarina|R|2013|3020|228000|75.5|Menninkäisenkuja 2
+Piispanristi|Kaarina|K|2002|3386|149000|44|Kultarinnankatu 4
+Kaarina|Kaarina|K|1986|1628|92000|56.5|Kuovinkatu 12
+Piispanristi|Kaarina|K|1974|1894|178000|94|Kuikankatu 11
+Littoinen|Kaarina|K|1991|2153|169000|78.5|Tappikatu 2
+Kaarina|Kaarina|K|2022|586|35159|60|Kartanontie 5 B 40
+Koristo|Kaarina|R|1989|2675|214000|80|Mäkitupalaisenkatu 3 B
+Kultanummi|Kaarina|R|1989|2726|169000|62|Menninkäisenkatu 7 B
+Piispanristi|Kaarina|K|1985|1909|64900|34|Kurjenkatu 11 A
+Koristo|Kaarina|O|1991|2397|525000|219|Ritarikatu 3
+Hovirinta|Kaarina|K|1967|1890|155000|82|Koristonkaari 6 C
+Rauhalinna|Kaarina|K|2027|3739|299156|80|Jalostusasemankatu 5a A 37
+Rauhalinna|Kaarina|K|2027|4355|119767|27.5|Jalostusasemankatu 5a A 8
+Piikkiö|Kaarina|R|1992|2000|166000|83|Mattilantie 5 A
+Hulkkio|Kaarina|R|1339|3725|339000|91|Myllyojankaari 4 as 2
+Hulkkio|Kaarina|R|1339|3725|339000|91|Myllyojankaari 4 as 1
+Kaarina|Kaarina|R|2007|3041|298000|98|Pappilankuja 1 B
+Empo|Kaarina|R|2027|4506|365000|81|Metsäniementie 4 as. 4
+Empo|Kaarina|R|2027|4734|445000|94|Metsäniementie 4 as. 5
+Empo|Kaarina|R|2027|4682|515000|110|Metsäniementie 4 as.6
+Empo|Kaarina|R|2027|4506|365000|81|Metsäniementie 4 as. 3
+Empo|Kaarina|R|2027|4682|515000|110|Metsäniementie 4 as. 1
+Empo|Kaarina|R|2027|4734|445000|94|Metsäniementie 4 as. 2
+Piispanristi|Kaarina|R|2021|592|47333|80|Herrasniitynkatu 4a
+Rauhalinna|Kaarina|K|2024|682|31390|46|Jalostusasemankatu 1 A 31
+Rauhalinna|Kaarina|K|2026|4149|195000|47|Jalostusasemankatu 9a
+Nunna|Kaarina|R|2027|3995|399500|100|Luostarintie 16 A1
+Voivala|Kaarina|R|2022|3405|332000|97.5|Koivikkokatu 5 B
+Piikkiö|Kaarina|O|2026|3986|558000|140|Katarintie 6B
+Piikkiö|Kaarina|K|1996|1376|97000|70.5|Laahamäenpolku 5 A
+Hovirinta|Kaarina|K|4169|1716|169000|98.5|Isännänkatu 9 b
+Voivala|Kaarina|R|2023|3616|320000|88.5|Koivikkokatu 6 A
+Kultanummi|Kaarina|R|1984|2677|166000|62|Vempeleenkatu 1
+Kultanummi|Kaarina|O|1938|1356|99000|73|Ruorikatu 10
+Kuusisto|Kaarina|O|1956|2650|265000|100|Kunnantie 20
+Piispanristi|Kaarina|K|1984|1463|117000|80|Kuovinkatu 14 A
+Rauhalinna|Kaarina|K|2027|5273|145000|27.5|Jalostusasemankatu 5a A 39
+Keskusta|Kaarina|K|2025|4153|242950|58.5|Pyhän Katariinan tie 5 A21
+Rauhalinna|Kaarina|K|2024|581|39192|67.5|Jalostusasemankatu 9b
+Keskusta|Kaarina|K|2011|3098|189000|61|Uimahallintie 5
+Keskusta|Kaarina|R|2019|3845|273000|71|Paraistentie 20
+Littoinen|Kaarina|R|1983|2417|174000|72|Menninkäisenkatu 10 G
+Littoinen|Kaarina|R|2016|3232|299000|92.5|Vyyryläisenmäentie 5
+Littoinen|Kaarina|R|1985|2229|195000|87.5|Noppakatu 4 A
+Piikkiö|Kaarina|K|1971|1742|54000|31|Mattilantie 2 A
+Kesämäki|Kaarina|O|1981|1335|325000|243.5|Syyskesäntie 14
+Auvainen|Kaarina|R|2018|3780|189000|50|Nurminiitynkatu 2 d
+Rauhalinna|Kaarina|K|2027|4136|179912|43.5|Jalostusasemankatu 5a A 9
+Rauhalinna|Kaarina|K|2027|3528|179912|51|Jalostusasemankatu 5a A 1
+Rauhalinna|Kaarina|K|2027|3624|154024|42.5|Jalostusasemankatu 5a A 14
+Rauhalinna|Kaarina|K|2027|3245|189849|58.5|Jalostusasemankatu 5a A 22
+Rauhalinna|Kaarina|K|2027|4284|134934|31.5|Jalostusasemankatu 5a A 3
+Tuorla|Kaarina|O|1958|1514|212000|140|Vanha Raadelmantie 4
+Rauhalinna|Kaarina|K|2024|570|41592|73|Jalostusasemankatu 5b
+Empo|Kaarina|O|1982|743|120000|161.5|Äyrästie 4
+Keskusta|Kaarina|K|1975|2182|168000|77|Pyhän Katariinan tie 10
+Littoinen|Kaarina|R|1984|2704|215000|79.5|Muurikinkatu 6 E
+Littoinen|Kaarina|R|1998|2509|207000|82.5|Lankakatu 1 B
+Rauhalinna|Kaarina|R|2024|6698|576000|86|Rantaleinikinkatu 6a A1
+Koristo|Kaarina|R|2001|2357|264000|112|Koriston rantatie 8 D as
+Keskusta|Kaarina|K|2020|4493|319000|71|Pyhän Katariinan tie 9 A
+Hadvala|Kaarina|R|1992|1632|204000|125|Seppäläntie 6 A
+Auvainen|Kaarina|R|2019|3911|176000|45|Ahdintie 36-40 E
+Piispanristi|Kaarina|K|1985|1623|129000|79.5|Kurjenkatu 11
+Littoinen|Kaarina|R|1984|1984|248000|125|Saksikatu 8
+Piispanristi|Kaarina|R|1976|1126|269000|239|Lohitie 8
+Rauhalinna|Kaarina|R|2018|3839|215000|56|Herraskartanonkatu 9 B
+Littoinen|Kaarina|O|2011|2425|388000|160|Pähkinärinne 7
+Rauhalinna|Kaarina|R|1968|1202|250000|208|Vesiheinänkatu 5 as
+Littoinen|Kaarina|O|1192|2207|192000|87|Niisikatu 6
+Pohjanpelto|Kaarina|R|2018|3685|269000|73|Pellonmäenkatu 1 A
+Kaarina|Kaarina|R|2024|3158|319000|101|Hulkkiontie 41 A
+Keskusta|Kaarina|K|2005|2397|139000|58|Pyhän Katariinan tie 16 B
+Piikkiö|Kaarina|K|1972|991|56500|57|Mattilantie 4 as
+Piikkiö|Kaarina|K|2011|2138|139000|65|Ahokuja 3
+Piikkiö|Kaarina|R|2026|4061|398000|98|Laahamäentie 9b A 3
+Piikkiö|Kaarina|R|2028|3964|329000|83|Laahamäentie 9b A 6
+Piikkiö|Kaarina|R|2028|3902|398000|102|Laahamäentie 9b A 4
+Piikkiö|Kaarina|R|2028|3902|398000|102|Laahamäentie 9b A 2
+Piikkiö|Kaarina|R|2028|4061|398000|98|Laahamäentie 9b A 1
+Piikkiö|Kaarina|R|2028|3964|329000|83|Laahamäentie 9b A 7
+Piikkiö|Kaarina|R|2028|3964|329000|83|Laahamäentie 9b A 5
+Littoinen|Kaarina|R|0|2320|239000|103|Kretonkikuja 2 as 2
+Piispanristi|Kaarina|K|2026|3713|209800|56.5|Panimokatu 2 A 1
+Piispanristi|Kaarina|K|2026|3807|283600|74.5|Panimokatu 2 A 18
+Piispanristi|Kaarina|K|2026|3825|183600|48|Panimokatu 2 A 3
+Piispanristi|Kaarina|K|2026|4873|146200|30|Panimokatu 2 A 7
+Piispanristi|Kaarina|K|2026|3996|179800|45|Panimokatu 2 A 2
+Piikkiö|Kaarina|K|2016|575|24420|42.5|Koroistenkuja 1 A 13
+Littoinen|Kaarina|R|1982|1571|139000|88.5|Ansakatu 8 F
+Piispanristi|Kaarina|K|2019|3025|119500|39.5|Mallaskatu 16 A
+Piikkiö|Kaarina|K|1977|1261|99000|78.5|Rekolanpolku 6 B
+Piispanristi|Kaarina|K|2017|3136|138000|44|Mallaskatu 18 A
+Littoinen|Kaarina|R|2010|2681|248000|92.5|Hovilankuja 1b
+Veitenmäki|Kaarina|O|1952|1921|219000|114|Tuurakatu 3
+Piikkiö|Kaarina|O|1999|10311|1660000|161|Rantaniityntie 129
+Sorro|Kaarina|R|2021|3545|312000|88|Lasittajankatu 5 A 2
+Auvainen|Kaarina|O|2022|4045|489000|120.9|Taimentie 2b
+Hakalanmäki|Kaarina|R|2018|3090|309000|100|Satulakatu 4 B
+Piispanristi|Kaarina|K|2023|3451|157000|45.5|Mallaskatu 4
+Piikkiö|Kaarina|R|2006|2691|183000|68|Pappilankuja 2 D
+Kesämäki|Kaarina|R|1983|2148|189000|88|Jumpurintie 10
+Sipilänmäki|Kaarina|O|1115|1597|115000|72|Sipiläntie 14
+Piispanristi|Kaarina|K|1973|1880|110000|58.5|Kuikankatu 9
+Hovirinta|Kaarina|K|1973|1532|118000|77|Hoviherrankatu 1
+Keskusta|Kaarina|K|2019|3706|189000|51|Pyhän Katariinan tie 8c
+Keskusta|Kaarina|K|2012|3559|210000|59|Lautakunnankatu 10 A
+Hulkkio|Kaarina|R|1983|2487|189000|76|Nurmelantie 6 C
+Lähteenmäki|Kaarina|O|1979|1992|238000|119.5|Koivuharjunkatu 4 a
+Hiiskanmäki|Kaarina|O|1975|1532|239000|156|Hallikuja 15
+Piikkiö/Toivonlinna|Kaarina|O|1962|1575|149000|94.6|Signaalivuorentie 32
+Hovirinta|Kaarina|K|2017|3806|295000|77.5|Pyhän Katariinan tie 8 b
+Pohjola|Kaarina|R|1989|2535|218000|86|Länkikatu 2 A
+Auranlaakso|Kaarina|R|2018|3674|248000|67.5|Reimarikatu 2a A
+Keskusta|Kaarina|K|2022|3915|229000|58.5|Pyhän Katariinan tie 7
+Piikkiö|Kaarina|O|1950|1222|110000|90|Luodontie 126
+Keskusta|Kaarina|K|2025|4256|248950|58.5|Pyhän Katariinan tie 5 A27
+Voivala|Kaarina|O|1982|1183|136000|115|Siniheinänkatu 1
+Auvainen|Kaarina|O|1962|1983|238000|120|Ahventie 3
+Keskusta|Kaarina|K|2007|2896|194000|67|Kiesikatu 1
+Kairiskulma|Kaarina|K|1985|1531|124000|81|Kurjenkatu 4
+Rientola|Kaarina|O|1953|1138|99000|87|Rientolankuja 10
+Rauhanlinna|Kaarina|K|2026|4257|149000|35|Jalostusasemankatu 9 A
+Littoinen|Kaarina|R|1985|2526|192000|76|Jaluskatu 3 E
+Piispanristi|Kaarina|K|2022|3583|206000|57.5|Mallaskatu 6
+Littoinen|Kaarina|R|1995|2175|174000|80|Luhakatu 14 as
+Rauhanlinna|Kaarina|K|2026|4154|189000|45.5|Jalostusasemankatu 9 A as
+Piispanristi|Kaarina|K|2020|3287|189000|57.5|Mallaskatu 10 A
+Empo|Kaarina|O|1984|802|95000|118.5|Äyrästie 2
+Hovirinta|Kaarina|K|1978|1747|138000|79|Isännänkatu 9 A
+Hovirinta|Kaarina|K|1985|2966|86000|29|Pyhän Katariinan tie 6 B
+Hovirinta|Kaarina|K|1977|1696|134000|79|Isännänkatu 13 C
+Piikkiö|Kaarina|R|1981|1827|137000|75|Katarintie 8
+Rauhalinna|Kaarina|R|1982|1293|97000|75|Kaislakatu 18 B
+Veitenmäki|Kaarina|R|1995|2744|214000|78|Vesitorninkatu 5 A
+Rauhalinna|Kaarina|K|2025|4585|149000|32.5|Jalostusasemankatu 13b A
+Kuusisto|Kaarina|R|2021|3694|290000|78.5|Rauhalankalliontie 3 as 1
+Piikkiö|Kaarina|K|1971|943|74000|78.5|Koroistentie 3
+Littoinen|Kaarina|O|2005|2697|369500|137|Kampakatu 6
+Piispanristi|Kaarina|O|2019|3404|388000|114|Herrasniitynkatu 5
+Poikluoma|Kaarina|O|0|3444|620000|180|Pohjanpellonkatu13
+Rauhalinna|Kaarina|R|2020|3843|269000|70|Rauhalinnantie 28 B
+Raadelma|Kaarina|R|2027|3967|249900|63|Hartmanintie 5 C13
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 C14
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 C15
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 C16
+Raadelma|Kaarina|R|2027|3653|379900|104|Hartmanintie 5 C17
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 B10
+Raadelma|Kaarina|R|2027|3653|379900|104|Hartmanintie 5 C12
+Raadelma|Kaarina|R|2027|3653|379900|104|Hartmanintie 5 B11
+Raadelma|Kaarina|R|2027|3967|249900|63|Hartmanintie 5 B9
+Raadelma|Kaarina|R|2027|3967|249900|63|Hartmanintie 5 B8
+Raadelma|Kaarina|R|2027|3653|379900|104|Hartmanintie 5 A5
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 A3
+Raadelma|Kaarina|R|2027|3967|249900|63|Hartmanintie 5 A6
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 B7
+Rauhalinna|Kaarina|K|2026|4217|97000|23|Jalostusasemankatu 9a A 20
+Raadelma|Kaarina|R|2027|3967|249900|63|Hartmanintie 5 A4
+Raadelma|Kaarina|R|2027|3806|314000|82.5|Hartmanintie 5 A2
+Raadelma|Kaarina|R|2027|3653|379900|104|Hartmanintie 5 A1
+Piikkiö|Kaarina|K|2012|2387|179000|75|Ahokuja 1
+Voivala|Kaarina|R|2013|3485|345000|99|Voivalanranta 18 C
+Piikkiö|Kaarina|O|1980|992|118000|119|Hakapellontie 26
+Lähteenmäki|Kaarina|O|2008|3165|519000|164|Untolantie 35
+Kairiskulma|Kaarina|K|1979|2594|89500|34.5|Kuikankatu 15
+Hovirinta|Kaarina|K|2022|3949|195500|49.5|Uimahallintie 8
+Nunna|Kaarina|O|1955|1300|130000|100|Nunnanpolku 6
+Auranlaakso|Kaarina|R|2013|3290|329000|100|Silvolanrinne 2 E
+Vättilä|Kaarina|O|1968|2264|249000|110|Loimitie 5
+Kuusisto|Kaarina|O|2003|2745|549000|200|Emponkaari 3
+Voivala|Kaarina|R|2022|3955|439000|111|Siniheinänkatu 2 A as 2
+keskusta|Kaarina|O|2023|3262|672000|206|Sekkikatu 1A
+Hovipelto|Kaarina|R|1979|2305|219000|95|Tuuliviirinkatu 2
+Silvola|Kaarina|R|2021|3925|314000|80|Silvolankaari 24 B
+Piispanristi|Kaarina|K|2018|3310|139000|42|Mallaskatu 20 A
+Hovirinta|Kaarina|K|1973|1511|139000|92|Voudinkatu 6
+Voivala|Kaarina|R|1983|2538|165000|65|Nurmelantie 6
+Hovirinta|Kaarina|K|1985|1654|129000|78|Voudinkatu 6 E
+Piikkiö|Kaarina|K|2016|562|23898|42.5|Koroistenkuja 1 A 12
+Piikkiö|Kaarina|O|1984|1337|234000|175|Matarakaari 13
+Kuusisto|Kaarina|R|2021|4898|529000|108|Metsätie 5
+Littoinen|Kaarina|O|2025|4461|455000|102|Mäntyharjunkatu 1
+Kuusisto|Kaarina|O|2002|8515|1290000|151.5|Räfnäsintie 91
+Piispanristi|Kaarina|R|2021|4058|349000|86|Kerppukuja 4C5
+Hovirinta|Kaarina|K|1985|1517|110000|72.5|Emännänkatu 11 A
+Nummenniitty|Kaarina|R|1973|1609|325000|202|Hovikatu 5 A
+Voivala|Kaarina|R|2022|3467|338000|97.5|Koivikkokatu 5
+Littoinen|Kaarina|R|2010|2703|250000|92.5|Hovilankuja 1b A
+Pohjola|Kaarina|R|1990|2613|209000|80|Tampurinkatu 3
+Runko|Kaarina|O|2009|2555|649000|254|Kivisillantie 40
+Voivala|Kaarina|O|2012|3679|574000|156|Tammihaperonkuja 1
+Piikkiö|Kaarina|K|2016|511|23781|46.5|Koroistenkuja 1 A 4
+Keskusta|Kaarina|K|2019|4523|199000|44|Pyhän Katariinan tie 8c B
+Piispanristi|Kaarina|R|2018|3271|229000|70|Nurminiitynkatu 2 A
+Keskusta|Kaarina|K|2006|2577|183000|71|Paraistentie 6 as
+Kuusisto|Kaarina|O|2019|4192|545000|130|Kunnantie 8
+Rauhalinna|Kaarina|K|2024|4173|169000|40.5|Jalostusasemankatu 13a A
+Kuusisto|Kaarina|O|1962|2106|179000|85|Puistotie 4
+Piispanristi|Kaarina|O|1954|900|90000|100|Kaistisentie 32
+Piispanristi|Kaarina|K|2026|3878|219100|56.5|Panimokatu 2 A 5
+Empo|Kaarina|O|1967|1191|231000|194|Mäkitie 10
+Hovirinta|Kaarina|K|1981|1134|89000|78.5|Isännänkatu 7 C
+Kirkonrinne|Kaarina|K|1987|1568|127000|81|Ahjotie 2
+Hovirinta|Kaarina|K|1975|1532|59000|38.5|Pehtorinkatu 5
+Littoinen Lähteenmäki|Kaarina|O|2023|4509|762000|169|Lintukallionkatu 6
+Keskusta|Kaarina|K|2025|4049|336100|83|Pyhän Katariinan tie 5 A17
+Keskusta|Kaarina|K|2022|4286|210000|49|Pyhän Katariinan tie 7 A
+Koristo|Kaarina|R|1997|2317|278000|120|Pohjanpellonkatu 5b
+Littoinen|Kaarina|R|1995|2488|199000|80|Luhakatu 14 B
+Hovirinta|Kaarina|K|1975|2150|158000|73.5|Pehtorinkatu 5A
+Sorro|Kaarina|R|2027|3513|342500|97.5|Timpurinkatu 1
+Kärki|Kaarina|R|2014|3113|249000|80|Kilpikatu 9 B
+Piispanristi|Kaarina|R|1998|2364|195000|82.5|Marsukatu 6 B 12
+Piispanristi|Kaarina|O|2010|3324|339000|102|Ahmankatu 42
+Sorro|Kaarina|O|1957|915|119000|130|Vistamäenkatu 5
+Hovirinta|Kaarina|K|1989|1664|89000|53.5|Emännänkatu 4 B
+Kuusisto|Kaarina|O|1980|1701|279000|164|Kuusiston Koulutie 9
+Hovirinta|Kaarina|K|1975|846|49500|58.5|Pehtorinkatu 5 A
+Raadelma|Kaarina|O|2020|3120|429000|137.5|Turku-Viipurintie 51
+Piikkiö|Kaarina|O|1987|913|188000|206|Jokitie 3
+Littoinen|Kaarina|O|1957|1688|135000|80|Hahtuvakatu 8b
+Piispanristi|Kaarina|K|2007|2449|169000|69|Kirjosieponkatu 5 as
+Raadelma|Kaarina|R|2020|552|39224|71|Turku-Viipurintie 59
+Hovirinta|Kaarina|K|1974|1196|67000|56|Pehtorinkatu 1 B
+Piikkiö|Kaarina|K|1978|1146|59000|51.5|Hadvalantie 8
+Littoinen|Kaarina|R|1990|2636|174000|66|Littoistenjärventie 10 C
+Littoinen|Kaarina|O|1953|1158|139000|120|Teerimäenkatu 1
+Littoinen|Kaarina|O|1962|989|98500|99.6|Kaidekatu 7
+Piispanristi|Kaarina|K|2014|528|26413|50|Mallaskatu 14
+Keskusta|Kaarina|K|2025|4218|223575|53|Pyhän Katariinan tie 5 A25
+Hovirinta|Kaarina|K|1974|1347|99000|73.5|Pehtorinkatu 7 C
+Kuusisto|Kaarina|O|2006|2183|489000|224|Puutarhatie 17
+Kaarina|Kaarina|O|1930|1988|159000|80|Asematie 4
+Littoinen|Kaarina|R|1982|1989|176000|88.5|Ansakatu 8 D
+Keskusta|Kaarina|K|2021|3747|178000|47.5|Kartanontie 7
+Sorro|Kaarina|O|1970|1231|128000|104|Asentajankatu 2
+Keskusta|Kaarina|R|2015|3775|285000|75.5|Hemmilänkatu 5
+Auranlaakso|Kaarina|O|2021|3375|459000|136|Silvolankatu 6
+Piispanristi|Kaarina|K|2026|5050|151500|30|Panimokatu 2 A 19
+Piispanristi|Kaarina|K|2026|4421|249800|56.5|Panimokatu 2 A 27
+Piispanristi|Kaarina|K|2026|4220|189900|45|Panimokatu 2 A 14
+Piispanristi|Kaarina|K|2026|4156|199500|48|Panimokatu 2 A 21
+Piispanristi|Kaarina|K|2026|4950|148500|30|Panimokatu 2 A 13
+Piispanristi|Kaarina|K|2026|3929|292700|74.5|Panimokatu 2 A 24
+Piispanristi|Kaarina|K|2026|4234|239200|56.5|Panimokatu 2 A 23
+Piispanristi|Kaarina|K|2026|4116|185200|45|Panimokatu 2 A 8
+Piispanristi|Kaarina|K|2026|3940|189100|48|Panimokatu 2 A 9
+Piispanristi|Kaarina|K|2026|4251|157300|37|Panimokatu 2 A 4
+Hulkkio|Kaarina|R|2025|4050|332100|82|Vairiontie 1 B 4
+Lähteenmäki|Kaarina|O|2012|2513|470000|187|Haaparinne 4
+Rauhalinna|Kaarina|K|2024|4000|176000|44|Jalostusasemankatu 13 A
+Keskusta|Kaarina|K|5282|3570|282000|79|Uimahallintie 5 A
+Auvainen|Kaarina|R|2017|3400|238000|70|Herrasniitynkatu 10
+Piispanristi|Kaarina|R|2025|3378|375000|111|Ahdintie 31 as 2
+Keskusta|Kaarina|K|2025|4220|183588|43.5|Pyhän Katariinan tie 5 A6
+Raadelma|Kaarina|R|2006|3051|447000|146.5|Asessorinpolku 4 A
+Keskusta|Kaarina|K|2025|4051|261280|64.5|Pyhän Katariinan tie 5 A20
+Piispanristi|Kaarina|K|1976|1544|122000|79|Kuikankatu 2 b
+Hovirinta|Kaarina|K|1987|1526|119000|78|Voudinkatu 6 F
+Piikkiö|Kaarina|O|1949|907|98000|108|Heernummentie 19
+Keskusta|Kaarina|K|2025|4600|200088|43.5|Pyhän Katariinan tie 5 A24
+Piispanristi|Kaarina|R|1990|2061|337000|163.5|Taimentie 1
+Keskusta|Kaarina|K|2025|4726|205588|43.5|Pyhän Katariinan tie 5 A30
+Keskusta|Kaarina|K|2025|4473|194588|43.5|Pyhän Katariinan tie 5 A18
+Keskusta|Kaarina|K|2025|4033|213775|53|Pyhän Katariinan tie 5 A13
+Keskusta|Kaarina|K|2025|3772|243280|64.5|Pyhän Katariinan tie 5 A2
+Keskusta|Kaarina|K|2020|4609|212000|46|Pyhän Katariinan tie 9
+Auvaisberg|Kaarina|O|1996|1897|880000|464|Auvaisbergin rantatie 39
+Raadelma|Kaarina|O|1982|1406|149000|106|Vanha Raadelmantie 10
+Littoinen|Kaarina|O|2010|1802|445000|247|Littoistenjärventie 26
+Piispanristi|Kaarina|O|2013|3150|550000|174.6|Metsolankatu 10b
+Keskusta|Kaarina|K|2019|3905|144500|37|Pyhän Katariinan tie 8c B44
+Rauhalinna|Kaarina|O|1858|2155|890000|413|Iso- Rauhalinnantie 42
+Kuusisto|Kaarina|O|2010|3683|499000|135.5|Rövarholmantie 61
+Kuusisto|Kaarina|R|1981|1988|169000|85|Metsätie 13 As.
+Keskusta|Kaarina|K|2001|2699|139000|51.5|Pyhän Katariinan tie 16 A
+Piispanristi|Kaarina|O|0|3222|290000|90|Ketoniitynkatu 9
+Kuusisto|Kaarina|O|1930|660|99000|150|Kuusistontie 2
+Keskusta|Raisio|K|2003|1931|98500|51|Keonkatu 3
+Hakinmäki|Raisio|K|1978|1699|62000|36.5|Kapponkatu 16
+Kallanen|Raisio|R|1991|2025|164000|81|Pääskynkuja 2
+Kerttula|Raisio|R|2021|503|45019|89.5|Toravuorenkatu 1
+Tikanmaa|Raisio|O|1955|1082|119000|110|Lirontie 5
+Kuua|Raisio|O|2020|3113|439000|141|Piriläntie 5
+Keskusta|Raisio|K|1975|1000|73000|73|Lumparlankatu 15
+Ihala|Raisio|O|1972|642|149000|232|Vihtiläntie 13
+Ihala|Raisio|R|2008|2584|230000|89|Konsankuja 2
+Ihala|Raisio|R|2002|2634|345000|131|Lukkarinkuja 4 as
+Raisio|Raisio|K|2022|585|43288|74|Kirkkoväärtinkuja 1 b A 15
+Kallanen|Raisio|R|1991|2000|160000|80|Kallastenkatu 30 B
+Raisio|Raisio|K|2022|689|23786|34.5|Kirkkoväärtinkuja 1 b A 20
+Kerttula|Raisio|K|1987|1511|105000|69.5|Kokinvuorenkatu 3 as
+Varppeenseutu|Raisio|R|1980|1502|157000|104.5|Tasalankatu 12
+Kallanen|Raisio|O|2001|1718|299000|174|Sirkunkuja 5
+Keskusta|Raisio|K|1997|2545|112000|44|Tornikatu 6 A
+Ihala|Raisio|R|2010|2696|275000|102|Nuijakuja 15B
+Kerttula|Raisio|K|2014|2591|228000|88|Murroskuja 4
+Raisio|Raisio|K|2027|3647|280800|77|Perhosenkatu 7 A27
+Raisio|Raisio|K|2027|3717|236000|63.5|Perhosenkatu 7 A25
+Raisio|Raisio|K|2027|3673|270000|73.5|Perhosenkatu 7 A26
+Tikanmaa|Raisio|R|2005|2461|189500|77|Teerikuja 6
+Hakinmäki|Raisio|K|1990|1469|108000|73.5|Hakinkatu 14
+Kuloinen|Raisio|O|2006|2727|360000|132|Keskitie 36
+Keskusta|Raisio|K|1973|1849|135000|73|Lumparlankatu 1
+Kuloinen|Raisio|R|2023|4481|419000|93.5|Pasantie 18
+Kuloinen|Raisio|K|2027|3647|280800|77|Perhosenkatu 7 A
+Petäsmäki|Raisio|R|1989|1588|127000|80|Kukkulatie 3
+Ylhäinen|Raisio|K|1969|1149|85000|74|Särkilahdenkatu 10 B
+Keskusta|Raisio|K|2004|2202|109000|49.5|Soliniuksenkuja 12
+Kerttula|Raisio|K|2021|4545|175000|38.5|Loimukatu 1 as
+Keskusta|Raisio|K|2027|3996|119890|30|Tanhukatu 2 A35
+Petäsmäki|Raisio|R|1979|1440|144000|100|Ansatie 5
+Pirilä|Raisio|O|1982|1355|225000|166|Halmeenkuja 2
+Kemppilä|Raisio|K|1990|1780|73000|41|Hurstipolku 3 A
+Inkoinen|Raisio|K|1977|1157|92000|79.5|Nummenpäänkatu 3
+Ihala|Raisio|K|2026|532|22623|42.5|Rahikuja 1
+Kerttula|Raisio|K|1986|1281|89000|69.5|Tytöntie 6
+Petäsmäki|Raisio|R|1984|1680|168000|100|Ansatie 3
+Huhko|Raisio|R|1986|1762|185000|105|Loukantie 11 A
+Inkoinen|Raisio|K|1978|1236|76000|61.5|Nummenpäänkatu 5 B
+Kuloinen|Raisio|O|2004|2500|345000|138|Kielomäenkuja 8
+Ihala|Raisio|O|2000|2547|298000|117|Mullintie 6 A
+Keskusta|Raisio|K|2007|2460|139000|56.5|Kerttulantie 10
+Varppeenseutu|Raisio|R|1975|1812|173000|95.5|Frälsintie 11 A
+Keskusta|Raisio|R|1982|2440|205000|84|Kirkkoväärtinkuja 17
+Koivisto|Raisio|R|1980|1429|115000|80.5|Kukkulatie 1
+Kerttula|Raisio|K|2020|3318|219000|66|Kerttulantie 46 As
+Keskusta|Raisio|R|1982|1755|179000|102|Kirkkoväärtinkuja 21
+Keskusta|Raisio|K|1963|1644|74000|45|Kirkkoväärtinkuja 13
+Kerttula|Raisio|R|2022|3485|230000|66|Kaupinkatu 3 A
+Kemppilä|Raisio|R|1987|2241|177000|79|Hurstikatu 4 B
+Kerttula|Raisio|K|1976|1387|129000|93|Venheenkatu 3
+Keskusta|Raisio|K|2007|2733|158500|58|Keonkatu 4
+Vetikko|Raisio|R|2005|2784|245000|88|Talollisenkatu 15
+Kaanaa|Raisio|O|1950|2100|168000|80|Jarrilantie 4
+Vaisaari|Raisio|K|1971|2431|79000|32.5|Pahtankatu 8 B
+Inkoinen|Raisio|R|1977|1728|159000|92|Vilpokatu 10 as.
+Keskusta|Raisio|K|2027|4267|349900|82|Tanhukatu 2 A40
+Keskusta|Raisio|K|2027|3995|149800|37.5|Tanhukatu 2 A44
+Raisio|Raisio|K|0|1481|77000|52|Viskaalinkatu 2 as
+Kallanen|Raisio|O|2007|2503|428000|171|Lehtokertunkatu 14
+Nuorikkala|Raisio|R|2021|513|35148|68.5|Pellonraivaajankatu 8
+Meri-Nuorikkala|Raisio|O|2007|2543|590000|232|Meritähdenkuja 8
+Keskusta|Raisio|K|1974|1303|99000|76|Tornikatu 9 A
+Metsäaro|Raisio|K|1974|1289|98000|76|Rankionkatu 9
+Keskusta|Raisio|R|1987|2250|135000|60|Kreetankuja 13
+Vaisaari|Raisio|K|1973|1140|65000|57|Kunnaankatu 19 A
+Kerrola|Raisio|R|1980|2126|169000|79.5|Hakapellonkatu 1
+Keskusta|Raisio|K|1963|1386|88000|63.5|Kirkkoväärtinkuja 13 A
+Ihala|Raisio|K|2024|541|35459|65.5|Knuutinkatu 10
+Metsäaro|Raisio|O|1963|616|85000|138|Syreenikatu 17
+Raisio|Raisio|K|2027|3583|227500|63.5|Perhosenkatu 7 A19
+Raisio|Raisio|K|2027|4151|110000|26.5|Perhosenkatu 7 A14
+Raisio|Raisio|K|2027|3600|180000|50|Perhosenkatu 7 A17
+Ihala|Raisio|R|1993|2542|211000|83|Knuutinkatu 17 A
+Kuloinen|Raisio|R|2027|4011|369000|92|Kuloistenniitynkatu 14 B
+Kuloinen|Raisio|R|2027|4011|369000|92|Kuloistenniitynkatu 14 A 1
+Kaanaa|Raisio|O|2022|3896|448000|115|Kajuuttakuja 3
+Tikanmaa|Raisio|R|1995|2852|174000|61|Iiroisentie 22 A
+Kaanaa|Raisio|R|2026|3699|258900|70|Nevakatu 6
+Kerttula|Raisio|O|2000|2526|389000|154|Yrjöläntie 22
+Järviniitty|Raisio|O|2022|2874|298000|103.7|Ristijärvenkatu 8
+Kerttula|Raisio|O|0|2436|285000|117|Metsäsylttyläntie 13
+Kauri|Raisio|R|1984|2171|178000|82|Tuomonkuja 12 B
+Keskusta|Raisio|K|2027|4484|239900|53.5|Tanhukatu 2 A38
+Somersoja|Raisio|O|1967|1264|249000|197|Oravatie 4
+Raisio|Raisio|K|2022|542|27115|50|Kirkkoväärtinkuja 1 b A 2
+Järämäki|Raisio|O|2003|2137|218000|102|Järätie 24
+Kaanaa|Raisio|O|1989|1757|195000|111|Käpyahde 19
+Kallanen|Raisio|O|2020|2877|748000|260|Kallastenkatu 57
+Kerttula|Raisio|K|2019|510|41831|82|Porekatu 8
+Kaanaa|Raisio|O|1997|2200|319000|145|Koivulanaukio 4
+Tikanmaa|Raisio|O|1953|1777|247000|139|Pälvikuja 1
+Varppeenseutu|Raisio|R|1985|1474|115000|78|Innanmaankatu 12 C
+Raisio|Raisio|K|2020|623|19929|32|Tornikatu 15 A 44
+Raisio|Raisio|K|2027|3969|252000|63.5|Perhosenkatu 7 A31
+Raisio|Raisio|K|2027|4100|205000|50|Perhosenkatu 7 A35
+Raisio|Raisio|K|2027|3457|238500|69|Perhosenkatu 7 A11
+Ihala|Raisio|O|1994|2217|368000|166|Vihtiläntie 14
+Kerttula|Raisio|R|2007|2351|228000|97|Sylttyläntie 10 D
+Inkoinen|Raisio|O|1956|875|105000|120|Paatsamatie 8
+Kerttula|Raisio|R|2022|3464|265000|76.5|Kaupinkatu 1 D
+Raisio|Raisio|K|2027|3626|168600|46.5|Perhosenkatu 7 A13
+Ihala|Raisio|R|2024|571|40559|71|Knuutinkatu 15
+Ihala|Raisio|O|1989|2000|198000|99|Hanhikkikuja 8
+Ihala|Raisio|O|1940|1455|160000|110|Jermuntie 7
+Kerttula|Raisio|K|2025|516|24494|47.5|Kokinvuorenkatu 11 A 12
+Kerttula|Raisio|K|2022|2774|190000|68.5|Pätkäkuja 3 A
+Kerttula|Raisio|K|1983|1463|109000|74.5|Voudinkatu 23 A
+Keskusta|Raisio|K|2005|2725|124000|45.5|Tornikatu 8
+Vaisaari|Raisio|K|1981|1610|95000|59|Kunnaankatu 5
+Varpeenseutu|Raisio|K|1976|2306|83000|36|Tasalankatu 1 B
+Kerttula|Raisio|K|2020|3558|169000|47.5|Kerttulantie 46
+Kerttula|Raisio|K|1967|1545|85000|55|Lautamiehenkatu 1 G
+Tikanmaa|Raisio|O|2019|3648|529000|145|Kehrääjänkuja 6
+Kaanaa|Raisio|R|2026|3623|279000|77|Kuminakatu 1 as 6
+Varppeenseutu|Raisio|O|1998|1425|275000|193|Kerrolankatu 20
+Viheriäinen|Raisio|K|1960|662|45000|68|Kalasvahantie 4
+Keskusta|Raisio|K|2012|3275|149000|45.5|Raisiontori 2
+Pasala|Raisio|R|2005|2575|273000|106|Suopirtinkuja 1 B
+Kerttula|Raisio|R|1991|2361|314000|133|Yrjöläntie 3 as
+Keskusta|Raisio|K|2027|4162|218500|52.5|Tanhukatu 2 A32
+Kerttula|Raisio|R|1968|1444|148000|102.5|Lautamiehenkatu 4
+Metsäsylttylä|Raisio|R|1985|2135|174000|81.5|Myllymäentie 12 as
+Varppeenseutu|Raisio|K|1984|1094|70000|64|Tasalanaukio 7
+Vuorenpää|Raisio|O|1951|2394|259000|108.2|Tilhitie 4
+keskusta|Raisio|K|1993|2705|119000|44|Hulvelankatu 22
+Keskusta|Raisio|K|1963|1556|119000|76.5|Kirkkoväärtinkuja 11
+Kaanaa|Raisio|O|2023|3844|419000|109|Kumputie 3
+Mahittula|Raisio|O|1964|1450|174000|120|Petterinpellontie 8
+Tikanmaa|Raisio|R|2020|3852|312000|81|Laulurastaankuja 8 C
+Hakinmäki|Raisio|K|1982|1333|52000|39|Hakinkatu 12
+Vaisaari|Raisio|K|1996|1896|109000|57.5|Martinkatu 5 as
+Kerttula|Raisio|K|1995|2469|100000|40.5|Kruunuvoudinkatu 4 as
+Raisio|Raisio|K|2027|3580|247000|69|Perhosenkatu 7 A18
+Kerttula|Raisio|K|2026|3811|139100|36.5|Kuuanlaaksontie 4 A 8
+Kerttula|Raisio|K|2026|3382|167400|49.5|Kuuanlaaksontie 4 A 4
+Kerttula|Raisio|K|2026|3350|175900|52.5|Kuuanlaaksontie 4 A 6
+Kerttula|Raisio|K|2026|3822|158600|41.5|Kuuanlaaksontie 4 A 9
+Kerttula|Raisio|K|2026|3077|223100|72.5|Kuuanlaaksontie 4 A 3
+Kerttula|Raisio|K|2026|3390|137300|40.5|Kuuanlaaksontie 4 A 7
+Somersoja|Raisio|O|1964|2863|272000|95|Minkkitie 5
+Tikanmaa|Raisio|K|1988|1030|64900|63|Kapponkatu 21 as
+Inkoinen|Raisio|O|1953|1952|244000|125|Jalavakuja 5
+Varppeenseutu|Raisio|K|1975|1217|98000|80.5|Tasalankatu 11 B
+Kuloinen|Raisio|R|1987|2519|194000|77|Timpurinkuja 2 A
+Kerttula|Raisio|K|1988|1655|139000|84|Pätkäkuja 1 B
+Kauri|Raisio|O|1959|1775|245000|138|Kirkkoväärtinkuja 23
+Tikanmaa|Raisio|K|1978|1018|57000|56|Kapponkatu 16 B
+Krookila|Raisio|O|1966|985|98000|99.5|Lemmikkikatu 1
+Somersoja|Raisio|O|1971|938|149000|158.9|Somersojantie 11
+Kerttula|Raisio|K|2021|3286|216900|66|Loimukatu 1
+Merinuorikkala|Raisio|O|2025|4802|629000|131|Raivaajankatu 9
+Somersoja|Raisio|R|1987|1622|126500|78|Ajomiehenkatu 2-4 A 2
+Keskusta|Raisio|K|2007|2549|209000|82|Torikuja 2
+Nuorikkala|Raisio|R|2020|3603|272000|75.5|Alhaistentie 20 A
+keskusta|Raisio|K|1972|1832|109000|59.5|Herastuomarinkatu 1 C
+Tikanmaa|Raisio|O|1950|1531|98000|64|Tuuvalantie 7
+Kallanen|Raisio|O|1988|1972|212000|107.5|Kuukkelikuja 6
+Raisio|Raisio|K|1990|2161|215000|99.5|Pahtankatu 4
+Viheriäinen|Raisio|K|1957|1253|99000|79|Kalasvahantie 2
+Varppeenseutu|Raisio|K|1972|1446|107000|74|Sorolaisenkatu 9
+Kerttula|Raisio|K|1986|1904|79000|41.5|Tytöntie 6 as
+Vierula|Raisio|O|1950|1401|248000|177|Laitatie 16
+Raisio|Raisio|K|2027|3497|257000|73.5|Perhosenkatu 7 A20
+Raisio|Raisio|K|2027|3451|196700|57|Perhosenkatu 7 A09
+Raisio|Raisio|K|2027|3540|164600|46.5|Perhosenkatu 7 A06
+Kuloinen|Raisio|R|1994|2687|219000|81.5|Neuvoksentie 15 A
+Vaisaari|Raisio|K|1983|671|95000|141.5|Tannerkatu 2 A
+Metsäaro|Raisio|O|1979|1132|129000|114|Pähkinäpolku 17
+Nuorikkala|Raisio|R|2019|524|35928|68.5|Pellonraivaajankatu 4
+Keskusta|Raisio|K|1972|1256|108000|86|Lumparlankatu 5 E
+Kerttula|Raisio|K|2026|3560|176200|49.5|Kuuanlaaksontie 4 A 11
+Kerttula|Raisio|K|2026|3681|149100|40.5|Kuuanlaaksontie 4 A 14
+Kerttula|Raisio|K|2026|3528|185200|52.5|Kuuanlaaksontie 4 A 13
+Kerrola|Raisio|R|1980|1589|278000|175|Havukatu 6 as
+Tikanmaa|Raisio|O|2011|2870|376000|131|Pensastaskunkuja 2
+Tikanmaa|Raisio|O|1999|1721|358000|208|Tikanmaankatu 75
+Lumparla|Raisio|K|1975|1309|72000|55|Lumparlankatu 13 B
+Vaisaari|Raisio|K|1989|2839|88000|31|Juhaninkuja 13
+Raisio|Raisio|K|2027|4000|106000|26.5|Perhosenkatu 7 A07
+Raisio|Raisio|K|2027|3459|172950|50|Perhosenkatu 7 A10
+Raisio|Raisio|K|2027|3413|262800|77|Perhosenkatu 7 A21
+Pirilä|Raisio|O|1965|1528|220000|144|Luhtakatu 3
+Keskusta|Raisio|R|1999|1904|199000|104.5|Kreetankuja 7
+Kuuanlaakso|Raisio|R|2022|3544|319000|90|Rälssikatu 7 A
+Nuorikkala|Raisio|O|1996|1959|239000|122|Peräpellonkatu 10
+Vaisaari|Raisio|K|1976|909|55000|60.5|Karrinkatu 2 as
+Ihala|Raisio|O|1957|1837|360000|196|Syreenikatu 4
+Keskusta|Raisio|K|1964|1514|84000|55.5|Viskaalinkatu 3
+Kuloinen|Raisio|R|2027|4012|329000|82|Kuloistenniitynkatu 14 A
+Kemppilä|Raisio|K|1990|1347|79500|59|Hurstipolku 5
+Lausmäki|Raisio|O|1960|984|60000|61|Nummerotie 8
+Lumparla|Raisio|K|1972|1256|108000|86|Lumparlankatu 1 A
+Ihala|Raisio|O|1963|1796|159800|89|Pyölinkuja 1
+Keskusta|Raisio|K|1984|1188|95000|80|Tasalanaukio 7 B
+Tikanmaa|Raisio|R|1953|2119|89000|42|Peukaloisenpolku 7 As
+Kerttula|Raisio|K|1986|1410|98000|69.5|Tytöntie 6 A
+Keskusta|Raisio|K|1995|1919|119000|62|Tornikatu 5 A
+Varppeenseutu|Raisio|R|1978|2086|218000|104.5|Tasalankatu 14
+Raisio|Raisio|K|2028|4954|289800|58.5|Leppäkertunkatu 1 30
+Raisio|Raisio|K|2028|4961|153800|31|Leppäkertunkatu 1 29
+Raisio|Raisio|K|2028|4928|308000|62.5|Leppäkertunkatu 1 28
+Raisio|Raisio|K|2028|4945|197800|40|Leppäkertunkatu 1 27
+Raisio|Raisio|K|2028|4938|256800|52|Leppäkertunkatu 1 26
+Raisio|Raisio|K|2028|4939|219800|44.5|Leppäkertunkatu 1 24
+Raisio|Raisio|K|2028|4953|232800|47|Leppäkertunkatu 1 25
+Raisio|Raisio|K|2028|4187|129800|31|Leppäkertunkatu 1 22
+Raisio|Raisio|K|2028|4171|385800|92.5|Leppäkertunkatu 1 20
+Raisio|Raisio|K|2028|4175|185800|44.5|Leppäkertunkatu 1 18
+Raisio|Raisio|K|2028|4108|182800|44.5|Leppäkertunkatu 1 11
+Raisio|Raisio|K|2028|4168|243800|58.5|Leppäkertunkatu 1 23
+Raisio|Raisio|K|2028|4099|239800|58.5|Leppäkertunkatu 1 17
+Raisio|Raisio|K|2028|3962|231800|58.5|Leppäkertunkatu 1 10
+Raisio|Raisio|K|2028|3961|122800|31|Leppäkertunkatu 1 9
+Raisio|Raisio|K|2028|4090|126800|31|Leppäkertunkatu 1 16
+Raisio|Raisio|K|2028|4173|260800|62.5|Leppäkertunkatu 1 21
+Raisio|Raisio|K|2028|4109|256800|62.5|Leppäkertunkatu 1 15
+Raisio|Raisio|K|2028|3981|248800|62.5|Leppäkertunkatu 1 8
+Raisio|Raisio|K|2028|4095|163800|40|Leppäkertunkatu 1 14
+Raisio|Raisio|K|2028|3970|158800|40|Leppäkertunkatu 1 7
+Raisio|Raisio|K|2028|4102|192800|47|Leppäkertunkatu 1 12
+Raisio|Raisio|K|2028|4092|212800|52|Leppäkertunkatu 1 13
+Raisio|Raisio|K|2028|3974|186800|47|Leppäkertunkatu 1 5
+Raisio|Raisio|K|2028|4166|195800|47|Leppäkertunkatu 1 19
+Raisio|Raisio|K|2028|3977|206800|52|Leppäkertunkatu 1 6
+Raisio|Raisio|K|2028|3973|176800|44.5|Leppäkertunkatu 1 4
+Raisio|Raisio|K|2028|4104|188800|46|Leppäkertunkatu 1 3
+Raisio|Raisio|K|2028|4107|221800|54|Leppäkertunkatu 1 1
+Raisio|Raisio|K|2028|4092|212800|52|Leppäkertunkatu 1 2
+Kuloinen|Raisio|K|2027|4168|243800|58.5|Leppäkertunkatu 1 as 23
+Kuloinen|Raisio|K|2027|4107|221800|54|Leppäkertunkatu 1 as 1
+Kuloinen|Raisio|K|2027|4092|212800|52|Leppäkertunkatu 1 as 2
+Kuloinen|Raisio|K|2027|4961|153800|31|Leppäkertunkatu 1 as 29
+Kuloinen|Raisio|K|2027|4928|308000|62.5|Leppäkertunkatu 1 as 28
+Kuloinen|Raisio|K|2027|4175|185800|44.5|Leppäkertunkatu 1 as 18
+Kuloinen|Raisio|K|2027|4938|256800|52|Leppäkertunkatu 1 as 26
+Kuloinen|Raisio|K|2027|4939|219800|44.5|Leppäkertunkatu 1 as 24
+Kuloinen|Raisio|K|2027|4187|129800|31|Leppäkertunkatu 1 as 22
+Kuloinen|Raisio|K|2027|4092|212800|52|Leppäkertunkatu 1 as 13
+Kuloinen|Raisio|K|2027|4173|260800|62.5|Leppäkertunkatu 1 as 21
+Kuloinen|Raisio|K|2027|3973|176800|44.5|Leppäkertunkatu 1 as 4
+Kuloinen|Raisio|K|2028|3970|158800|40|Leppäkertunkatu 1 as 7
+Kuloinen|Raisio|K|2027|4095|163800|40|Leppäkertunkatu 1 as 14
+Kuloinen|Raisio|K|2027|4109|256800|62.5|Leppäkertunkatu 1 as 15
+Kuloinen|Raisio|K|2027|4099|239800|58.5|Leppäkertunkatu 1 as 17
+Kuloinen|Raisio|K|2027|3974|186800|47|Leppäkertunkatu 1 as 5
+Kuloinen|Raisio|K|2028|3962|231800|58.5|Leppäkertunkatu 1 as 10
+Kuloinen|Raisio|K|2027|3631|188800|52|Leppäkertunkatu 1 as 3
+Kuloinen|Raisio|K|2027|3977|206800|52|Leppäkertunkatu 1 as 6
+Kuloinen|Raisio|K|2028|3981|248800|62.5|Leppäkertunkatu 1 as 8
+Kuloinen|Raisio|K|2027|4102|192800|47|Leppäkertunkatu 1 as 12
+Kuloinen|Raisio|K|2027|4945|197800|40|Leppäkertunkatu 1 as 27
+Kuloinen|Raisio|K|2027|4166|195800|47|Leppäkertunkatu 1 as 19
+Kuloinen|Raisio|K|2027|4171|385800|92.5|Leppäkertunkatu 1 as 20
+Kuloinen|Raisio|K|2027|4108|182800|44.5|Leppäkertunkatu 1 as 11
+Kuloinen|Raisio|K|2027|4090|126800|31|Leppäkertunkatu 1 as 16
+Kuloinen|Raisio|K|2027|3961|122800|31|Leppäkertunkatu 1 as 9
+Kuloinen|Raisio|K|2027|4954|289800|58.5|Leppäkertunkatu 1 as 30
+Kerttula|Raisio|K|1980|2354|76500|32.5|Voudinkatu 25
+Kerttula|Raisio|K|2026|4165|168700|40.5|Kuuanlaaksontie 4 A 34
+Varpeenseutu|Raisio|K|1972|1756|137000|78|Sorolaisenkatu 2
+Raisio|Raisio|R|1983|2310|179000|77.5|Serkunkuja 4
+Krookila|Raisio|O|1964|1214|85000|70|Varpiokatu 3
+Inkoinen|Raisio|O|1947|2115|258000|122|Valkovuokonkatu 8
+Keskusta|Raisio|O|1967|1779|185000|104|Raatimiehenkatu 6
+Kuua|Raisio|O|1963|1514|268000|177|Kuuantie 20
+Inkoinen|Raisio|K|1974|1301|119000|91.5|Hakakatu 2 C
+Hakinmäki|Raisio|K|1978|644|38000|59|Kapponkatu 12 D
+Kerttula|Raisio|K|2026|3748|271700|72.5|Kuuanlaaksontie 4 A 30
+Kerttula|Raisio|K|2026|3331|259800|78|Kuuanlaaksontie 4 A 19
+Varppeenseutu|Raisio|K|1970|1149|108000|94|Särkilahdenkatu 3 AS
+Varppeenseutu|Raisio|K|1972|1536|84500|55|Lumparlankatu 5 F
+Sorolaisenmäki|Raisio|K|1972|1432|106000|74|Sorolaisenkatu 7
+Kemppilä|Raisio|R|1987|2013|159000|79|Hurstikatu 2 A
+Raisio|Raisio|O|1950|4640|515000|111|Uhkurintie 16
+Vaisaari|Raisio|K|1983|1227|92000|75|Tannerkatu 2 as
+Metsäaro|Raisio|K|1985|1284|104000|81|Hakakatu 1
+Keskusta|Raisio|K|1961|1982|109000|55|Keonpellonkatu 1b
+Ihala|Raisio|O|2005|2140|398000|186|Liponkuja 15
+Kuloinen|Raisio|O|1984|2792|335000|120|Jertantie 12
+Pirilä|Raisio|O|1993|1745|239000|137|Luumukuja 2
+Hakinmäki|Raisio|K|1979|1536|182000|118.5|Hakinkatu 10 As
+Vaisaari|Raisio|R|1980|2157|179000|83|Kreetankuja 11 A
+Kaanaanranta|Raisio|O|2003|2266|324000|143|Airokuja 3
+Huhko|Raisio|R|1986|2281|195000|85.5|Kartanontie 4 B
+Kerttula|Raisio|K|1995|2106|129500|61.5|Kruunuvoudinkatu 4
+Kerttula|Raisio|K|1980|975|59000|60.5|Voudinkatu 25 A
+Varppeenseutu|Raisio|K|2016|501|32343|64.5|Särkilahdenkatu 2
+Keskusta|Raisio|K|1975|1765|105000|59.5|Tasalankatu 11 A
+Kemppilä|Raisio|R|1991|1925|179000|93|Hurstikatu 3
+Krookila|Raisio|R|1977|1559|159000|102|Virnakuja 2
+Metsäaro|Raisio|R|1985|2115|129000|61|Lehmuskuja 6 G
+Petäsmäki|Raisio|O|1981|1086|139000|128|Majavapolku 7
+Varppeenseutu|Raisio|K|1975|1164|64000|55|Lumparlankatu 15 E
+Ihala|Raisio|R|2020|3290|329000|100|Luokkikuja 2 A
+Kuloisteniitty|Raisio|K|2026|530|29939|56.5|Kuloistenniitynkatu 8 B 51
+Kuloisteniitty|Raisio|K|2026|515|29075|56.5|Kuloistenniitynkatu 8 B 33
+Kuloisteniitty|Raisio|K|2026|525|29651|56.5|Kuloistenniitynkatu 8 B 45
+Kuloisteniitty|Raisio|K|2026|503|37223|74|Kuloistenniitynkatu 6 A 22
+Kuloisteniitty|Raisio|K|2026|510|29075|57|Kuloistenniitynkatu 6 A 21
+Kuloisteniitty|Raisio|K|2026|520|29363|56.5|Kuloistenniitynkatu 6 A 12
+Ihala|Raisio|O|2100|1282|100000|78|Lekakuja 3
+Keskusta|Raisio|K|2005|2571|162000|63|Tornikatu 2 A
+Kerttula|Raisio|R|2023|520|35588|68.5|Kellarimäenkatu 8 D 23
+Tikanmaa|Raisio|R|1990|2028|219000|108|Punarinnankatu 10
+Raisio|Raisio|K|2027|3498|174900|50|Perhosenkatu 7 A02
+Raisio|Raisio|K|2027|3850|192500|50|Perhosenkatu 7 A29
+Kaanaa|Raisio|R|2026|3623|279000|77|Kuminakatu 1 as 7
+Ihala|Raisio|O|0|3316|388000|117|Laistotie 23
+Tikanmaa|Raisio|R|1991|2315|147000|63.5|Kultarinnankuja 2 A
+Kerttula|Raisio|K|2026|3992|209600|52.5|Kuuanlaaksontie 4 A 33
+Kerttula|Raisio|K|2026|3799|296300|78|Kuuanlaaksontie 4 A 32
+Kerttula|Raisio|K|2026|4028|199400|49.5|Kuuanlaaksontie 4 A 31
+Kerttula|Raisio|K|2026|3943|159700|40.5|Kuuanlaaksontie 4 A 28
+Kerttula|Raisio|K|2026|3777|198300|52.5|Kuuanlaaksontie 4 A 27
+Kerttula|Raisio|K|2026|3812|188700|49.5|Kuuanlaaksontie 4 A 25
+Kerttula|Raisio|K|2026|3519|255100|72.5|Kuuanlaaksontie 4 A 24
+Kerttula|Raisio|K|2026|4094|169900|41.5|Kuuanlaaksontie 4 A 23
+Kerttula|Raisio|K|2026|3812|154400|40.5|Kuuanlaaksontie 4 A 21
+Kerttula|Raisio|K|2026|4079|148900|36.5|Kuuanlaaksontie 4 A 22
+Kerttula|Raisio|K|2026|3651|191700|52.5|Kuuanlaaksontie 4 A 20
+Kerttula|Raisio|K|2026|3685|182400|49.5|Kuuanlaaksontie 4 A 18
+Kerttula|Raisio|K|2026|3945|144000|36.5|Kuuanlaaksontie 4 A 15
+Kerttula|Raisio|K|2026|3957|164200|41.5|Kuuanlaaksontie 4 A 16
+Kerttula|Raisio|K|1960|1500|93000|62|Keonpellonkatu 5 B
+Kuua|Raisio|O|1954|1438|128000|89|Takapellonkatu 11
+Raisio|Raisio|K|2027|3962|225850|57|Perhosenkatu 7 A34
+Raisio|Raisio|K|2027|3332|229900|69|Perhosenkatu 7 A04
+Raisio|Raisio|K|2027|3835|295300|77|Perhosenkatu 7 A33
+Kuloisteniitty|Raisio|K|2026|515|29366|57|Perhosenkatu 5 B 59
+Kuloisteniitty|Raisio|K|2026|504|28730|57|Perhosenkatu 5 B 45
+Kuloisteniitty|Raisio|K|2026|530|30215|57|Perhosenkatu 3 A 36
+Kuloisteniitty|Raisio|K|2026|613|19931|32.5|Perhosenkatu 3 A 34
+Kuloisteniitty|Raisio|K|2026|519|29578|57|Perhosenkatu 3 A 29
+Kaanaa|Raisio|R|2026|3534|334000|94.5|Kuminakatu 1 as 8
+Raisio|Raisio|K|2022|647|22326|34.5|Kirkkoväärtinkuja 1 b A 1
+Raisio|Raisio|K|1996|1722|99000|57.5|Martinkatu 7 as
+Raisio|Raisio|K|2027|3891|286000|73.5|Perhosenkatu 7 A32
+Raisio|Raisio|K|2027|3962|273400|69|Perhosenkatu 7 A30
+Raisio|Raisio|K|2027|3770|214900|57|Perhosenkatu 7 A28
+Raisio|Raisio|K|2027|3709|255900|69|Perhosenkatu 7 A24
+Raisio|Raisio|K|2027|3668|183400|50|Perhosenkatu 7 A23
+Raisio|Raisio|K|2027|3632|207000|57|Perhosenkatu 7 A22
+Raisio|Raisio|K|2027|3500|199500|57|Perhosenkatu 7 A16
+Raisio|Raisio|K|2027|3282|252700|77|Perhosenkatu 7 A15
+Raisio|Raisio|K|2027|3452|219200|63.5|Perhosenkatu 7 A12
+Raisio|Raisio|K|2027|3243|249700|77|Perhosenkatu 7 A08
+Raisio|Raisio|K|2027|3499|239700|68.5|Perhosenkatu 7 A03
+Raisio|Raisio|K|2027|3425|191800|56|Perhosenkatu 7 A01
+Raisio|Raisio|K|2027|3351|212800|63.5|Perhosenkatu 7 A05
+Keskusta|Raisio|K|1974|1219|89000|73|Lumparlankatu 7 E
+Kuloinen|Raisio|O|1967|2427|199000|82|Keskitie 12
+Viheriäinen|Raisio|K|1960|982|56000|57|Kalasvahantie 4 B
+Raisio|Raisio|R|1977|1870|172000|92|Vilpokatu 10 as
+Kerttula|Raisio|K|2025|543|25801|47.5|Kokinvuorenkatu 11 A 20
+Vaisaari|Raisio|K|1978|1068|63000|59|Käpsänkatu 2
+Vaisaari|Raisio|K|1974|1500|57000|38|Kunnaankatu 6
+Petäsmäki|Raisio|R|1990|1744|139500|80|Aisatie 4
+keskusta|Raisio|K|1960|1932|119800|62|Keonpellonkatu 7 A
+Keskusta|Lieto|K|2027|3635|199900|55|Vesikonpiha 3 A9
+Keskusta|Lieto|K|2027|3171|129999|41|Vesikonpiha 3 A7
+Keskusta|Lieto|K|2027|3680|126950|34.5|Vesikonpiha 3 A17
+Keskusta|Lieto|K|2027|3983|95600|24|Vesikonpiha 3 A6
+Keskusta|Lieto|K|2027|3956|314500|79.5|Vesikonpiha 3 A27
+Lieto keskusta|Lieto|K|2027|4261|129958|30.5|Vesikonpiha 3 A 41
+Ilmarinen|Lieto|R|2022|3615|235000|65|Luuvartinlenkki 6A
+Lieto keskusta|Lieto|K|2027|3414|209951|61.5|Vesikonpiha 3 A 37
+Lieto keskusta|Lieto|K|2027|3906|185529|47.5|Vesikonpiha 3 A 40
+Talviniitty|Lieto|O|2023|2898|284000|98|Manunlenkki 4
+Nuolemo|Lieto|O|1973|963|104000|108|Vuorimiehenkuja 1
+Loukinainen|Lieto|R|2027|3653|379900|104|Airikintie 5 C 12
+Littoinen|Lieto|O|1950|1314|92000|70|Välikuja 6
+Loukinainen|Lieto|R|2027|3806|314000|82.5|Airikintie 5 B 11
+Loukinainen|Lieto|R|2027|3806|314000|82.5|Airikintie 5 C 13
+Loukinainen|Lieto|R|2027|3967|249900|63|Airikintie 5 B 9
+Loukinainen|Lieto|R|2027|3653|379900|104|Airikintie 5 A 1
+Loukinainen|Lieto|R|2027|3806|314000|82.5|Airikintie 5 A 2
+Loukinainen|Lieto|R|2027|3653|379900|104|Airikintie 5 C 15
+Loukinainen|Lieto|R|2027|3653|379900|104|Airikintie 5 B 7
+Loukinainen|Lieto|R|2027|3806|314000|82.5|Airikintie 5 A 5
+Loukinainen|Lieto|R|2027|3653|379900|104|Airikintie 5 A 6
+Loukinainen|Lieto|R|2027|3806|314000|82.5|Airikintie 5 B 10
+Keskusta|Lieto|R|1980|1774|149000|84|Suunnistajankuja 6 B
+Palomäki|Lieto|O|1960|2731|142000|52|Metsäkuja 2
+Tarvasjoki|Lieto|O|2019|2185|295000|135|Silmukuja 8
+Nuolemo|Lieto|R|2022|3557|249000|70|Rytinkuja 1 B
+Nuolemo|Lieto|R|2022|3431|199000|58|Rytinkuja 1 A
+Nuolemo|Lieto|O|1985|2101|209000|99.5|Raivaajankuja 8
+Keskusta|Lieto|K|2023|599|21548|36|Simpukkatie 17
+Hakkinen|Lieto|O|1969|1490|149000|100|Hakkistenkuja 13
+Nuolemo|Lieto|O|1971|1063|185000|174|Huoltomiehentie 13
+Tarvasjoki|Lieto|O|1986|1430|149000|104.2|Riihikuja 6
+Keskusta|Lieto|K|2011|2788|329000|118|Simpukkatie 1 As
+Vanhalinna|Lieto|R|2022|3758|248000|66|Henttalankuja 1
+Loukinainen|Lieto|O|1997|2503|448000|179|Piilipuunkuja 4-6
+Littoinen|Lieto|O|2010|2639|950000|360|Kallenkuja 3
+Nuolemo|Lieto|O|1975|1216|259000|213|Kanervakuja 4
+Loukinainen|Lieto|R|2026|3435|274800|80|keskikankare 8
+Vierunpuisto|Lieto|R|1985|1962|155000|79|Tuomaankuja 2
+Loukinainen|Lieto|O|2006|2240|775000|346|Keskikankare 10
+Lieto|Lieto|O|1979|1485|199000|134|Kuusikuja 2
+Loukinainen|Lieto|O|1920|2800|168000|60|Vähävankiontie 25
+Littoinen|Lieto|K|1998|3791|163000|43|Verkaranta 3
+Sillilä|Lieto|O|1960|1767|129000|73|Lietniementie 33
+Raukkala|Lieto|O|0|725|58000|80|Raukkalantie 114
+Keskusta|Lieto|K|2026|3802|319402|84|Kärpijoentie 6a 3
+Ilmarinen|Lieto|O|1940|2929|249000|85|Lausteentie 13
+Kahloja|Lieto|O|2007|2678|245000|91.5|Rekikuja 1 D
+Vieru|Lieto|R|1987|2056|184000|89.5|Vieruntie 7 as 2
+Hyvättylä|Lieto|R|1980|2960|148000|50|Kärpijoentie 10 as
+Keskusta|Lieto|K|2020|515|40191|78|Nuolemontie 22
+Taatila|Lieto|R|2022|3436|268000|78|Araraitti 1 A
+Tarvasjoki|Lieto|O|1948|590|59000|100|Hämeentie 3245 b
+Tarvasjoki|Lieto|R|1992|904|75000|83|Postinkuja 4 A
+Vierunpuisto|Lieto|R|2011|2836|234000|82.5|Nummisuutarintie 1
+Littoinen|Lieto|K|1891|3367|101000|30|Verkaranta 5 E 26
+Ilmarinen|Lieto|O|2007|2088|238000|114|Töykkäläntie 4
+Teijula|Lieto|O|2026|3041|298000|98|Aromipiha 2
+Loukinainen|Lieto|R|2026|3408|248800|73|Ratuntie 8
+Keskusta|Lieto|O|1971|1229|279000|227|Kärpijoentie 12
+Poikoja|Lieto|O|1954|796|199000|250|Helavuorentie 2
+Hakula|Lieto|R|2021|3028|330000|109|Vilkkimäentie 15
+Keskusta|Lieto|K|1968|1692|154000|91|Keskustie 2
+Kisakallio|Lieto|R|2018|3069|89000|29|Kisatie 2 A
+Vierunpuisto|Lieto|O|1961|1750|245000|140|Aapispolku 3
+Vierunpuisto|Lieto|R|1985|1962|155000|79|Juhaninkuja 1 B
+Lieto as|Lieto|R|1992|1964|163000|83|Kaurakuja 1
+keskusta|Lieto|K|1992|2072|172000|83|Nuolemontie 17
+Littoinen|Lieto|O|1980|1741|235000|135|Palomäentie 78
+keskusta|Lieto|K|1983|1787|109000|61|Kuntoilijanlenkki 6
+Vanhalinna|Lieto|R|2021|3500|259000|74|Nenärengas 1
+Ilmarinen / Laustee|Lieto|O|1979|1613|179000|111|Hopeapajuntie 58 a
+Nuolemo|Lieto|O|1968|2674|238000|89|Jännekuja 1
+Littoinen|Lieto|O|2006|2180|449000|206|Karinpolku 4
+Vanhalinna|Lieto|O|1956|1143|168000|147|Kuninkaanpolku 6
+Keskusta|Lieto|K|2017|3167|209000|66|Ajurintie 3 A
+Loukinainen|Lieto|O|2027|3752|529000|141|Henkulankuja 7
+Loukinainen|Lieto|O|2027|3752|529000|141|Henkulankuja 5
+Ilmarinen|Lieto|R|1994|2261|199000|88|Alalausteentie 3
+Ilmarinen|Lieto|O|1955|1279|179000|140|Kanahaantie 21
+Ilmarinen|Lieto|O|2015|2541|338000|133|Vanha Tampereentie 917b
+Keskusta|Lieto|R|1999|2682|232000|86.5|Pitkäkuja 3 A
+Keskusta|Lieto|K|2027|4561|221220|48.5|Kärpijoentie 6a 6
+Keskusta|Lieto|K|2011|2977|198000|66.5|Simpukkatie 1 A14
+Keskusta|Lieto|K|2026|3965|333060|84|Kärpijoentie 6a 5
+Vintala|Lieto|O|1993|1758|466000|265|Vintalantie 411
+Hakkinen|Lieto|R|1991|2060|189500|92|Ortenniityntie 2 B
+Piispala|Lieto|R|1988|1972|209000|106|Piispalantie 8 B
+Tarvasjoki|Lieto|O|2023|2347|291000|124|Aittakuja 3
+Lieto|Lieto|O|2004|2543|595000|234|Kivipiha 9
+Tarvasjoki|Lieto|O|1986|1400|238000|170|Kivistöntie 11
+Keskusta|Lieto|R|1974|2096|283000|135|Hanhiojantie 4 As
+Ilmarinen|Lieto|O|1952|510|49000|96|Harviaistenkuja 6
+Tuuliniitty|Lieto|O|0|4536|499000|110|Marskintie 2
+Ilmarinen|Lieto|R|2017|3323|216000|65|Halmelantie 13 as
+Lieto|Lieto|O|1971|989|188000|190|Alikulmantie 389A
+Lieto Keskus|Lieto|R|1973|2300|115000|50|Luusmäentie 3 as
+Keskusta|Lieto|K|2027|4155|311650|75|Kärpijoentie 6a 4
+Lieto|Lieto|K|2020|602|40328|67|Karjatie 12 b as 16
+Keskusta|Lieto|K|2027|4285|263550|61.5|Kärpijoentie 6a 8
+Poikoja|Lieto|O|1920|2083|250000|120|Nikkilänkuja 1-3
+Tarvasjoki/ Seppälä|Lieto|O|1985|1147|109000|95|Kyröntie 535
+Loukinainen|Lieto|O|0|3398|428200|126|Matintalonlenkki
+Piispala|Lieto|O|1986|2085|269000|129|Piispalantie 18
+Yliskulma|Lieto|O|1950|592|100000|169|Vartinmäentie 34
+Tarvasjoki Alikulma|Lieto|O|1925|1345|78000|58|Alikulmantie 407
+Keskusta|Lieto|K|2019|4292|103000|24|Vesikonpiha 4 A
+Keskusta|Lieto|K|2023|4161|255873|61.5|Kärpijoentie 6b 8
+Keskusta|Lieto|K|2023|3692|310099|84|Kärpijoentie 6b 3
+Keskusta|Lieto|K|2023|3730|294634|79|Kärpijoentie 6b 1
+Tarvasjoki|Lieto|O|1971|707|159000|225|Hämeen Härkätie 867
+Ilmarinen|Lieto|O|2025|4221|515000|122|Pahkalaukkaantie 27 A
+Keskusta|Naantali|K|2024|5039|257000|51|Tuulensuunkatu 23 B69
+Keskusta|Naantali|K|2024|3879|450000|116|Luostarinkatu 22 A2
+Naantali|Naantali|O|1989|736|110000|149.5|Ylttistentie 76
+Keskusta|Naantali|K|2010|3106|219000|70.5|Presidentinkatu 5 B
+Luonnonmaa|Naantali|K|2024|553|40124|72.5|Vuoksi 4
+Tammisto|Naantali|R|2020|509|44821|88|Torpparinkaari 4a
+Tammisto|Naantali|R|1991|2697|205000|76|Aidanvierusta 1
+Taattinen|Naantali|O|1820|3402|864000|254|Koverintie 23
+Isokylä|Naantali|O|2013|4384|537000|122.5|Isokyläntie 9
+Karvetti|Naantali|K|1979|1566|119000|76|Teräskatu 2
+Hellemäki|Naantali|O|1990|1695|239000|141|Urpukuja 4
+Nuhjala|Naantali|O|1973|1227|395000|322|Haapakatu 2
+Kultaranta|Naantali|R|1990|3176|189000|59.5|Viitatiaisenkuja 14 as
+Luonnonmaa|Naantali|O|2015|7968|996000|125|Särkänsalmentie 310
+Nuhjala|Naantali|K|1974|1427|107000|75|Isotalontie 3
+Ruona|Naantali|K|1968|1852|138000|74.5|Kurkelankatu 6
+Taimo|Naantali|R|1993|3029|106000|35|Rantaluikkiontie 6
+Naantali|Naantali|O|1990|1858|275000|148|Ajonpääntie 148
+Keskusta|Naantali|K|1963|2043|95000|46.5|Tuulensuunkatu 13 A
+Soininen|Naantali|R|2021|3761|252000|67|Kivirampinpolku 3
+Tammisto|Naantali|O|1962|1961|249000|127|Lietsalantie 9
+Kirkonkylä|Naantali|K|1975|644|38000|59|Viluntie 1 A
+Luonnonmaa|Naantali|O|2026|3197|390000|122|Hiukkaskuja 3
+Venka|Naantali|R|2027|3694|399000|108|Kraatarintie 2 as 2
+Venka|Naantali|R|2027|3694|399000|108|Kraatarintie 4 as 1
+Venka|Naantali|R|2027|3694|399000|108|Kraatarintie 4 as 2
+Venka|Naantali|R|2027|3694|399000|108|Kraatarintie 2 as 1
+Karvetti|Naantali|K|1982|1470|147000|100|Karvetinkatu 3
+Naantali|Naantali|O|2001|1595|319000|200|Niittupolku 7
+Naantali|Naantali|R|1988|2762|116000|42|Tiilenkantajantie 23 A
+Ruona|Naantali|K|1972|1913|88000|46|Lintulankuja 2a B
+Nuhjala|Naantali|O|1965|1031|99000|96|Mäntykaari 13
+Naantali|Naantali|R|2005|2551|199000|78|Taimontie 22 b
+Ruona|NAANTALI|K|1968|1641|151000|92|Arholankuja 1
+Peräniitty-Riistavuori|Naantali|O|1215|1762|215000|122|Ansatie 16
+Keskusta|Naantali|K|2020|4939|163000|33|Kopenkatu 2 A
+Soikallio|Naantali|O|2020|3568|330000|92.5|Proventinpolku 2
+Naantali|Naantali|R|1989|2213|249000|112.5|Taimontie 13 B
+Karvetti|Naantali|K|1977|1488|119000|80|Makasiinipolku 2
+Soininen|Naantali|O|2015|4091|585000|143|Välskärinkuja 6
+Ruona|Naantali|K|1971|1478|85000|57.5|Arholankuja 3 A
+Karjaluoto|Naantali|O|2006|7443|975000|131|Pirttiluodontie 19
+Naantali|Naantali|O|2008|4786|469000|98|Impivaaranraitti 26
+Ruona|NAANTALI|K|1985|1904|119000|62.5|Mäkikuja 3
+Taimo|Naantali|R|1975|1692|198000|117|Kelokaari 6 A
+Keskusta|Naantali|K|1992|2861|196000|68.5|Prikitankatu 4 D
+Rymättylän keskusta|Naantali|O|1977|565|52000|92|Koulukuja 6
+Luonnonmaa|Naantali|R|1999|2504|169000|67.5|Järvihaankuja 6
+Rymättylän keskusta|Naantali|O|1977|1190|125000|105|Koulukuja 3
+Väinölä|Naantali|K|1986|1957|136000|69.5|Lukkarinkatu 7
+Ruona|Naantali|K|1972|1981|105000|53|Lintulankuja 1 C
+keskusta|Naantali|K|1982|2276|198000|87|Henrikinkatu 4 B
+Soininen|Naantali|O|2003|2153|379000|176|Kartanonkaari 15
+Rymättylä keskusta|Naantali|R|1976|1288|119800|93|Elosentie 1
+Rymättylä keskusta|Naantali|O|2009|2655|299000|112.6|Venetie 3 B
+Ruona|Naantali|K|1972|1792|129000|72|Lintulankuja 2a
+Nuhjala|Naantali|O|1974|2170|319000|147|Poppelikuja 1
+Keskusta|Naantali|K|1954|2076|109000|52.5|Henrikinkatu 2 A
+Keskusta|Naantali|K|2021|4481|177000|39.5|Palomäenkatu 1 A
+Kultaranta Resort|Naantali|O|2699|2405|699900|291|Santalantie 1
+Luonnonmaa|Naantali|O|2011|3762|489000|130|Virvenrinne 9
+Hellemäki|Naantali|R|1983|1613|159700|99|Hellemäentie 7 A
+Hellemäki|Naantali|O|1982|1782|212000|119|Heikinmäentie 11
+Suovuori|Naantali|R|1986|2543|178000|70|Nuhjalantie 36
+Luonnonmaa|Naantali|O|2022|5051|495000|98|Lounatuuli 12b
+Luonnonmaa|Naantali|O|2022|5289|595000|112.5|Venda 16
+Ruona|Naantali|K|1971|1648|75000|45.5|Arholankuja 3 as
+Tammisto|Naantali|R|1979|1901|154000|81|Kastovuorenkatu 6 b
+Keskusta|Naantali|K|2000|3282|128000|39|Käsityölaiskatu 11
+Ruona|Naantali|R|2022|5970|597000|100|Pirttiluodontie 22 B
+Pirttiluoto|Naantali|O|2021|19396|2890000|149|Pirttiluodontie 26
+Ruona|Naantali|K|1983|1652|128000|77.5|Mäkikuja 5 D
+Luonnonmaa|Naantali|O|2025|3788|519000|137|Tilho 7
+Lietsala|Naantali|R|1989|2144|179000|83.5|Vatukonkatu 1
+Kultaranta|Naantali|O|1986|1976|247000|125|Pulmusentie 6
+Karvetti|Naantali|K|1982|1512|114900|76|Karvetinkatu 3 A
+Kultaranta|Naantali|O|2019|4429|279000|63|Käpylinnuntie 10
+Keskusta|Naantali|K|1965|2116|66650|31.5|Kreivinkatu 3
+Ruona|Naantali|R|1989|2493|339000|136|Rantaruonankatu 7 B
+Nuhjala|Naantali|R|1988|2118|179000|84.5|Kielokuja 2b B
+Luonnonmaa|Naantali|R|2020|3441|320000|93|Keihäänkärjentie 2
+Poikko|Naantali|O|2012|4000|348000|87|Impivaaranraitti 34
+Vanhakaupunki|Naantali|K|1993|2727|195000|71.5|Tullikatu 5 as
+Keskusta|Naantali|K|1980|2877|315000|109.5|Puistotie 21 B
+Soininen|Naantali|R|2021|4018|219000|54.5|Kivirampinpolku 1
+Luikkio|Naantali|O|1984|1547|249000|161|Leinikkikatu 7
+Suopelto|Naantali|R|1982|1873|148000|79|Suopellonkatu 4 A
+Venka|Naantali|O|2026|3544|365000|103|Vihnetie 2
+Merimasku / Järvensuu|Naantali|O|1985|2506|208000|83|Heikinmäentie 3
+Merimasku|Naantali|O|1995|1740|167000|96|Mäkiläntie 5
+Väinölä|Naantali|O|1949|1833|319000|174|Vadstenankatu 8
+Keskusta|Naantali|K|2024|4465|288000|64.5|Tuulensuunkatu 23
+Keskusta|Naantali|K|2024|5700|550050|96.5|Torikatu 14 as 1
+Humalisto|Naantali|K|2018|3794|129000|34|Kopenkatu 4 A
+Luonnonmaa|Naantali|O|2020|9136|1480000|162|Ajonpääntie 137
+Järvensuu|Naantali|O|2015|4410|785000|178|Meripirtintie 15
+Vanhakaupunki|Naantali|O|1823|3353|285000|85|Mannerheiminkatu 15 a
+Keskusta|Naantali|K|1965|2273|125000|55|Presidentinkatu 6b
+Soikallio|Naantali|O|2014|3837|798000|208|Välskärinkuja 1
+Viiala|Naantali|O|2003|2969|475000|160|Kipparintie 11
+Tammisto|Naantali|R|2025|3414|309000|90.5|Vanha Vantontie 7 as
+Meri-Naantali|Naantali|K|1979|2823|199000|70.5|Lukkarinkatu 6 A
+Peräniitty|Naantali|R|1989|2532|159500|63|Nuhjalantie 34
+Naantali|Naantali|R|1990|3114|109000|35|Rantaluikkiontie 4 as
+Meri-Naantali|Naantali|K|1981|2717|235000|86.5|Lukkarinkatu 4 B
+Väinölä|Naantali|K|1968|3132|119000|38|Luostarinkatu 14 B
+Taimo|Naantali|R|1983|2212|188000|85|Peräniitynkatu 1 C
+Murikko|Naantali|O|1990|1794|339000|189|Putkikatu 41
+Väinölä|Naantali|O|1950|3340|334000|100|Teljentie 14
+Merimasku|Naantali|O|1989|2087|265000|127|Heikinmäentie 18
+Pirttiluoto|Naantali|R|2018|4942|598000|121|Luodontie 3
+Keskusta|Naantali|K|2019|4455|225000|50.5|Presidentinkatu 6a
+Keskusta|Naantali|R|1992|3045|268000|88|Hallinpolku 3 C
+Poikko|Naantali|O|2006|1926|285000|148|Poikon rantatie 13
+Keskusta|Naantali|K|1982|2590|215000|83|Prikitankatu 5 A
+Immanen|Naantali|O|2026|3739|445000|119|Paimenenpiha 5
+Metsäluikkio|Naantali|O|2698|3814|698000|183|Metsäluikkiontie 5
+Keskusta|NAANTALI|K|1962|1736|105000|60.5|Tuulensuunkatu 21
+Naantali|Naantali|R|1986|2524|159000|63|Meripirtintie 5 as 3
+Taimo|Naantali|R|1978|1977|174000|88|Kuusikaari 13 B
+Kultaranta|Naantali|R|1994|2063|179500|87|Kivitaskunkuja 1 B
+Soikallio|Naantali|R|2003|2137|249000|116.5|Kartanonkaari 1 as
+Peräniitty|Naantali|O|1981|1171|175000|149.5|Vuokkokatu 5
+Keskusta|Naantali|K|2024|5000|235000|47|Tuulensuunkatu 23 B72
+Maijamäki|Naantali|O|1953|1760|338000|192|Valliuksenkatu 20
+Väinölä|Naantali|R|2020|4490|449000|100|Väinöläntie 26 A 1
+Rymättylä|Naantali|O|1930|1345|78000|58|Ahteentaantie 5
+Merimasku|Naantali|O|1288|1327|288000|217|Killaistentie 155
+Taimo|Naantali|R|1995|2531|162000|64|Taimontie 1-3 C
+Keskusta|Naantali|K|1960|2188|175000|80|Luostarinkatu 27 B
+Merimasku|Naantali|O|1598|3934|598000|152|Mustalahdentie 32
+Keskusta|Naantali|K|1999|2731|325000|119|Käsityöläiskatu 5
+Ruona|Naantali|K|1971|1637|128500|78.5|Lintulankuja 2b
+Luonnonmaa|Naantali|O|2022|3819|695000|182|Venda 12
+Merimasku|Naantali|O|1965|1250|75000|60|Horjantie 61
+Rymättylä|Naantali|O|1914|988|395000|400|Vanha Ahteentaantie 1b
+Lietsala|Naantali|R|2027|3642|448000|123|Nikkarintie 9 as 1
+Lietsala|Naantali|R|2027|3642|448000|123|Nikkarintie 9 as 2
+Ruona|Naantali|O|1953|2600|195000|75|Mäkikuja 12-14
+Taimo|Naantali|R|2027|3831|475000|124|Perälänkuja 1
+Nuhjala|Naantali|R|1986|1817|139000|76.5|Nuhjalantie 31 b
+Naantali|Naantali|O|2014|21000|2100000|100|Karvaskarintie
+Merimasku|Naantali|O|2010|3856|698000|181|Lukkaraistentie 23
+Keskusta|NAANTALI|K|1993|3268|134000|41|Tullikatu 5
+Rymättylä|Naantali|O|2024|16179|1990000|123|Heinäisten rantatie 86
+Merimasku|Naantali|O|2009|1875|300000|160|Minkkitarhankuja 1
+Luikkio|Naantali|O|1980|1605|199000|124|Metsävirnankatu 2
+Karvetti|Naantali|R|1982|1909|189000|99|Sirkkelitie 2b
+Lietsala|Naantali|O|1987|2064|227000|110|Kirveskuja 7
+Luonnonmaa|Naantali|R|2008|4295|189000|44|Särkänsalmentie 197
+Porhonkallio|Naantali|R|2013|5211|284000|54.5|Särkänsalmentie 298
+Rymättylä|Naantali|O|1940|2292|149000|65|Rymättyläntie 1568
+Luonnonmaa|Naantali|O|1980|4395|690000|157|Lapilantie 88
+Keskusta|NAANTALI|K|1982|2262|207000|91.5|Tullikatu 13
+Väinölä|Naantali|K|1952|2235|219000|98|Kreivinkatu 1 B
+Heikinmäki|Naantali|O|1986|2593|350000|135|Rajatie 22
+Keskusta|Naantali|O|1903|2718|598000|220|Kaivokatu 8a
+Luonnonmaa|Naantali|R|2027|4280|398000|93|Kotkavuorentie 5 as 3
+Keskusta|Naantali|K|1987|2151|128000|59.5|Luostarinkatu 15-17
+Metsäluikkio|Naantali|O|2017|4028|578000|143.5|Metsäluikkiontie 16
+Rymättylä|Naantali|O|2006|1083|249000|230|Kirkkojärventie 7
+Luonnonmaa|Naantali|R|2027|3839|286000|74.5|Taivaankansi 2 A 4
+Luonnonmaa|Naantali|R|2027|3698|336500|91|Taivaankansi 2 A 5
+Luonnonmaa|Naantali|R|2027|3839|286000|74.5|Taivaankansi 2 A 2
+Luonnonmaa|Naantali|R|2027|3839|286000|74.5|Taivaankansi 2 B 8
+Luonnonmaa|Naantali|R|2027|3839|286000|74.5|Taivaankansi 2 B 9
+Merimasku|Naantali|O|2014|1787|427000|239|Perkontie 11
+Keskusta|Naantali|K|2004|2808|139000|49.5|Palomäenkatu 2
+Vanhakaupunki|Naantali|R|2019|4000|520000|130|Kaivokatu 11
+Luolala|Naantali|K|1939|1980|99000|50|Emännänpolku 1 B
+Meri-Naantali|Naantali|K|1982|2549|209000|82|Lukkarinkatu 11 A
+Suovuori|Naantali|R|1991|2576|219000|85|Päivärinteenkatu 5 C
+Lounatuuli|Naantali|O|2022|3991|459000|115|Venda 7
+Keskusta|Naantali|K|1976|1653|62000|37.5|Tullikatu 12 A
+Immanen|Naantali|O|2024|3779|445900|118|Paimenenpiha 6
+Rymättylä|Naantali|K|1974|778|49000|63|Piimätie 10
+Immanen|Naantali|O|1977|1046|160000|153|Kauristie 16
+Luonnonmaa|Naantali|R|2026|3236|349500|108|Linnunrata 6 A
+Kultaranta|Naantali|R|2008|3568|157000|44|Särkänsalmentie 197 B
+Keskusta|Naantali|K|1966|2311|119000|51.5|Kristiinankatu 15 C
+Luonnonmaa|Naantali|R|2026|3299|292000|88.5|Linnunrata 6 B
+Rymättylä|Naantali|K|1976|532|42000|79|Piimätie 3
+Luonnonmaa|Naantali|R|2027|3674|349000|95|Pyrstötähti 8
+Luonnonmaa|Naantali|O|2011|2906|590000|203|Särkänsalmentie 293 A
+Keskusta|Kempele|K|2027|3547|235900|66.5|Asemantie 2 B24
+Ristisuo|Kempele|R|2001|1685|182000|108|Myllykorventie 7 A
+Keskusta|Kempele|K|2027|3424|273900|80|Asemantie 2 B21
+Keskusta|Kempele|K|2027|3332|229900|69|Asemantie 2 B7
+Linnakangas|Kempele|O|1981|1366|179000|131|Käpytie 4
+Keskusta|Kempele|O|1980|1305|165000|126.4|Tuomitie 7 A
+Linnakangas|Kempele|R|2013|2743|197500|72|Porttivahdinkuja 10 A
+Niittyranta|Kempele|O|2021|2325|279000|120|Niittokuja 4
+Sarkkiranta|Kempele|R|2014|2433|189500|77.9|Tornikuja 2 A
+Kempele|Kempele|R|1975|1479|88000|59.5|Lehmikentäntie 6 B
+Kokkokangas|Kempele|R|2000|2069|149000|72|Metsotie 5D1
+Keskusta|Kempele|K|2027|3228|261500|81|Asemantie 2 B10
+Keskusta|Kempele|O|2026|3477|399900|115|Sammonkuja 3
+Keskusta|Kempele|K|2027|3299|169900|51.5|Asemantie 2 B3
+Tähkälä|Kempele|O|2027|2507|346000|138|Ruumen 19 B4 ja B5
+Tähkälä|Kempele|O|2027|3165|288000|91|Ruumen 19 A2
+Linnakangas|Kempele|O|2020|2579|325000|126|Neidonkehä 11 A 2
+Keskusta|Kempele|K|2027|3156|252500|80|Asemantie 2 B4
+Keskusta|Kempele|K|2027|3344|178900|53.5|Asemantie 2 B11
+Paituri|Kempele|O|2027|3186|334500|105|Patotie 1
+Haapamaa|Kempele|O|1985|1794|244000|136|Kelokuja 28
+Kempele|Kempele|O|2027|3277|329000|100.4|Sipolantie 5
+Kokkokangas|Kempele|O|2017|2464|239000|97|Haukkakaarto 5 A
+Sarkkiranta|Kempele|K|2018|2891|79500|27.5|Alangontie 2
+Tähkälä|Kempele|O|2022|2348|364000|155|Ruumen 22
+Keskusta|Kempele|K|2027|3243|173500|53.5|Asemantie 2 B1
+Santamäki|Kempele|R|2011|2566|195000|76|Santakuja 1 C
+Ylikylä|Kempele|R|2023|3114|218000|70|Nerolantie 1 A
+Ristisuo|Kempele|R|1971|1397|109000|78|Ristisuontie 6
+Linnakangas|Kempele|R|2020|3125|175000|56|Veijarinkurvi 6
+Linnakangas|Kempele|O|2025|3203|349100|109|Lemminkäinen 5
+Kempele|Kempele|K|1998|2106|116900|55.5|Kirkkotie 3
+Juurussuo|Kempele|O|1989|2039|188000|92.2|Kivirinteentie 16
+Kempele|Kempele|O|2024|3191|359000|112.5|Piriläntie 4
+Niittyranta|Kempele|O|2018|3095|229000|74|Kuovitie 4 A
+Niittyranta|Kempele|R|2004|1944|104000|53.5|Nätkelmätie 14
+Keskusta|Kempele|K|2022|3656|111500|30.5|Kauppakuja 4
+Sarkkiranta|Kempele|O|1977|1168|139000|119|Rytitie 10
+Linnakangas|Kempele|O|2017|3284|335000|102|Välskärinkurvi 3
+Keskusta|Kempele|K|2027|3307|176900|53.5|Asemantie 2 B5
+Keskusta|Kempele|O|1966|1328|158000|119|Leilitie 10
+Sarkkiranta|Kempele|O|1973|1967|480000|244|Lääninperätie 15
+Linnakangas|Kempele|R|2017|3042|216000|71|Vesihaudankuja 2 B 7
+Keskusta|Kempele|R|1972|1320|99000|75|Nassakkatie 2-6 F
+Linnakangas|Kempele|R|2027|3455|209000|60.5|Linnavoudintie 3
+Keskusta|Kempele|K|2027|3457|229900|66.5|Asemantie 2 B18
+Tähkälä|Kempele|O|2027|3311|298000|90|Ruumen 19 B6
+Keskusta|Kempele|K|2027|3307|219900|66.5|Asemantie 2 B6
+Kokkokangas|Kempele|R|1997|2069|149000|72|Metsotie 1
+Vihiluoto|Kempele|O|2023|3405|429000|126|Vihiluoto 7 B As 2
+Hakamaa|Kempele|O|1972|793|78500|99|Pulkkisentie 19
+Kokkokangas|Kempele|R|2024|3436|345000|100.4|Helylänkuja 8 B
+Paituri|Kempele|R|2022|3215|299000|93|Roinilankuja 11 B
+Kokkokangas|Kempele|K|2004|2042|98000|48|Ajurinpiha 4
+Kempele|Kempele|R|1981|1709|129000|75.5|Tiilipellontie 6 A
+Ristisuo|Kempele|K|2015|2867|86000|30|Kuivaamontie 3
+Kokkokangas|Kempele|R|2011|2529|174500|69|Haukkakaarto 7 J
+Ollakka|Kempele|R|2022|2905|215000|74|Kurikkahaantie 10
+Sarkkiranta|Kempele|O|2027|3344|369500|110.5|Korsipolku 2
+Keskusta|Kempele|K|2027|3158|249500|79|Asemantie 2 B2
+Metsärinne|Kempele|R|2020|3058|159000|52|Käpälälauta 1
+Kempele|Kempele|R|2007|1865|194000|104|Kurikkahaantie 8
+Metsärinne|Kempele|O|2022|3100|279000|90|Ketunkolo 2 B
+Linnakangas|Kempele|R|2020|3281|214900|65.5|Linnavoudintie 5 D
+Keskusta|Kempele|K|2014|2704|146000|54|Kurikkahaantie 5 A
+Keskusta|Kempele|K|2027|3520|242900|69|Asemantie 2 B25
+Ylikylä|Kempele|R|2004|2166|209000|96.5|Uunintekijäntie 7
+Keskusta|Kempele|K|2027|3393|181500|53.5|Asemantie 2 B 17
+Keskusta|Kempele|K|2027|3369|173500|51.5|Asemantie 2 B 8
+Keskusta|Kempele|K|2027|3394|274900|81|Asemantie 2 B 22
+Keskusta|Kempele|K|2027|3500|280000|80|Asemantie 2 B 27
+Keskusta|Kempele|K|2027|3396|234300|69|Asemantie 2 B 13
+Keskusta|Kempele|K|2026|3397|225900|66.5|Asemantie 2 B 12
+Keskusta|Kempele|K|2027|3408|175500|51.5|Asemantie 2 B14
+Kokkokangas|Kempele|O|1996|1925|335000|174|Timperinhaka 8
+Keskusta|Kempele|R|2026|3941|269990|68.5|Kirkkotie 18
+Keskusta|Kempele|K|2026|4470|192200|43|Kirkkotie 18
+Keskusta|Kempele|K|2027|3462|238900|69|Asemantie 2 B19
+Haapamaa|Kempele|R|1987|1674|79500|47.5|Linnukkatie 11 as 5
+Keskusta|Kempele|O|2022|3146|269000|85.5|Kurikkahaantie 10 D
+Linnakangas|Kempele|R|2026|2777|379000|136.5|Ilmatar 34
+Honkanen|Kempele|O|1984|1104|159000|144|Puukiipijäntie 21a
+Ristisuo|Kempele|O|2024|3849|460000|119.5|Ristisuontie 14
+Keskusta|Kempele|R|2003|1904|169500|89|Hallikuja 3 C
+Keskusta|Kempele|K|2012|2489|109500|44|Ollakantie 2 C
+Vihiluoto|Kempele|O|1989|2422|545000|225|Vihiluoto 1
+Keskusta|Kempele|K|2027|3493|179900|51.5|Asemantie 2 B26
+Ristisuo|Kempele|O|2001|1776|325000|183|Myllykorventie 8
+Keskusta|Kempele|K|2001|1984|125000|63|Ollakantie 3 A
+Keskusta|Kempele|K|1998|1972|70000|35.5|Kirkkotie 3 A
+Kempele|Kempele|R|1998|1585|149000|94|Takatie 5 B
+Keskusta|Kempele|K|2020|2576|170000|66|Hallikuja 7
+Tähkälä|Kempele|O|2026|3370|259500|77|Ruumen 1 A
+Tähkälä|Kempele|O|2026|3314|321500|97|Ruumen 1 D
+Tähkälä|Kempele|O|2026|3362|292500|87|Ruumen 1 B
+Metsärinne|Kempele|O|2023|3200|448000|140|Karhunkäpälä 14
+Keskusta|Kempele|R|2008|2167|179900|83|Länkeläntie 8 C2
+Sarkkiranta|Kempele|O|1975|556|65000|117|Vesitornintie 16
+Ollila|Kempele|R|1972|1200|114000|95|Nassakkatie 2 E
+Kempele|Kempele|O|1999|2243|379000|169|Äijönkuja 1
+Riihivainio|Kempele|O|2019|3442|389000|113|Riihivainiontie 5
+keskusta|Kempele|K|1983|1728|58750|34|Ollilantie 6
+Niittyranta|Kempele|R|2006|2099|149000|71|Neikankuja 7 B
+Keskusta|Kempele|R|2004|1834|212000|115.6|Punatulkuntie 3b
+Linnakangas|kempele|R|2026|3350|175900|52.5|Linnavallintie 5C9
+Juurussuo|Kempele|O|2021|2815|349000|124|Kuismokankaantie 53
+Ollila|Kempele|O|1973|1181|189000|160|Kiiestie 3
+Niittyranta|Kempele|O|2009|2229|379000|170|Kiurunkuja 7
+Ristisuo|Kempele|R|1979|1506|119000|79|Mikkosentie 2-4 F
+Paituri|Kempele|O|2017|2928|325000|111|Eeronpolku 3B
+Linnakangas|Kempele|O|2006|2029|349000|172|Porttikellonkuja 1
+Kokkokangas|Kempele|R|1998|2313|77500|33.5|Kokkokaarto 36
+Kempele|Kempele|O|1978|1374|180000|131|Ketolanperäntie 768
+Ollila|Kempele|O|1970|893|209000|234|Ollilantie 30
+Honkanen|Kempele|R|0|1662|56500|34|Lehmikentäntie 12 B
+Keskusta|Kempele|K|1967|1050|63000|60|Kirkkotie 13
+Niittyranta|Kempele|O|2022|2787|255000|91.5|Niittokuja 2 A
+Honkanen|Kempele|R|1972|1005|99500|99|Peukaloisentie 5
+Niittyranta|Kempele|O|1979|836|99500|119|Haminakuja 8
+Kokkokangas|Kempele|R|2000|2367|200000|84.5|Metsotie 5
+Metsärinne|Kempele|O|2026|2049|295000|144|Jäniksenkäpälä 9
+Koskela|Kempele|O|2026|3101|369000|119|Kärpäntie 19 B
+Koskela|Kempele|O|2026|3261|388000|119|Kärpäntie 19 A
+Ollila|Kempele|R|1969|836|99500|119|Minkkitie 13
+Keskusta|Kempele|K|2022|3471|147500|42.5|Kauppatie 5
+Kärppä|Liminka|O|2006|1684|249000|147.9|Kotikuja 2
+Tupos|Liminka|O|2000|2450|245000|100|Järvenpääntie 71 C
+Tupos|Liminka|O|2002|1619|259000|160|Kotilehto 7
+Tupos|Liminka|O|2027|2752|289000|105|Hieroja 3
+Tupos|Liminka|O|2027|2848|235000|82.5|Ylälaude 7
+Tupos|Liminka|R|2016|2294|398000|173.5|Länsiranta 12
+Tupos|Liminka|O|2026|2680|268000|100|Ylälaude 9
+Keskusta|Liminka|K|2021|2891|198000|68.5|Meijerintie 8
+Tupos|Liminka|O|2003|1624|295000|181.6|Mäenmutka 14
+Tupos|Liminka|O|2000|1250|225000|180|Lintulammentie 43 A
+Keskusta|Liminka|R|1989|1336|78800|59|Kärpänkuja 3 B
+Vanha-Liminka|Liminka|O|1976|928|109000|117.5|Alapääntie 21
+Liminka|Liminka|R|2010|1867|112000|60|Karjakuja 2
+Rehula|Liminka|O|2022|2344|245000|104.5|Kedonperäntie 6
+Saunaranta|Liminka|O|2026|2380|239000|100.4|Metsäsauna 6
+Okkosenranta|Liminka|R|2014|2070|178000|86|Kotkansiipi 5
+Keskusta|Liminka|O|1973|798|95000|119|Pakolantie 17
+Keskusta|Liminka|R|2026|2782|204500|73.5|Heikki Toppilantie 8 A 2
+Ala-Temmes|Liminka|O|2008|960|285000|297|Juotontie 6a
+Liminka|Liminka|R|2006|1897|148000|78|Aapinaho 28
+Keskusta|Liminka|R|2026|2801|204500|73|Heikki Toppilantie 8 A 1
+Tupos|Liminka|R|2020|2330|205000|88|Metsäsauna 5 A
+Liminka|Liminka|O|2005|2542|469000|184.5|Krankantie 4b
+Härmänhaka|Liminka|R|1990|1207|99000|82|Hoikantie 1 A
+Keskusta|Liminka|K|2021|3065|259000|84.5|Meijerintie 8 as
+Tupos|Liminka|O|2022|3159|199000|63|Alalaude 3
+Ojanperänkangas|Liminka|R|2012|1783|128000|71.8|Kankaanlaita 30 B
+Jutkokylä|Liminka|O|1985|1674|359000|214.5|Kedonperäntie 30
+Tupos|Liminka|O|2021|1902|199000|104.6|Katajarinne 10
+Tupos|Liminka|O|1988|1214|195000|160.6|Ojatie 9
+Keskusta|Liminka|K|2021|3062|199000|65|Meijerintie 8 as.
+Liminka|Liminka|O|2014|1960|475000|242.4|Aabramintie 13
+Liminka|Liminka|R|2026|2388|239000|100.1|Heikki Toppilantie 8 B 4
+Liminka|Liminka|R|2026|2786|204500|73.4|Heikki Toppilantie 8 B 3
+Ojanperänkangas|Liminka|R|2009|1824|129500|71|Ahonrinne 4 A
+Tupos|Liminka|R|2026|2409|265000|110|Kiuas 3, Liminka
+Ketunmaa|Liminka|O|1913|663|179000|270|Ketunmaantie 56
+Keskusta|Liminka|K|2026|4170|304410|73|Liminganraitti 10 A 27
+Keskusta|Liminka|K|2026|4200|176400|42|Liminganraitti 10 A 24
+Keskusta|Liminka|K|2026|4400|182600|41.5|Liminganraitti 10 A 28
+Keskusta|Liminka|K|2026|4070|297110|73|Liminganraitti 10 A 21
+Keskusta|Liminka|K|2026|4200|174300|41.5|Liminganraitti 10 A 20
+Keskusta|Liminka|K|2026|4100|127100|31|Liminganraitti 10 A 16
+Keskusta|Liminka|K|2026|4200|195300|46.5|Liminganraitti 10 A 23
+Keskusta|Liminka|K|2026|4300|337550|78.5|Liminganraitti 10 A 29
+Keskusta|Liminka|K|2026|4000|124000|31|Liminganraitti 10 A 10
+Keskusta|Liminka|K|2026|4100|260350|63.5|Liminganraitti 10 A 25
+Keskusta|Liminka|K|2026|3870|282510|73|Liminganraitti 10 A 15
+Keskusta|Liminka|K|2026|4000|186000|46.5|Liminganraitti 10 A 17
+Keskusta|Liminka|K|2026|3570|260610|73|Liminganraitti 10 A 3
+Keskusta|Liminka|K|2026|3900|163800|42|Liminganraitti 10 A 12
+Keskusta|Liminka|K|2026|3700|155400|42|Liminganraitti 10 A 6
+Keskusta|Liminka|K|2026|4000|168000|42|Liminganraitti 10 A 18
+Keskusta|Liminka|K|2026|4000|166000|41.5|Liminganraitti 10 A 14
+Keskusta|Liminka|K|2026|3750|273750|73|Liminganraitti 10 A 9
+Keskusta|Liminka|K|2026|3900|161850|41.5|Liminganraitti 10 A 8
+Keskusta|Liminka|K|2026|4200|130200|31|Liminganraitti 10 A 22
+Keskusta|Liminka|K|2026|3800|241300|63.5|Liminganraitti 10 A 13
+Keskusta|Liminka|K|2026|4300|273050|63.5|Liminganraitti 10 A 30
+Keskusta|Liminka|K|2026|3900|181350|46.5|Liminganraitti 10 A 11
+Keskusta|Liminka|K|2026|3700|172050|46.5|Liminganraitti 10 A 5
+Keskusta|Liminka|K|2026|3900|247650|63.5|Liminganraitti 10 A 19
+Keskusta|Liminka|K|2026|3600|228600|63.5|Liminganraitti 10 A 7
+Keskusta|Liminka|K|2026|3700|153550|41.5|Liminganraitti 10 A 2
+Keskusta|Liminka|K|2026|3800|117800|31|Liminganraitti 10 A 4
+Keskusta|Liminka|K|2026|3800|176700|46.5|Liminganraitti 10 A 1
+Lapinkylä|Kirkkonummi|O|2022|4737|649000|137|Raulanmalmi 7
+Ravals|Kirkkonummi|R|1993|2455|259000|105.5|Ravalsintie 6
+Keskusta|Kirkkonummi|K|2014|3689|225000|61|Saloviuksenpiha 2
+Kolsari|Kirkkonummi|R|2013|585|57021|97.5|Muhuntie 1
+Kirkkonummi|Kirkkonummi|K|1972|1667|94996|57|Tolsanpolku 6
+Veikkola|Kirkkonummi|R|1977|2492|152000|61|Männistöntie 1
+Masala|Kirkkonummi|O|1995|3287|378000|115|Hvittorpintie 41
+Kantvik|Kirkkonummi|K|1965|1781|65000|36.5|Harju 1
+Kirkkonummi|Kirkkonummi|R|1976|1112|109000|98|Framnäsintie 9
+Keskusta|Kirkkonummi|K|2027|3464|180121|52|Jokiniityntie 18 A 31
+Hevosenkavio|Kirkkonummi|O|1974|2419|329000|136|Hevosenkavio 24
+Sarvvik|Kirkkonummi|K|0|4264|153500|36|Sinikellontie 4  B 13
+Masala|Kirkkonummi|R|2023|3523|369900|105|Ljusdalantie 1 E15
+Finnsbacka|Kirkkonummi|K|1978|1993|148500|74.5|Lukkarinkuja 1 B
+Sarvvik|Kirkkonummi|K|2023|4857|119000|24.5|Heinäkedontie 3 A
+Kantvik|Kirkkonummi|R|2015|538|51944|96.5|Sokeripolku 1
+Kolsari|Kirkkonummi|R|2013|615|48558|79|Osmussaarenkaari 10
+Veikkola|Kirkkonummi|O|1933|2363|189000|80|Kaskelantie 3
+Sarvvik|Kirkkonummi|K|0|4529|264934|58.5|Sinikellontie 4 B 12
+Keskusta|Kirkkonummi|K|2027|4166|254124|61|Jokiniityntie 18 A 14
+Tolsa|Kirkkonummi|K|2017|3778|119000|31.5|Tolsankuja 3
+Veikkola|Kirkkonummi|R|2001|2918|248000|85|Käärmekuusenpolku 4 D
+Masala|Kirkkonummi|R|1978|2085|172000|82.5|Hulluksentie 3
+Keskusta|Kirkkonummi|K|2026|4154|126700|30.5|Jokiniityntie 16
+Masala|Kirkkonummi|K|1973|1580|109000|69|Tinantie 1 A
+Sundsberg|Kirkkonummi|O|2016|5752|998000|173.5|Vapaaherrankaari 29
+Kantvik|Kirkkonummi|R|1966|2324|165000|71|Rajakallio
+Tolsa|Kirkkonummi|K|2012|568|24980|44|Tolsankuja 4 A 25
+Masala|Kirkkonummi|K|2006|3412|145000|42.5|Tinanrinne 2
+Masala|Kirkkonummi|K|1994|2064|129000|62.5|Yhdyskuja 4-6 A
+Sundsberg|Kirkkonummi|R|2022|3912|268000|68.5|Sundetin puistotie 33
+Kirkkonummi|Kirkkonummi|R|2014|4483|269000|60|Vapaaherranpolku 2
+Tolsa|Kirkkonummi|K|2012|543|27397|50.5|Tolsankuja 4 A 28
+Sundsberg|Kirkkonummi|O|2026|4085|379900|93|Laamanninkaari 3
+Sundsberg|Kirkkonummi|R|2026|4085|379900|93|Laamanninkaari 3
+Finnsbacka|Kirkkonummi|R|2011|522|39402|75.5|Asentajantie 2
+Neidonkallio|Kirkkonummi|R|2005|2632|250000|95|Neidonpuistonkuja 1
+Keskusta|Kirkkonummi|K|2027|4233|198949|47|Jokiniityntie 18 A 16
+Keskusta|Kirkkonummi|K|2027|4200|275098|65.5|Jokiniityntie 18 A 22
+Veikkola|Kirkkonummi|O|1348|3412|348000|102|Lammaskallionkuja 3
+Veikkola|Kirkkonummi|O|2026|3102|549000|177|Kuovintie 2
+Sepänkylä|Kirkkonummi|O|1975|2726|259000|95|Myllylammentie 44
+Masala|Kirkkonummi|R|2007|3146|258000|82|Tinanrinne 4
+Sarvvik|Kirkkonummi|K|0|4859|196809|40.5|Sinikellontie 4 B 15
+Sarvvik|Kirkkonummi|K|0|4577|164775|36|Sinikellontie 4  B 20
+Lindal|Kirkkonummi|K|1990|2419|179000|74|Puistokalliontie 1 A 1, 02400 Kirkkonummi
+Kirkkonummi|Kirkkonummi|K|1980|2093|157000|75|Veturitallintie 4 C
+Kolsari|Kirkkonummi|R|2021|655|58279|89|Muhuntie 2
+Sarvvik|Kirkkonummi|K|2017|3983|235000|59|Ukonkellontie 4
+Masala|Kirkkonummi|R|1991|2644|238000|90|Kaarenpiha 2
+keskusta|Kirkkonummi|K|2027|4270|134516|31.5|Jokiniityntie 18 A 1
+Keskusta|Kirkkonummi|K|2027|3860|189117|49|Jokiniityntie 18 A 35
+Evitskog|Kirkkonummi|O|1979|2179|340000|156|Evitskogintie 547
+Sarfvik|Kirkkonummi|O|2020|5022|899000|179|Harakankellonkuja 6
+Keskusta|Kirkkonummi|K|1991|2397|139000|58|Grandalantie 2
+Vuohimäki|Kirkkonummi|O|1985|2172|695000|320|Brunnebergintie 14b
+Sarvvik|Kirkkonummi|K|0|4587|139900|30.5|Sinikellontie 4 B 3
+Sundsberg|Kirkkonummi|R|2007|3595|399000|111|Nymaninkuja 3 B
+Masala|Kirkkonummi|R|1991|1878|169000|90|Kaarenpiha 2 E
+Luoma|Kirkkonummi|O|1989|1847|495000|268|Sjövikintie 18
+Hevosmäki|Kirkkonummi|R|1976|2061|235000|114|Hevosmäki 6
+Heikkilä|Kirkkonummi|K|1976|1113|89000|80|Heikkiläntori 3
+Keskusta|Kirkkonummi|R|1988|3231|189000|58.5|Rajanotkontie 2 R
+Masala|Kirkkonummi|R|1981|1751|169000|96.5|Nissnikuntie 5 A
+Veikkola|Kirkkonummi|O|2024|3942|548000|139|Teerenkuja 2
+Jorvas|Kirkkonummi|R|1974|1831|238000|130|Jorvaksenpuisto 3 A
+Veikkola|Kirkkonummi|R|1986|2355|179000|76|Männistöntie 10
+Masala|Kirkkonummi|R|2022|5100|255000|50|Framnäsintie 7 H
+Sundsberg|Kirkkonummi|O|2013|3511|818000|233|Sundsberginraitti 148
+Masala|Kirkkonummi|K|1994|1824|114000|62.5|Yhdyskuja 4-6
+Jorvas|Kirkkonummi|O|2002|2753|592000|215|Kvisinkuja 4 A
+Jorvas|Kirkkonummi|R|2008|2132|469000|220|Stenkalvintie 208 B
+Tolsa|Kirkkonummi|R|1985|2346|224000|95.5|Karhunhammas 4 H
+Sundsberg|Kirkkonummi|O|2021|4646|525000|113|Konsulinrinne 4 As 2
+Masala|Kirkkonummi|K|2013|3222|145000|45|Vernerintie 1
+Finnsbacka|Kirkkonummi|K|1985|1780|113000|63.5|Pitäjäntuvanpolku 2 B
+Tolsa|Kirkkonummi|K|2010|506|26794|53|Tarutie 1 A 06
+Lapinkylä|Kirkkonummi|O|1978|3736|396000|106|Sjökullantie 36
+Masala|Kirkkonummi|O|2009|3352|419000|125|Ratsumiehentie 9
+Finnsbacka|Kirkkonummi|K|1983|2000|69000|34.5|Kuninkaantie 13
+Kirkkolaakso/keskusta|Kirkkonummi|K|2013|3897|265000|68|Saloviuksenpiha 3 B
+Neidonkallio|Kirkkonummi|O|2825|3750|825000|220|Neidonkaari 19
+Sundsberg|Kirkkonummi|K|2022|4500|198000|44|Konsulinkaari 7 A
+Masala|Kirkkonummi|K|2020|4289|178000|41.5|Rydmanintie 7 A
+Sarfvik|Kirkkonummi|K|2025|4918|150000|30.5|Heinäkedontie 1
+Tolsa|Kirkkonummi|K|2017|3101|169000|54.5|Tolsankuja 3 A
+Kolsari|Kirkkonummi|K|2013|694|27056|39|Muhuntie 1
+Jolkby|Kirkkonummi|R|1984|2746|254000|92.5|Ahmatie 6
+Kolsari|Kirkkonummi|O|2008|3213|498000|155|Ruhnuntie 9
+Sarvvik|Kirkkonummi|K|2026|6359|699500|110|Kurjenpolvenpiha 8 A4
+Sarvvik|Kirkkonummi|K|2026|6368|589000|92.5|Kurjenpolvenpiha 8 A3
+Sundsberg|Kirkkonummi|O|2013|5512|689000|125|Vapaaherrankaari 11
+Överby|Kirkkonummi|O|1994|1595|598000|375|Ratatie 29-31
+Masala|Kirkkonummi|R|2022|4420|179000|40.5|Framnäsintie 7 J
+Laajakallio|Kirkkonummi|O|1999|3283|499000|152|Virvatulenkuja 1
+Sarvvik|Kirkkonummi|K|2022|5232|429000|82|Sarvvikintie 7
+Masala|Kirkkonummi|R|1977|2317|219000|94.5|Hulluksentie 1 B
+Veikkola|Kirkkonummi|R|1985|2386|198000|83|Allastie 4
+Porkkala|Kirkkonummi|O|1993|1240|595000|480|Torsnäsintie 82
+Sepänkylä|Kirkkonummi|O|1998|2975|595000|200|Gesterbyntie 336
+Lindal|Kirkkonummi|K|1970|1295|79000|61|Lindalintie 8
+Veikkola|Kirkkonummi|O|2016|3927|538000|137|Päivärinteenpolku 21 C
+Sarvvik|Kirkkonummi|R|2024|4459|379000|85|Metsätähdenkuja 5 E
+Masala|Kirkkonummi|R|1977|2488|199000|80|Framnäsintie 4
+Veikkola|Kirkkonummi|R|1971|2101|187000|89|Männistöntie 2 A
+Jolkby|Kirkkonummi|O|1985|2536|284000|112|Karhutie 3
+Kantvik|Kirkkonummi|K|1972|1878|139000|74|Kummi
+Keskusta|Kirkkonummi|K|2013|4090|182000|44.5|Limnellinpiha 5
+Kirkkonummi|Kirkkonummi|O|2007|3949|545000|138|Kabanovintie 117
+Pappilanmäki|Kirkkonummi|R|2024|4021|376000|93.5|Antbackantie 3
+Veikkola|Kirkkonummi|O|2026|4132|438000|106|Paasitie 15
+Gesterby|Kirkkonummi|K|1977|1195|89000|74.5|Gesterbynpolku 14
+Kantvik|Kirkkonummi|O|2018|3615|376000|104|Haapiorinne 6
+Kantvik|Kirkkonummi|O|2023|5060|420000|83|Kidetie 16
+Sepänkannas|Kirkkonummi|R|2019|3716|275000|74|Sepänrinteentie 11 B 9
+Veikkola|Kirkkonummi|R|1969|1633|98000|60|Koivurinteentie 92
+Kantvik|Kirkkonummi|R|2026|4409|485000|110|Ediksentie 3 C
+Jorvas|Kirkkonummi|O|0|3825|459000|120|Myllymestarinkuja 9 C
+Heikkilä|Kirkkonummi|K|1976|1219|97500|80|Heikkiläntori 3 A
+Jolkby|Kirkkonummi|R|1983|1840|150000|81.5|Sarvitie 3 C
+Laajakallio|Kirkkonummi|R|2004|2589|299000|115.5|Jättiläisenkaari 1a
+Sundsberg|Kirkkonummi|R|2018|622|52592|84.5|Sundsberginkuja 1
+Friggesby|Kirkkonummi|O|2005|2681|437000|163|Porkkalantie 855
+Finnsbacka|Kirkkonummi|K|1986|1758|87000|49.5|Kuninkaantie 9-11 A
+Jorvas|Kirkkonummi|O|1940|3459|595000|172|Vanha Rantatie 403
+Kirkkolaakso|Kirkkonummi|K|2012|3976|328000|82.5|Limnellinpiha 7
+Masala|Kirkkonummi|R|1978|2166|209000|96.5|Hulluksentie 3 D 17
+Kantvik|Kirkkonummi|O|1965|2045|229000|112|Ristikalliontie 9
+Jolkby|Kirkkonummi|O|1986|1833|297000|162|Susitie 2
+Långvik|Kirkkonummi|K|1975|2075|69500|33.5|Tanskarlantie 4
+Kantvik|Kirkkonummi|K|1991|1739|120000|69|Sokeritehtaantie 13 B
+Sundsberg|Kirkkonummi|R|2006|3753|319000|85|Lodenkuja 2
+Lindal|Kirkkonummi|R|1991|2149|159000|74|Vaarinpiha 5
+Kantvik|Kirkkonummi|R|1969|1506|259000|172|Niittypolku 4
+Veklahti|Kirkkonummi|O|2015|3640|495000|136|Säflaksintie 25
+Kartanonranta|Kirkkonummi|R|2023|4220|365000|86.5|Laamanninkaari 12 L
+Laajakallio|Kirkkonummi|O|1939|2964|495000|167|Sinipiiantie 4
+Bro|Kirkkonummi|R|1984|2237|189000|84.5|Brontie 5
+Veikkola|Kirkkonummi|O|2026|4474|595000|133|Vuohenojankuja 6
+Kantvik|Kirkkonummi|R|1974|2128|221261|104|Brissaksentie 2 C
+Tolsa|Kirkkonummi|O|1996|3630|795000|219|Långhagintie 9
+Neidonkallio|Kirkkonummi|R|2005|2835|275000|97|Ruususentie 2 F
+Jolkby|Kirkkonummi|R|1986|2725|109000|40|Karhutie 6 I
+Ravals|Kirkkonummi|O|1990|2591|329000|127|Pohjoispiha 14
+Gesterby|Kirkkonummi|O|1975|1621|227000|140|Hevosmäki 1
+Långvik|Kirkkonummi|K|1975|2107|79000|37.5|Tanskarlantie 8
+Jorvas|Kirkkonummi|O|2007|2778|375000|135|Stenkalvintie 83b
+Masala|Kirkkonummi|O|2021|4491|649000|144.5|Pyssysepänkaari 10
+Masala|Kirkkonummi|R|1977|3265|191000|58.5|Framnäsintie 6 C 6
+Heikkilä|Kirkkonummi|K|1972|2322|169500|73|Tolsanpolku 6 E
+Ravals|Kirkkonummi|R|1992|2731|198000|72.5|Ravalsintie 8 C
+Sundsberg|Kirkkonummi|R|2011|4067|305000|75|Sundsberginkuja 16
+Keskusta|Kirkkonummi|K|1985|2338|169500|72.5|Pitäjäntuvanpolku 2
+Pilvijärvi|Kirkkonummi|O|2017|2825|678000|240|Pilviniitty 25
+Keskusta|Kirkkonummi|K|1990|2232|77000|34.5|Grandalantie 4 J
+Heikkilä|Kirkkonummi|K|1982|1552|149000|96|Heikkiläntori 5
+Jorvas|Kirkkonummi|K|1950|928|385000|415|Henriksrontie 27
+Sarvvik|Kirkkonummi|O|1920|3031|485000|160|Sarvvikinpiha 5
+Sundsberg|Kirkkonummi|O|2004|3776|555000|147|Kirsikkatie 36
+Gesterby|Kirkkonummi|R|1988|2802|169500|60.5|Gesterborgintie 4
+Lindal|Kirkkonummi|R|1978|2197|167000|76|Rajakummuntie 1 B
+Kylmälä / Sjökulla|Kirkkonummi|O|2000|2565|590000|230|Prasintie 30
+Jorvas|Kirkkonummi|R|2005|3163|272000|86|Kolmenkyläntie 6 A
+Kantvik|Kirkkonummi|O|1987|2482|283000|114|Rajakalliontie 24
+Jorvas|Kirkkonummi|R|1989|2107|295000|140|Bengt Schalinin tie 16
+Kantvik|Kirkkonummi|O|1968|1174|135000|115|Ristikalliontie 40
+Sarvvik|Kirkkonummi|O|2019|5140|699000|136|Niittyrinne 11 A
+Gesterby|Kirkkonummi|K|1976|1008|60000|59.5|Gesterbynpolku 12
+Jorvas|Kirkkonummi|R|1961|1322|115000|87|Vanha Rantatie 381
+Veikkola|Kirkkonummi|R|1979|2235|219000|98|Lamminpääntie 2
+Sepänkannas|Kirkkonummi|O|2016|3144|349000|111|Kuokkatie 15
+Kantvik|Kirkkonummi|K|2010|527|28725|54.5|Kabanovintie 18
+Keskusta|Kirkkonummi|K|2014|3679|172900|47|Saloviuksenpiha 2 B
+Kirkkonummi|Kirkkonummi|R|1982|2656|239000|90|Hirvitie 3 c
+Sarfvik|Kirkkonummi|K|2018|4340|319000|73.5|Ritarinkannuksentie 6 A
+Hila|Kirkkonummi|O|1958|4160|1090000|262|Hilantie 534
+Kirkkonummi|Kirkkonummi|O|1920|857|120000|140|Peikontie 66
+Veklahti|Kirkkonummi|O|1967|2417|174000|72|Veklahdentie 188
+Porkkalanniemi|Kirkkonummi|O|2017|5868|2490000|424.3|Häggesbölenhaara 34
+Jorvas|Kirkkonummi|O|2012|3677|860000|233.9|Västergårdintie 42
+Överby|Kirkkonummi|O|0|7154|1395000|195|Överbyntie 231
+Syväjärvi / Kolsari|Kirkkonummi|O|1910|3450|690000|200|Syvärinteentie 3
+Veikkola|Kirkkonummi|K|1975|1703|109000|64|Männistöntie 4 B
+Veikkola|Kirkkonummi|O|2021|2362|489000|207|Päivärinteentie 18
+Lindal|Kirkkonummi|K|2003|2356|139000|59|Rajanotkontie 8 A
+Överby|Kirkkonummi|O|1960|1975|158000|80|Karlbergintie 52
+Finnsbacka|Kirkkonummi|K|1982|1597|99000|62|Wiikintie 4
+Jolkby|Kirkkonummi|O|1983|2624|265000|101|Haukankäyrä 4
+Kantvik|Kirkkonummi|O|1989|2210|389000|176|Kantvikintie 14
+Gesterby|Kirkkonummi|K|1972|1049|64000|61|Jokisuonrinne 1
+Veikkola|Kirkkonummi|R|1985|2344|259000|110.5|Impivaarantie 8
+Masala|Kirkkonummi|O|1987|1725|395000|229|Kiviniitynkuja 2
+Masala|Kirkkonummi|R|1978|1913|153000|80|Hulluksentie 5 G
+Veikkola|Kirkkonummi|O|2006|2290|419000|183|Honkatie 19 A
+Kantvik|Kirkkonummi|R|1988|2554|189000|74|Niittypolku 7
+Neidonkallio|Kirkkonummi|R|2005|3496|215000|61.5|Ruususentie 2 B
+Porkkala|Kirkkonummi|O|3298|662|298000|450|Porkkalantie 953
+Långvik|Kirkkonummi|K|1975|1886|34900|18.5|Tanskarlantie 4-8
+Mattby|Kirkkonummi|O|1980|2795|246000|88|Mattbyntie 24
+Sundsberg|Kirkkonummi|R|2023|3901|355000|91|Laamanninkaari 12
+Jolkby|Kirkkonummi|R|1983|2352|147000|62.5|Sarvitie 3
+Sundsberg|Kirkkonummi|O|1998|3147|579000|184|Morbackantie 92
+Sarvvik|Kirkkonummi|O|2019|4523|579000|128|Tulikukankuja 5
+Sarvvik|Kirkkonummi|K|2023|6490|159000|24.5|Heinäkedontie 3 B
+Kirkkonummi|Kirkkonummi|K|1977|1354|67000|49.5|Gesterbynpolku 14 B
+Långvik|Kirkkonummi|O|1975|5264|2190000|416|Lillskoginpolku 16
+Kirkkonummi|Kirkkonummi|O|2020|3917|799000|204|Tulikukankuja 2a
+Veikkola|Kirkkonummi|O|2013|3410|578000|169.5|Kaislammentie 2 C
+Bro|Kirkkonummi|R|1975|1757|239000|136|Brontie 1
+Sundsberg|Kirkkonummi|R|2022|3872|424000|109.5|Sundetin puistotie 33 C
+Bro|Kirkkonummi|R|1971|2593|319000|123|Brontie 2 As
+Veikkola|Kirkkonummi|R|2005|3048|288000|94.5|Vanhatie 10 A 2
+Långstrand|Kirkkonummi|O|1985|2865|412000|143.8|Långstrandintie 4
+Veikkola|Kirkkonummi|O|2003|3460|519000|150|Lohansuontie 8
+Masala|Kirkkonummi|R|1977|1827|179000|98|Framnäsintie 2 A
+Finnsbacka|Kirkkonummi|K|1980|2013|160000|79.5|Veturitallintie 4
+Kolsari|Kirkkonummi|O|1945|1529|428000|280|Syväjärvenkuja 8
+Porkkala|Kirkkonummi|O|1970|1303|129000|99|Häggesbölentie 10
+Kartanonranta|Kirkkonummi|R|2010|3543|496000|140|Ramsaynkuja 8
+Veikkola|Kirkkonummi|R|1979|2095|155000|74|Tuulensuunraitti 5
+Veikkola|Kirkkonummi|R|1983|2062|100000|48.5|Impivaarankuja 3
+Masala|Kirkkonummi|K|2014|2958|184900|62.5|Vernerinkuja 6 A
+Oitmäki|Kirkkonummi|O|1980|4225|169000|40|Peltopolku 40
+Kylmälä|Kirkkonummi|O|1996|2207|309000|140|Kylmäläntie 478
+Sarvvik|Kirkkonummi|K|2023|4882|148900|30.5|Heinäkedontie 3
+Lindal|Kirkkonummi|R|1976|2154|252000|117|Lindalintie 12
+Kyrkvalla|Kirkkonummi|O|1970|3506|298000|85|Kyrkvallanrinne 5
+Kantvik|Kirkkonummi|K|2010|550|25827|47|Puoshaantie 2
+Kylmälä|Kirkkonummi|O|2006|2716|565000|208|Sjökullantie 370 C
+Veikkola|Kirkkonummi|O|2012|6221|1350000|217|Kipinäpolku 3
+Vitträsk/Luoma|Kirkkonummi|O|2001|6505|1880000|289|Sommarbontie 75
+Ravals|Kirkkonummi|R|2012|4515|149000|33|Ravalsintie 18
+Jorvas|Kirkkonummi|O|1981|2719|590000|217|Kotipolku 43
+Lindal|Kirkkonummi|K|1990|2890|118500|41|Puistokalliontie 1
+Överby|Kirkkonummi|O|1970|5122|589000|115|Överbyntie 231 A
+Masala|Kirkkonummi|K|2020|4585|121500|26.5|Rydmannintie 7 A
+Masala|Kirkkonummi|K|2023|4233|91000|21.5|Framnäsintie 1, 02430 Kirkkonummi
+Kylmälä|Kirkkonummi|O|1954|4265|145000|34|Eskonmäentie 11
+Veikkola|Kirkkonummi|R|1986|3189|169000|53|Impivaarantie 10-12
+Lindal|Kirkkonummi|R|1975|2564|209000|81.5|Pellavarinne 5 C
+Keskusta|Kirkkonummi|O|2011|3215|598000|186|Kuninkaantie 6
+Sundsberg|Kirkkonummi|R|2017|4078|365000|89.5|Laamanninkaari 7 B
+Sepänkannas|Kirkkonummi|R|2023|4422|398000|90|Hankaintie 15 B3
+Sepänkannas|Kirkkonummi|R|2023|4049|498000|123|Hankaintie 15 A3
+Sepänkannas|Kirkkonummi|R|2023|4089|368000|90|Hankaintie 15
+Veikkola|Kirkkonummi|O|2010|4633|732000|158|Rantatie 35 a
+Masala|Kirkkonummi|K|2022|4717|125000|26.5|Framnäsintie 3 A
+Jorvas|Kirkkonummi|R|1974|2338|159000|68|Jorvaksenpuisto 3 C
+Ravals|Kirkkonummi|O|1991|3399|588000|173|Länsipiha 3
+Lindal|Kirkkonummi|K|2011|3684|245000|66.5|Piippolanrinne 4
+Masala|Kirkkonummi|R|1978|2545|210000|82.5|Hulluksentie 3 A
+Kirkkonummi|Kirkkonummi|O|1990|1610|760000|472|Volsintie 380a
+Bro|Kirkkonummi|K|1989|2414|169000|70|Brontie 9
+Bro|Kirkkonummi|R|1974|2100|315000|150|Bronrinne 1
+Lindal|Kirkkonummi|K|1975|1840|115000|62.5|Pellavarinne 4 C
+Masala|Kirkkonummi|K|2019|3615|94000|26|Vernerintie 10 A
+Masala|Kirkkonummi|K|2022|5409|119000|22|Framnäsintie 3
+Masala|Kirkkonummi|R|2023|4671|369000|79|Ljusdalantie 1
+Bro|Kirkkonummi|R|1974|1720|184000|107|Brobrinken 1
+Kuusal|Kirkkonummi|R|2013|4019|209000|52|Länsilenkki 12
+Kantvik|Kirkkonummi|R|1991|2148|189000|88|Sokeritehtaantie 13
+Veikkola|Kirkkonummi|R|1988|1963|265000|135|Metsäkalliontie 7
+Veikkola|Kirkkonummi|R|2026|4265|418000|98|Vanhatie 11 As 3
+Lindal|Kirkkonummi|K|1974|1592|99500|62.5|Lindalintie 2
+Finnsbacka|Kirkkonummi|K|1984|1700|119000|70|Eerikinkallio 1
+Masala|Kirkkonummi|R|2022|4464|279000|62.5|Framnäsintie 7
+Tolsa|Kirkkonummi|K|2010|543|51612|95|Tarutie 1 C 33
+Veikkola|Kirkkonummi|O|2012|2726|308000|113|Metsäkalliontie 13 A
+Eestinkylä|Kirkkonummi|O|1985|1358|349000|257|Eestinkyläntie 89
+Långvik|Kirkkonummi|O|2017|7661|1425000|186|Medvastintie 72b
+Masala|Kirkkonummi|R|1978|2021|195000|96.5|Hulluksentie 3 D
+Finnsbacka|Kirkkonummi|K|1978|2308|138500|60|Topparoikka 3 C
+Tolsa|Kirkkonummi|K|2012|505|43916|87|Tolsankuja 4 A 14
+Veikkola|Kirkkonummi|O|1982|2596|379000|146|Kaskimäentie 16
+Masala|Kirkkonummi|R|2022|4617|187000|40.5|Framnäsintie 7 D
+Långvik|Kirkkonummi|O|2005|2829|850000|300.5|Hirsalantie 633
+Heikkilä|Kirkkonummi|O|1911|1263|120000|95|Axbodantie 30
+Luoma|Kirkkonummi|O|1912|5743|1990000|346.5|Rajapuomintie 9
+Sundsberg|Kirkkonummi|K|2018|677|27771|41|Sundsberginkuja 1
+Gesterby|Kirkkonummi|K|1974|992|59000|59.5|Gesterbynpolku 8 C 24
+Lapinkylä|Kirkkonummi|R|1969|1489|198000|133|Lastutie 15
+Kantvik|Kirkkonummi|O|2027|3982|390279|98|Sokerimestarintie 20 F
+Kantvik|Kirkkonummi|O|2027|4047|396579|98|Sokerimestarintie 20 H
+Spjutsund|Sipoo|O|1900|2234|248000|111|Storuddintie 63
+Linnanpelto|Sipoo|O|2005|2272|484000|213|Holstaksentie 91
+Söderkulla|Sipoo|O|1999|2942|459000|156|Kangasvuokonkuja 4
+Söderkulla|Sipoo|K|2018|3720|199000|53.5|Gneissikaari 5
+Nikkilä|Sipoo|K|2019|584|30954|53|Jokipuistontie 1
+Box|Sipoo|O|2005|2831|518000|183|Spjutsundintie 334
+Hindsby|Sipoo|O|1844|4585|298000|65|Puromäki 12
+Söderkulla|Sipoo|O|2589|2778|589000|212|Valkovuokonkuja 1
+Nikkilä|Sipoo|K|1983|2109|97000|46|Iso Kylätie 22 C
+Söderkulla|Sipoo|K|2016|588|43252|73.5|Graniittitie 13 C As. 16
+Söderkulla|Sipoo|K|2019|590|26569|45|Kvartsitie 1
+Nikkilä|Sipoo|O|2027|4028|435000|108|Kylävuorentie 5 a
+Söderkulla|Sipoo|K|2006|3149|159000|50.5|Tasbyntie 10
+Söderkulla|Sipoo|O|2026|3992|499000|125|Amiraalinmäki 4 A
+Söderkulla|Sipoo|R|0|4195|365000|87|Kvartsitie 6 A 3
+Söderkulla|Sipoo|R|2016|574|45078|78.5|Kalliokielontie 2 B 10
+Nikkilä|Sipoo|K|1915|3420|383000|112|Jokipuistonkaari 8 I
+Eriksnäs|Sipoo|O|2007|3410|459000|134.6|Palokärjentie 15
+Söderkulla|Sipoo|K|0|3099|203000|65.5|Kalliomäenkaari 23 A 1
+Söderkulla|Sipoo|K|0|3634|238000|65.5|Kalliomäenkaari 23 A 20
+Söderkulla|Sipoo|K|0|3634|238000|65.5|Kalliomäenkaari 23 A 22
+Söderkulla|Sipoo|K|0|3875|310000|80|Kalliomäenkaari 23 A 23
+Söderkulla|Sipoo|K|0|3588|287000|80|Kalliomäenkaari 23 A 17
+Söderkulla|Sipoo|K|0|3776|219000|58|Kalliomäenkaari 23 A 19
+Söderkulla|Sipoo|K|0|4159|183000|44|Kalliomäenkaari 23 A 21
+Söderkulla|Sipoo|K|0|4321|175000|40.5|Kalliomäenkaari 23 A 18
+Söderkulla|Sipoo|K|0|3542|232000|65.5|Kalliomäenkaari 23 A 16
+Söderkulla|Sipoo|K|0|3542|232000|65.5|Kalliomäenkaari 23 A 14
+Söderkulla|Sipoo|K|0|3690|214000|58|Kalliomäenkaari 23 A 13
+Söderkulla|Sipoo|K|0|3818|168000|44|Kalliomäenkaari 23 A 15
+Söderkulla|Sipoo|K|0|3350|268000|80|Kalliomäenkaari 23 A 11
+Söderkulla|Sipoo|K|0|3975|161000|40.5|Kalliomäenkaari 23 A 12
+Söderkulla|Sipoo|K|0|3221|211000|65.5|Kalliomäenkaari 23 A 10
+Söderkulla|Sipoo|K|0|3568|157000|44|Kalliomäenkaari 23 A 9
+Söderkulla|Sipoo|K|0|3221|211000|65.5|Kalliomäenkaari 23 A 8
+Söderkulla|Sipoo|K|0|3414|198000|58|Kalliomäenkaari 23 A 7
+Söderkulla|Sipoo|K|0|3704|150000|40.5|Kalliomäenkaari 23 A 6
+Söderkulla|Sipoo|K|0|3099|203000|65.5|Kalliomäenkaari 23 A 3
+Söderkulla|Sipoo|K|0|3836|117000|30.5|Kalliomäenkaari 23 A 5
+Söderkulla|Sipoo|K|0|3295|145000|44|Kalliomäenkaari 23 A 2
+Söderkulla|Sipoo|K|0|3574|109000|30.5|Kalliomäenkaari 23 A 4
+Söderkulla|Sipoo|K|2020|3975|157000|39.5|Gneissikaari 7
+Nikkilä|Sipoo|K|1961|1309|89000|68|Suursuonkuja 2 C
+Söderkulla|Sipoo|K|2025|560|23795|42.5|Kalliomäenkaari 5 A 02
+Söderkulla|Sipoo|K|2016|653|25782|39.5|Graniittitie 13 C As. 05
+Söderkulla|Sipoo|R|2023|3884|369000|95|Hansaksenkuja 7 as 2
+Söderkulla Taasjärvi|Sipoo|O|2023|4551|578000|127|Kaunokkikaari 32
+Box|Sipoo|O|1947|2250|297000|132|Pajatie 17
+Nikkilä|Sipoo|K|1971|1679|89000|53|Jussaksentie 1 H
+Itäsalmi|Sipoo|K|2025|667|45699|68.5|Örnvikintie 2
+Söderkulla|Sipoo|K|2017|3031|97000|32|Tasbyntie 54-56
+Kalkkiranta|Sipoo|O|0|8852|1850000|209|Kalkkirannantie 437
+Nikkilä|Sipoo|K|1974|1778|104000|58.5|Itäinen Suursuonkuja 5 B
+Söderkulla|Sipoo|R|1992|2644|312000|118|Ankkurinvarsi 1
+Nikkilä|Sipoo|K|1990|1552|135000|87|Läntinen Suursuonkuja 3 A
+Nikkilä|Sipoo|O|2022|3621|525000|145|Papinpellontie 8
+Savijärvi|Sipoo|O|2005|3065|498000|162.5|Raiskinkuja 10
+Söderkulla|Sipoo|R|2023|3900|468000|120|Hansaksenkuja 7 as 7
+Kitö|Sipoo|O|1955|5917|355000|60|Kitöntie 210
+Sipoonranta|Sipoo|K|2012|4670|495000|106|Sipoonranta 10 C
+Söderkulla|Sipoo|K|2016|3406|166900|49|Graniittitie 21 A
+Hagalund|Sipoo|O|1993|2151|398000|185|Notkotie 4
+Nikkilä|Sipoo|K|2017|3581|94900|26.5|Iso Kylätie 21-23 B
+Söderkulla|Sipoo|R|2016|528|51247|97|Kalliokielontie 2 C 13
+Linnanpelto|Sipoo|O|1949|1920|215000|112|Skepparsintie 100
+Nikkilä|Sipoo|K|1914|4756|428000|90|Jokipuistonkaari 4
+Gesterby|Sipoo|O|2025|4658|680000|146|Gesterbyntie 100
+Söderkulla|Sipoo|K|2023|4139|190376|46|Amiraalintie 4 A
+Söderkulla|Sipoo|R|2016|565|44387|78.5|Kalliokielontie 2 A 05
+Hangelby|Sipoo|O|1949|1323|205000|155|Plindintie 50
+Kirkonkylä|Sipoo|O|1964|1990|199000|100|Bölenvuorentie 5
+Pohjois-Paippinen|Sipoo|O|2004|2916|449000|154|Mosantie 125
+Söderkulla|Sipoo|K|1980|2133|160000|75|Terveystie 3 B
+Söderkulla|Sipoo|K|2021|3824|239000|62.5|Kalliomäenkaari 29 A
+Söderkulla|Sipoo|K|2021|3630|245000|67.5|Gneissikaari 7 B
+Söderkulla|Sipoo|K|2019|3170|149000|47|Graniittitie 23 A
+Hitå|Sipoo|O|2008|8028|2890000|360|Vainuddintie 199
+Nikkilä|Sipoo|K|1982|1474|115000|78|Kirkkoniityntie 28 B
+Söderkulla|Sipoo|O|1948|1781|228000|128|Taasjärventie 89-16
+Söderkulla|Sipoo|K|1986|2067|124000|60|Keskustakuja 3 C
+Söderkulla|Sipoo|K|2017|3094|99000|32|Tasbyntie 54 A
+Taasjärvi|Sipoo|R|2017|3268|250000|76.5|Tasbyntie 54
+Söderkulla|Sipoo|K|2017|2891|92500|32|Tasbyntie 56
+Sipoo|Sipoo|O|1992|2991|350000|117|Kitöntie 416
+Söderkulla|Sipoo|K|2016|611|44883|73.5|Graniittitie 13 C As. 11
+Martinkylä|Sipoo|O|1978|3424|315000|92|Kotimäentie 75
+Söderkulla|Sipoo|R|0|4286|360000|84|Kvartsitie 6 B 6
+Sipoonranta|Sipoo|K|2012|4286|375000|87.5|Sipoonranta 10
+Söderkulla|Sipoo|K|1984|2230|165000|74|Söderkullan tori 6 A
+Nikkilä|Sipoo|R|1975|2552|148000|58|Suursuontie 21
+Söderkulla|Sipoo|K|2015|3785|229000|60.5|Gneissikaari 1
+Söderkulla|Sipoo|R|0|4195|365000|87|Kvartsitie 6 A 2
+Talma|Sipoo|O|2005|1871|318000|170|Hiekkamalmintie 24
+Gumbostrand|Sipoo|O|2019|6111|990000|162|Tippiksentie 13
+Kalkkiranta|Sipoo|O|2004|4031|790000|196|Nuottakodantie 291
+Söderkulla|Sipoo|O|2023|3900|429000|110|Kalliomäenkaari 19 a1
+Söderkulla|Sipoo|R|0|4286|360000|84|Kvartsitie 6 B 5
+Söderkulla|Sipoo|R|2006|2946|299000|101.5|Tuulihaukankuja 1 A
+Söderkulla|Sipoo|K|2015|3095|229000|74|Ketunleivänkuja 3 B
+Sipoo|Sipoo|O|2008|2671|219000|82|Kalkkirannantie 335 B
+Hangelby|Sipoo|O|1997|3094|495000|160|Kimostie 34
+Söderkulla|Sipoo|K|2015|3065|236000|77|Graniittitie 7 A
+Söderkulla|Sipoo|K|2016|574|30695|53.5|Graniittitie 13 C As. 04
+Nikkilä|Sipoo|K|1915|3421|195000|57|Jokipuistonkaari 8 A
+Nikkilä|Sipoo|K|1970|1613|129000|80|Iso Kylätie 24
+Nikkilä|Sipoo|K|1977|1720|92000|53.5|Pyhän Sigfridintie 30 B
+Hindsby|Sipoo|O|0|4839|1350000|279|Mosabackantie 67
+Nikkilä|Sipoo|K|2000|2764|199000|72|Iso Kylätie 26 A
+Nikkilä|Sipoo|R|2022|3618|398000|110|Katajatie 9 a
+Söderkulla|Sipoo|K|2024|3435|237000|69|Kalliomäenkaari 33
+Nikkilä|Sipoo|R|2023|3542|379000|107|Löydöstie 1 D
+Nikkilä|Sipoo|R|1985|2385|229000|96|Kuusitie 22 A
+Söderkulla|Sipoo|R|1981|2588|207000|80|Torpantie 11
+Söderkulla|Sipoo|O|2599|4792|599000|125|Keltavuokonkuja 2a
+Västerskog|SIPOO|O|2011|3762|650000|172.8|Uusi Porvoontie 844-21
+Söderkulla|Sipoo|O|2020|8230|1720000|209|Tasbynkaari 5
+Nikkilä|Sipoo|K|1915|3635|329000|90.5|Jokipuistonkaari 8 C
+Nikkilä|Sipoo|R|2018|2772|219000|79|Karttakuja 1 B
+Talma|Sipoo|O|1991|2238|320000|143|Nygårdintie 131
+Nikkilä|Sipoo|O|1976|1701|359000|211|Pihlajatie 13
+Söderkulla|Sipoo|K|1979|1157|59000|51|Torpantie 7 E 15
+Linnanpelto|Sipoo|O|1862|1125|90000|80|Impaksentie 29
+Söderkulla|Sipoo|K|2026|4068|264450|65|Kalliomäenkaari 3 A 04
+Kirkonkylä|Sipoo|R|1990|2854|274000|96|Hirvitie 10-12 B
+Nikkilä|Sipoo|O|2000|2595|480000|185|Uudensillantie 10
+Söderkulla|Sipoo|R|1981|1725|138000|80|Torpantie 17
+Eriksnäs|Sipoo|O|2005|2745|549000|200|Hiirihaukankuja 5
+Box|Sipoo|O|2023|4044|550000|136|Hästbackantie 54
+Paippinen|Sipoo|O|1979|1935|240000|124|Hommanäsintie 45
+Söderkulla|Sipoo|K|1986|2168|155000|71.5|Keskustakuja 1 B
+Nikkilä|Sipoo|O|1945|1278|184000|144|Martinkyläntie 3
+Nikkilä|Sipoo|O|2000|1781|309000|173.5|Orastie 4
+Linnanpelto|Sipoo|O|1977|1737|198000|114|Skepparsintie 297
+Söderkulla|Sipoo|R|1987|2822|278000|98.5|Opintie 4 B
+Sipoo|Sipoo|O|1935|1688|270000|160|Paippistentie 545
+Söderkulla|Sipoo|K|1977|1322|78000|59|Torpantie 14
+Kalkkiranta|Sipoo|O|2008|3034|449000|148|Ronaksentie 2
+Söderkulla|Sipoo|K|2020|3867|87000|22.5|Gneissitie 10
+Vaakkola|Sipoo|O|1970|1361|113000|83|Uusi Porvoontie 864-15
+Söderkulla|Sipoo|R|2007|2862|249000|87|Tasbyntie 14 A
+Söderkulla|Sipoo|K|2020|3148|138500|44|Gneissikaari 17 B
+Paippinen|Sipoo|O|2005|2015|397000|197|Linsvedintie 306
+Martinkylä|Sipoo|O|1954|1812|125000|69|Halkosuontie 89
+Nikkilä|Sipoo|K|2018|4357|183000|42|Pilvilinnantie 1 A
+Nikkilä|Sipoo|O|2013|2942|459000|156|Notkotie 18
+Nikkilä|Sipoo|K|2016|3556|120900|34|Itäinen Suursuonkuja 3 A
+Söderkulla|Sipoo|O|1999|3823|497000|130|Valkovuokonkuja 7
+Söderkulla|Sipoo|O|2018|2651|920000|347|Palokärjentie 26
+Nikkilä|Sipoo|O|1999|3509|400000|114|Lammaskuja 2
+Nikkilä|Sipoo|K|1980|1417|107000|75.5|Metsätie 17 B
+Nikkilä|Sipoo|K|2019|3308|86000|26|Löötinkuja 6 A
+Söderkulla|Sipoo|R|2016|2925|155000|53|Kaunokkitie 1
+Paippinen|Sipoo|O|1959|2113|169000|80|Brusaksentie 165
+Sipoo|Sipoo|O|2022|5000|700000|140|Lillörintie 6c
+Söderkulla|Sipoo|O|2014|5272|949000|180|Lehdokinkuja 6, Sipoo
+Nikkilä|Sipoo|K|2020|3622|259000|71.5|Iso Kylätie 17 A
+Kalkkiranta|Sipoo|O|2013|4261|375000|88|Nuottakodantie 127
+Linnanpelto|Sipoo|O|1923|1638|339000|207|Pornaistentie 447
+Söderkulla|Sipoo|R|0|4286|360000|84|Kvartsitie 6 B 4
+Nikkilä|Sipoo|K|2018|2839|132000|46.5|Iso Kylätie 23 B
+Nikkilä|Sipoo|K|1926|3509|279000|79.5|Jokipuistonkaari 10
+Nikkilä|Sipoo|O|1980|1387|165000|119|Pihlajatie 12
+Nikkilä|Sipoo|K|1979|1722|130000|75.5|Metsätie 15 C
+Söderkulla|Sipoo|K|2015|2592|98500|38|Ketunleivänkuja 7
+Nikkilä|Sipoo|R|2017|3520|339000|96.3|Rinnemetsänpiha 2
+Hangelby|Sipoo|O|1864|3194|495000|155|Kalkkirannantie 134
+Söderkulla|Sipoo|K|1977|1339|79000|59|Torpantie 14 A
+Nikkilä|Sipoo|O|1930|2067|215000|104|Pornaistentie 191
+Nikkilä|Sipoo|K|1978|1587|123000|77.5|Jussaksentie 6 B
+Söderkulla|Sipoo|R|1981|2317|219000|94.5|Torpantie 11 B
+Söderkulla|Sipoo|R|1978|2235|190000|85|Torpantie 7 A
+Talma|Sipoo|O|1984|1586|249000|157|Kaskelantie 386
+Nikkilä|Sipoo|O|1962|1241|170000|137|Papinpellontie 1
+Sipoonranta|Sipoo|K|2011|5255|247000|47|Sipoonranta 12 A
+Nikkilä|Sipoo|O|1946|2185|349600|160|Ratapolku 1
+Söderkulla|Sipoo|R|0|4157|370000|89|Kvartsitie 6 B 7
+Söderkulla|Sipoo|R|0|4195|365000|87|Kvartsitie 6 A 1
+Sipoonranta|Sipoo|R|2016|4425|385000|87|Örnvikintie 4D
+Nikkilä|Sipoo|R|2021|4170|417000|100|Ahmakuja 13 B
+Söderkulla|Sipoo|K|2026|4504|159900|35.5|Kalliomäenkaari 3 A 12
+Söderkulla|Sipoo|K|2026|4002|252150|63|Kalliomäenkaari 3 A 01
+Nikkilä|Sipoo|K|2020|3148|114900|36.5|Iso Kylätie 17 B
+Söderkulla|Sipoo|K|2023|4552|198000|43.5|Amiraalintie 4 B
+Söderkulla|Sipoo|K|2019|3534|129000|36.5|Graniittitie 8 A
+Box|Sipoo|O|2019|3216|595000|185|Hästbackantie 23
+Kalkkiranta|Sipoo|O|2017|3322|299000|90|Lisebergintie 27
+Söderkulla|Sipoo|K|5239|3104|239000|77|Graniittitie 7 B
+Eriksnäs|Sipoo|O|2010|3311|649000|196|Palokärjentie 22
+Nikkilä|Sipoo|O|1962|1908|229000|120|Katajatie 3
+Söderkulla|Sipoo|R|2019|3414|198000|58|Gneissikaari 13 A
+Söderkulla|Sipoo|K|2026|4100|174250|42.5|Kalliomäenkaari 3 A 14
+Nikkilä|Sipoo|K|1978|1660|88000|53|Metsätie 14 B
+Talma|Sipoo|O|2005|3793|569000|150|Kyllästämöntie 113
+Talma|Sipoo|O|2012|3598|680000|189|Talmantie 421
+Nikkilä|Sipoo|K|1985|1564|129000|82.5|Iso Kylätie 28 B
+Nikkilä|Sipoo|R|1995|1968|183000|93|Metsätie 20
+Sipoonranta|Sipoo|O|2014|7227|1590000|220|Lillörintie 15
+Söderkulla|Sipoo|K|2010|530|34715|65.5|Mäntymäentie 1 as 30
+Sipoo|Sipoo|O|2005|3180|690000|217|Storuddintie 412
+Söderkulla|Sipoo|R|2019|4052|235000|58|Gneissikaari 13 A 5
+Gumbostrand|Sipoo|O|2016|7679|2250000|293|Vainuddintie 38
+Sipoonranta|Sipoo|O|1941|4091|450000|110|Päivänpolku 1
+Söderkulla|Sipoo|K|2020|3862|112000|29|Gneissikaari 17 A 5
+Söderkulla|Sipoo|K|1977|1787|134000|75|Torpantie 14 B
+Söderkulla|Sipoo|K|2026|3963|354650|89.5|Kalliomäenkaari 3 A 23
+Nikkilä|Sipoo|K|1980|1574|85000|54|Metsätie 17 A
+Nikkilä|Sipoo|O|0|1232|170000|138|Kulmakuja 6
+Söderkulla|Sipoo|O|2020|3805|567000|149|Hansaksentie 8 F
+Nikkilä|Sipoo|K|2017|3620|143000|39.5|Kauppakuja 3 A
+Söderkulla|Sipoo|O|2025|3992|499000|125|Amiraalinmäki 4 B
+Söderkulla|Sipoo|K|2018|3564|319000|89.5|Gneissinkaari 5 B
+Söderkulla|Sipoo|K|2023|4271|147355|34.5|Amiraalintie 4 A 37
+Nikkilä|Sipoo|K|1961|1639|88500|54|Suursuonkuja 2 B 15
+Söderkulla|Sipoo|K|1980|2653|225533|85|Terveystie 3 C
+Kauniainen|Kauniainen|R|1991|3613|448000|124|Maisterintie 21 C
+Kauniainen|Kauniainen|R|1986|3842|438000|114|Maisterintie 15 D
+Kauniainen|Kauniainen|K|2017|5265|186900|35.5|Ratapolku 4 A
+Kauniainen|Kauniainen|K|1972|3750|345000|92|Laaksotie 5 A
+Kauniainen|Kauniainen|K|2014|3917|193900|49.5|Venevalkamantie 6 A
+Kauniainen|Kauniainen|K|2021|6972|380000|54.5|Asematie 13
+Koivuhovi|Kauniainen|K|2020|4562|266900|58.5|Ullanmäentie 10 B C
+Koivuhovi|Kauniainen|K|2020|4951|212900|43|Ullanmäentie 10b C
+Kasavuori|Kauniainen|K|1967|3133|235000|75|Magnus Hagelstamin tie 3 B
+Kauniainen|Kauniainen|K|1967|3532|249000|70.5|Urheilutie 9
+Kasavuori|Kauniainen|O|1971|2361|850000|360|Marcus Collinin kuja 3
+Keskusta|Kauniainen|K|2009|6199|530000|85.5|Kauniaistentie 13 B
+Kauniainen|Kauniainen|R|1964|3575|286000|80|Nuohoojankuja 4
+Kasavuori|Kauniainen|K|2020|4626|229000|49.5|Bredanportti 5 C
+Kasavuori|Kauniainen|K|2020|4909|220900|45|Bredanportti 5 A
+Kauniainen|Kauniainen|K|1964|3750|120000|32|Forsellesintie 1-3
+Keskusta|Kauniainen|K|2014|6614|549000|83|Laaksotie 10
+Kasavuori|Kauniainen|R|1966|3205|476000|148.5|Kasavuorentie 12
+Kauniainen|Kauniainen|K|1964|3117|187000|60|Kasavuorentie 18
+Kauniainen|Kauniainen|K|1966|5508|168000|30.5|Tunnelitie 6 A
+Kauniainen|Kauniainen|R|1985|3880|648000|167|Kavallintie 2 G
+Keskusta|Kauniainen|O|2004|7647|1950000|255|Yhtiöntie 7 B
+Kauniainen|Kauniainen|K|2020|5290|328000|62|Ullanmäentie 10b
+Kauniainen|Kauniainen|K|2002|4582|378000|82.5|Palokunnantie 5 B
+Kasavuori|Kauniainen|K|1967|4107|345000|84|Urheilutie 13 F
+Kauniainen|Kauniainen|K|2014|4212|179000|42.5|Venevalkamantie 7
+Kasavuori|Kauniainen|R|1966|5626|557000|99|Kasavuorentie 14
+Kauniainen|Kauniainen|R|1972|3264|865000|265|Kauppalantie 11
+Kauniainen|Kauniainen|K|1975|4352|420000|96.5|Helsingintie 4 B
+Kauniainen|Kauniainen|K|2020|5140|239000|46.5|Bredanportti 5
+Kauniainen|Kauniainen|K|2009|7280|768000|105.5|Kauniaistentie 11
+Kauniainen|Kauniainen|K|1968|4748|565000|119|Forsellesintie 5-7 E
+Venevalkama|Kauniainen|K|2014|4000|112000|28|Venevalkamantie 9
+Kauniainen|Kauniainen|K|1984|4398|475000|108|Bredantie 6 F
+Kauniainen|Kauniainen|O|2005|6633|1320000|199|Suokrouvintie 2 B
+Kauniainen|Kauniainen|O|2011|5840|1390000|238|Vanha Turuntie 25 A
+Kauniainen|Kauniainen|O|1969|3322|950000|286|Yrjö Liipolan tie 14
+Kauniainen|Kauniainen|R|1982|3848|379000|98.5|Silmukka 7
+Kauniainen|Kauniainen|K|2019|6541|199500|30.5|Kauniaistentie 9
+Kauniainen|Kauniainen|O|2002|6038|785000|130|Vesitorninpolku 2
+Kauniainen|Kauniainen|R|1967|2688|430000|160|Helsingintie 5-7
+Kauniainen|Kauniainen|O|1999|3310|695000|210|Vanha Turuntie 27
+Kauniainen|Kauniainen|O|1954|2837|749000|264|Jondalintie 6
+Kauniainen|Kauniainen|O|2005|5579|1880000|337|Pohjoinen Heikelintie 23 A
+Kauniainen|Kauniainen|K|2013|3622|211900|58.5|Venevalkamatie 2 A
+Kauniainen|Kauniainen|R|1977|3502|837000|239|Kavallintie 39 A
+Kauniainen|Kauniainen|R|1978|2817|648000|230|Dosentintie 16
+Kauniainen|Kauniainen|K|1976|3482|195000|56|Forsellesintie 18
+Kauniainen|Kauniainen|O|1996|4696|995000|211.9|Kavallintie 37
+Kasavuori|Kauniainen|K|2020|4767|216900|45.5|Bredanportti 5 B
+Kauniainen|Kauniainen|R|1981|3217|370000|115|Läntinen Koulupolku 8
+Keskusta|Kauniainen|K|1963|4238|339000|80|Kirkkotie 15 B
+Kauniainen|Kauniainen|R|1983|4163|435000|104.5|Kylätie 11
+Kauniainen|Kauniainen|O|1991|3774|1019000|270|Fasaaninpolku 14
+Kauniainen|Kauniainen|K|1964|3956|269000|68|Forsellesintie 1-3 B
+Kauniainen|Kauniainen|K|1963|5731|149000|26|Kirkkotie 15 A
+Kauniainen|Kauniainen|K|2012|4395|345000|78.5|Vanha Tienhaara 2
+Kauniainen|Kauniainen|O|1954|2878|449000|156|Yhtiöntie 8
+Kauniainen|Kauniainen|R|1982|3889|387000|99.5|Torpankuja 1
+Kauniainen|Kauniainen|O|2019|6726|1890000|281|Kaikupolku 6A
+Kauniainen|Kauniainen|O|1989|2331|1149000|493|Mäkitie 5
+Kauniainen|Kauniainen|K|1968|4741|275000|58|Asematie 2
+Kauniainen|Kauniainen|O|1997|3000|825000|275|Puutarhatie 6
+Kauniainen|Kauniainen|K|2012|3866|230000|59.5|Venevalkamantie 3 A
+Kauniainen|Kauniainen|K|1963|4258|246980|58|Laaksotie 11
+Kauniainen|Kauniainen|R|1974|3978|1090000|274|Bembölentie 21
+Kauniainen|Kauniainen|R|2023|6307|1170000|185.5|Kavallintie 12 B
+Kukkila|Hollola|O|2005|2561|315000|123|Maasälväntie 2
+Kartano|Hollola|R|1990|1479|159000|107.5|Keinokartanontie 4 b
+Kukkila|Hollola|O|2026|2628|339000|129|Tilkkutie
+Vanhatalo|Hollola|O|2015|3114|520000|167|Saniaiskorventie 1
+Hollola|Hollola|O|2026|2817|369000|131|Kiiltopajuntie 4
+Soramäki|Hollola|K|1970|825|47000|57|Setäläntie 5 B
+KK|Hollola|O|2011|1686|295000|175|Söyringintie 4
+Soramäki|Hollola|K|1968|1072|89000|83|Kolmenässäntie 1
+Tiilikangas|Hollola|O|1976|1217|128000|105.2|Kissalantie 5
+Soramäki|Hollola|K|1977|600|45000|75|Salpatie 2
+Hollola|Hollola|R|1983|1988|159000|80|Vanhatalontie 39
+Kartano|Hollola|K|1969|774|65000|84|Hedelmätarhantie 5 A
+Pyhäniemi|Hollola|O|1780|1737|1490000|858|Rantatie 708
+Kartano|Hollola|O|1967|975|79000|81|Kumpulanmutka 5
+Tiilijärvi|Hollola|O|1972|2216|308000|139|Lemminkäisentie 9
+Kalliola|Hollola|O|0|825|99000|120|Paimelantie 101
+Paimela|Hollola|O|2018|2983|525000|176|Paimelantie 712
+Salpakangas|Hollola|K|1988|1009|59000|58.5|Terveystie 3
+Salpakangas|Hollola|O|1950|2308|198500|86|Kirsikkatie 10
+Kartano|Hollola|K|1972|961|49000|51|Mäkirinteentie 3 B
+Hollola|Hollola|O|2011|2165|275000|127|Söyringintie 6
+Kutajoki|Hollola|O|1957|615|80000|130|Salo-Syrjälä 29
+Kartano|Hollola|R|1981|1277|119000|93.2|Keinokartanontie 12 As
+Vanhatalo|Hollola|R|1981|1536|101500|66.1|Jousikuja 2 A
+Salpakangas|Hollola|K|1972|1042|99000|95|Salpakankaantie 18 B
+Pappila|Hollola|O|0|784|69000|88|Tuomalantie 21
+Vesala|Hollola|O|1953|648|59000|91|Rouvintie 195
+Vanhatalo|Hollola|O|1249|2075|249000|120|Kettupiha 3
+Tiilijärvi|Hollola|R|1988|1388|179000|129|Kalevantie 10
+Kastari|Hollola|O|1953|580|29000|50|Kerolantie 11
+Kuntakeskus|Hollola|R|1975|1203|86000|71.5|Tiilijärventie 10 C
+Heinlammi|Hollola|O|2013|1950|349000|179|Kivijärventie 148
+Vesala|Hollola|R|1982|1661|147000|88.5|Harjutie 1 B
+Kuntakeskus|Hollola|K|1990|1135|84000|74|Kansankuja 3 A
+Kuntakeskus|Hollola|K|1981|1474|85500|58|Keskuskatu 1 As
+Tiilijärvi|Hollola|R|1975|1425|129000|90.5|Tiilijärventie 10
+Salpakangas|Hollola|K|1968|800|60000|75|Salpakankaantie 13 C
+Salpakangas|Hollola|K|1972|832|79000|95|Salpakankaantie 18
+Tiilijärvi|Hollola|K|1981|906|53000|58.5|Tervatie 2
+Tiilijärvi|Hollola|O|1985|1727|228000|132|Kalevantie 2
+Kalliola|Hollola|O|1969|1650|198000|120|Palotie 9
+kuntakeskus|Hollola|K|2004|2327|114000|49|Terveystie 19
+Kartano|Hollola|O|1970|1383|159000|115|Kumpulantie 2
+Tiilikangas|Hollola|R|1976|1233|254000|206|Simeonintie 1
+Salpakangas|Hollola|K|1988|1221|94000|77|Terveystie 3 A
+Hollola|Hollola|K|1967|800|40000|50|Salpakankaantie 8
+Hollola kk|Hollola|O|2009|2180|335000|153.7|Hallatie 23
+Kukkila|Hollola|O|2011|1883|499000|265|Selonkuja 1
+Kartano|Hollola|O|1990|1338|186000|139|Tähkätie 4
+Vähäjoki|Hollola|O|1967|2187|269000|123|Nostavantie 507
+Tiilijärvi|Hollola|O|1985|1886|249000|132|Kalevantie 4
+Vaania|Hollola|O|2007|1951|950000|487|Vaaniantie 773
+Hollola|Hollola|R|1983|1433|149000|104|Vanha Kukkilantie 6 C
+Isosaari|Hollola|O|1972|1242|149000|120|Isosaarentie 113
+Hedelmätarha|Hollola|K|1974|730|42000|57.5|Hedelmätarhantie 15
+Salpakangas|Hollola|R|2025|2694|299000|111|Mallasmäki 1 as 6
+Salpakangas|Hollola|R|2025|2677|249000|93|Mallasmäki 1 as 4
+Kukkila|Hollola|O|2021|2726|259000|95|Murronpellontie 1 D
+Kukkila|Hollola|R|2011|2155|139000|64.5|Lähdemäentie 6 E
+Latokarkea|Hollola|O|1957|1239|135000|109|Moisantie 2
+Salpakangas|Hollola|R|1985|1758|145000|82.5|Tervatie 8 G
+Kirkonkylä|Hollola|O|1999|7823|1150000|147|Rälssintie 293
+Vanhatalo|Hollola|O|1980|879|175000|199|Nuolikuja 3
+Työtjärvi|Hollola|O|2003|1542|239000|155|Tanhuantie 1
+Työtjärvi|Hollola|R|1976|1162|115000|99|Harjutie 15 E
+Kukkila|Hollola|O|2000|1895|379000|200|Toisenmäenkuja 6
+Rajaharju|Hollola|O|1964|5565|3450000|620|Pähkinäkukkula 172-174
+Kukkila|Hollola|O|2011|2246|265000|118|Hakapellontie 11
+Kalliola|Hollola|O|1981|1211|149000|123|Lintumäentie 140
+Herrala|Hollola|O|1988|500|65000|130|Hahmajärventie 464
+Työtjärvi|Hollola|R|1975|1094|139000|127|Harjutie 15 C
+Tiilikangas|Hollola|K|1975|983|59000|60|Salpatie 4
+Kartano|Hollola|R|1982|1491|139000|93.2|Keinokartanontie 10 A
+Salpakangas|Hollola|K|1967|1044|95000|91|Salpakankaantie 12 as.
+Kukkila|Hollola|R|2007|2235|219000|98|Teutamontie 1 B
+Latokarkea|Hollola|O|1972|855|159000|186|Kulotie 6
+Kukkila|Hollola|O|2013|1841|359000|195|Pellonkulma 2
+Hämeenkoski|Hollola|K|1987|1146|59000|51.5|Asikkalantie 2
+Kuntakeskus|Hollola|K|1991|1204|59000|49|Keskuskuja 6 C
+Kirkonkylä|Hollola|O|2008|3738|598000|160|Särkäntie 49
+Nostava|Hollola|O|2007|1592|285000|179|Kauppilanrinne 4
+Paimela|Hollola|O|1974|640|89000|139|Pykälistö 66
+Kartano|Hollola|R|2021|3124|289000|92.5|Keinokartanontie 1
+Hollola|Hollola|O|2006|1606|289000|180|Puhkalantie 84
+Hollola|Hollola|O|1994|1034|120000|116|Kirkkotie 104
+Kalliola|Hollola|O|1976|626|119000|190|Palotie 11
+Kukkila|Hollola|R|2022|2794|359000|128.5|Lehtoranta 3
+Hämeenkoski|Hollola|R|1984|932|55000|59|Kaiturintie 3
+Kartano|Hollola|K|1969|1061|52000|49|Koulutie 4 A
+Hedelmätarha|Hollola|K|1970|947|72000|76|Hedelmätarhantie 11 H
+Kartano|Hollola|O|1994|1924|329000|171|Korsikuja 4
+Okeroinen|Hollola|K|1967|934|85000|91|Salpakankaantie 12
+Heinlammi|Hollola|O|2010|1886|249000|132|Koivutie 25
+Kuntakeskus|Hollola|K|1981|838|49000|58.5|Tervatie 2 C
+Kankaantila|Hollola|O|1983|1393|209000|150|Rinkkakuja 1 A
+Sairakkala|Hollola|O|1933|1408|169000|120|Manskiventie 5
+Hedelmätarha|Hollola|K|1970|1032|48000|46.5|Mäkirinteentie 1
+Soramäki|Hollola|K|2014|2480|107900|43.5|Tiilikankaantie 2 A
+Hämeenkoski|Hollola|O|1944|607|85000|140|Sahatie 2
+Kartano|Hollola|O|1967|1104|159000|144|Jyvätie 6
+Hämeenkoski|Hollola|O|1971|1026|79000|77|Pihlajamäentie 22
+Pyhäniemi|Hollola|O|1983|1078|129000|119.7|Paakkunaisentie 6
+Kutajärvi|Hollola|O|1991|926|189000|204|Toivontie 3
+Hedelmätarha|Hollola|K|1974|781|57000|73|Hedelmätarhantie 15 E
+Kalliola|Hollola|O|2009|1499|299000|199.4|Lintumäentie 126
+Hämeenkoski|Hollola|R|1989|922|59000|64|Orttentie 4
+Herrala|Hollola|O|2004|1219|148000|121.4|Kaarelankuja 2
+Kalliola|Hollola|O|2024|3993|539000|135|Paimelantie 276
+Soramäki|Hollola|O|1974|1000|165000|165|Tösämäentie 8
+Salpakangas|Hollola|O|1981|1460|157000|107.5|Jännekuja 3
+Kukkila|Hollola|O|1985|5284|428000|81|Tiilisannankuja 1
+Herrala|Hollola|O|1993|1667|170000|102|Roopentie 3
+Hämeenkoski|Hollola|O|1936|2265|299000|132|Kalatie 103
+Tiilikangas|Hollola|O|1978|1543|179000|116|Laurintie 4
+Hämeenkoski|Hollola|R|1991|742|59000|79.5|Päivärinteentie 7
+Hämeenkoski|Hollola|O|1966|955|149000|156|Koskiharjuntie 17
+Okeroinen|Hollola|O|1970|642|68000|106|Tikkakalliontie 254
+Hollola|Hollola|K|1966|756|59000|78|Salpakankaantie 7 a
+Kukkila|Hollola|O|2016|2548|409000|160.5|Aavanpellontie 5
+Kukkila|Hollola|O|1979|1355|298000|220|Maasälväntie 12
+Hämeenkoski|Hollola|O|1915|892|339000|380|Huhdintie 99
+Soramäki|Hollola|K|1975|844|27000|32|Salpatie 4 C
+Tiilikangas|Hollola|R|1977|1460|94900|65|Jukolantie 1
+Soramäki|Hollola|K|1977|527|39000|74|Salpatie 2 B
+Hämeenkoski|Hollola|O|1958|853|128000|150|Asikkalantie 18
+Kartano|Hollola|R|1990|1341|165000|123|Keinokartanontie 4
+Kukkila|Hollola|O|2013|2541|399000|157|Pellonkulma 4
+Soramäki|Hollola|K|1968|614|51000|83|Kolmenässäntie 1 B
+Työtjärvi|Hollola|R|2006|2075|159800|77|Kirkkotie 53
+Soramäki|Hollola|O|1959|990|104000|105|Lehmustie 2
+Uskila|Hollola|O|1949|640|48000|75|Hipintie 7
+Salpakangas|Hollola|R|1984|1758|145000|82.5|Tervatie 6 B
+Kutajoki|Hollola|O|1920|931|149000|160|Vehkosaari 290
+Työtjärvi|Hollola|R|1993|1327|199000|150|Valkamantie 2 A
+Salpakangas|Hollola|K|1969|845|49000|58|Salpakankaantie 11 A
+Kukkila|Hollola|O|2019|3073|398000|129.5|Rätikönmäki 8
+Tiilikangas|Hollola|K|2004|2083|125000|60|Terveystie 19 A
+Salpakangas|Hollola|K|1967|978|89000|91|Salpakankaantie 14
+Tiilijärvi|Hollola|R|1985|1903|157000|82.5|Tervatie 8 H
+Työtjärvi|Hollola|R|1986|1655|139000|84|Harjutie 15 A
+Salpakangas|Hollola|R|2025|2677|249000|93|Mallasmäki 1 as 7
+Salpakangas|Hollola|R|2025|2677|249000|93|Mallasmäki 1 as 3
+Tiilikangas|Hollola|R|1979|920|79000|85.9|Karilantie 4-6 A
+Kuntakeskus|Hollola|K|2011|2255|168000|74.5|Virastotie 5 A
+Soramäki|Hollola|K|1974|922|53000|57.5|Salpatie 6 F
+Tiilikangas|Hollola|O|1974|1265|148000|117|Muorintie 5
+Tiilijärvi|Hollola|R|1984|1735|98000|56.5|Tervatie 6
+Kartano|Hollola|K|1968|905|52500|58|Salpakankaantie 9 A
+Kukkila|Hollola|O|2000|5791|498000|86|Vähäseläntie 19
+Työtjärvi|Hollola|O|1993|1374|268000|195|Saaranlähteentie 11
+Luhdantausta|Hollola|O|1969|866|103000|119|Rauhanpolku 22
+Salpakangas|Hollola|K|1966|1594|169000|106|Salpakankaantie 1 C
+Tiilikangas|Hollola|O|1976|1124|159000|141.5|Aapontie 2
+Salpakangas|Hollola|K|1967|1133|85000|75|Salpakankaantie 17 C
+Isosaari|Hollola|O|2019|6348|895000|141|Tiilisannankuja 3
+Salpakeskus|Hollola|K|2014|2583|105900|41|Tiilijärventie 5 A
+Hedelmätarha|Hollola|K|1973|774|44900|58|Hedelmätarhantie 13 A
+Kartano|Hollola|R|1983|1165|99000|85|Keinokartanontie 5 A
+Tiilijärvi|Hollola|R|1973|1174|229000|195|Vellamontie 4 as
+Salpakangas|Hollola|K|1974|900|27000|30|Hedelmätarhantie 15 D
+Herrala|Hollola|O|2010|1993|269000|135|Roopentie 21
+Tiilikangas|Hollola|O|1980|940|109000|116|Ilvestie 8
+Kutajärvi|Hollola|O|1992|1515|153000|101|Taavelintie 110
+Kalliola|Hollola|O|1991|1145|198000|173|Metsänneidontie 4
+Kartano|Hollola|R|1981|1774|138900|78.3|Keinokartanontie 12
+Salpakangas|Hollola|K|1967|956|87000|91|Salpakankaantie 12 a
+Hämeenkoski|Hollola|O|1981|588|70000|119|Kuusirannantie 6
+Vesala|Hollola|K|1969|561|49900|89|Setäläntie 5
+Salpakangas|Hollola|K|2002|2653|199000|75|Kansankatu 7 as
+Paimela|Hollola|O|1950|2950|59000|20|Hietapiha 2
+Kuntakeskus|Hollola|K|1986|1066|89000|83.5|Tervatie 4
+Paimela|Hollola|O|1920|1064|298000|280|Paimelantie 339
+Latokarkea|Hollola|O|1978|787|185000|235|Kulotie 5
+Soramäki|Hollola|K|1975|983|59000|60|Salpatie 4 A
+Tiilijärvi|Hollola|R|1986|1719|98000|57|Annikintie 4
+Parinpelto|Hollola|O|2005|1795|359000|200|Parinpellontie 19
+Hämeenkoski|Hollola|R|2005|1187|89000|75|Jokipolku 1-3 as
+Hämeenkoski|Hollola|O|1950|898|44900|50|Toijalantie 7
+Hämeenkoski|Hollola|R|1990|920|81000|88|Orttentie 4 B
+Kirkonmäki|Siilinjärvi|K|1975|932|68000|73|Haarahongantie 17 A
+Leppäkaarre|Siilinjärvi|R|1981|1121|65000|58|Sepäntie 5
+Panninniemi|Siilinjärvi|O|2015|1736|289000|166.5|Haitarintie 8
+Vuorela|Siilinjärvi|R|1998|1864|164000|88|Pajaharjuntie 8
+Simonsalo|Siilinjärvi|R|2005|1533|115000|75|Jussintie 3 A
+Keskusta|Siilinjärvi|K|2019|2738|89000|32.5|Asematie 2 as
+Kasurila|Siilinjärvi|R|2014|2511|167000|66.5|Vilholantie 6
+Rissala|Siilinjärvi|O|1965|1089|110000|101|Jännemäentie 94
+Keskusta|Siilinjärvi|K|1971|512|33000|64.5|Asematie 13 A
+Vesijärvi|Siilinjärvi|O|1977|1308|155000|118.5|Puistotie 4
+Kirkonmäki|Siilinjärvi|K|1977|1179|33000|28|Santamäentie 6
+Keskusta|Siilinjärvi|R|1986|908|54500|60|Kotipolku 12 B
+Kuuslahti|Siilinjärvi|O|1971|878|79000|90|Nilsiäntie 962
+Päivärinne|Siilinjärvi|R|2008|2262|164000|72.5|Vattuahontie 7
+Viinamäki|Siilinjärvi|R|1998|1411|79000|56|Pappilanrinne 7 c
+Toivala Haaparinne|Siilinjärvi|O|2011|2305|348000|151|Kultasiipi 9
+Räimä|Siilinjärvi|O|1981|1154|105000|91|Köörtintie 248
+Keskusta|Siilinjärvi|K|2003|2130|98000|46|Asematie 5
+Leppäkaaarre|Siilinjärvi|O|1968|1449|129000|89|Pajutie 7
+Kasurila|Siilinjärvi|R|0|1845|155000|84|Pellavatie 8 B
+Vanha-Pappila|Siilinjärvi|O|1968|1158|249000|215|Poikkipolku 11
+Toivala|Siilinjärvi|O|2009|2102|349000|166|Haapakiitäjä 19
+Kasurila|Siilinjärvi|O|1977|1536|215000|140|Pihlajapolku 14
+Viinamäki|Siilinjärvi|K|2004|2324|79000|34|Kasurilantie 23
+Toivala|Siilinjärvi|R|2027|2490|259000|104|Pihtakuja 6
+Pöljä|Siilinjärvi|O|1942|1471|253000|172|Pitkänranta 37
+Vuorela|Siilinjärvi|R|1987|1502|117900|78.5|Laaksopolku 12
+Kumpunen|Siilinjärvi|O|1990|1409|179000|127|Metsäpellontie 10
+Räisälä|Siilinjärvi|O|1974|1168|139000|119|Teerentie 9
+Päivärinne|Siilinjärvi|R|2009|1917|162000|84.5|Kihmulantie 5
+Vuorela|Siilinjärvi|K|2014|2600|208000|80|Tammirannantie 7 A
+Vuorela / Siilinjärvi|Siilinjärvi|O|1975|825|198000|240|Kallionkierto 36
+Leppäkaarre|Siilinjärvi|R|1982|1219|89000|73|Leppäkaarteentie 43 A
+Leppäkaarre|Siilinjärvi|R|1989|1230|75000|61|Vaahterapolku 3 A
+Kasurilanmäki|Siilinjärvi|O|1994|1874|298000|159|Kasurilanmäentie 125
+Honkamäki|Siilinjärvi|O|1990|1250|150000|120|Runkopolku 14
+Räisälä|Siilinjärvi|R|1972|1129|79000|70|Pöllöntie 2
+Simonsalo|Siilinjärvi|R|2005|1827|95000|52|Jussintie 3 B
+Simonsalo|Siilinjärvi|R|1972|800|44000|55|Jussintie 1 A
+Leppäkaarre|Siilinjärvi|O|1981|1240|129000|104|Apilakaarre 6
+Siilinpää|Siilinjärvi|R|1978|979|95000|97|Julkulantie 10
+Kirkonmäki|Siilinjärvi|K|1988|831|49000|59|Haarahongantie 9 A
+Harjamäki|Siilinjärvi|O|2007|1790|299000|167|Kevättömänpolku 13
+Harjamäki / Siilinjärvi|Siilinjärvi|O|2009|2242|435000|194|Kevättömänpolku 2
+Toivala|Siilinjärvi|R|2012|2655|154000|58|Kirjokehrääjä 17 D
+Vuorela|Siilinjärvi|R|1995|2176|185000|85|Pajaharjuntie 10
+Pyylampi|Siilinjärvi|O|1972|619|65000|105|Ruuskalantie 85
+Leppäkaarre|Siilinjärvi|R|1990|1180|118000|100|Varpukuja 8 AS
+Pyylampi|Siilinjärvi|O|1975|590|69000|117|Sävelpolku 8
+Siilinjärvi|Siilinjärvi|K|1971|592|29000|49|Asematie 13
+Simonsalo|Siilinjärvi|R|1975|731|49000|67|Jussintie 2
+Vuorela|Siilinjärvi|R|1968|1264|88500|70|Hirvenpolku 15 B
+Harjamäki|Siilinjärvi|R|2005|1616|139000|86|Melojantie 1 A
+Päivärinne|Siilinjärvi|R|2009|1864|178000|95.5|Vattuahontie 18 as
+Simonsalo|Siilinjärvi|R|1986|1389|109000|78.5|Anteronkierto 8 A
+Pöljä|Siilinjärvi|O|1993|1336|145000|108.5|Pitkänranta 33
+Pöljä|Siilinjärvi|O|1958|934|99000|106|Pöljän Vanhatie 23
+Harjamäki|Siilinjärvi|R|2018|2483|149000|60|Kevättömäntie 10 E
+Leppäkaarre|Siilinjärvi|R|2007|1928|160000|83|Vaahterapolku 1
+Vuorela|Siilinjärvi|R|1978|1248|59900|48|Laaksopolku 7
+Siilinpää|Siilinjärvi|O|1961|1563|198500|127|Savolantie 10
+Viinamäki|Siilinjärvi|R|1998|1375|99000|72|Pappilanrinne 7 B
+Leppäkaarre|Siilinjärvi|O|1982|1190|119000|100|Jälsipolku 1
+Kasurilanmäki|Siilinjärvi|O|1981|1344|219000|163|Kasurilanmäentie 91
+Siilinjärvi|Siilinjärvi|O|1913|680|449000|660|Tarinaharjuntie 119
+Toivala|Siilinjärvi|R|1989|1757|188000|107|Vanamopolku 7A
+Jännevirta|Siilinjärvi|O|1979|1521|219000|144|Uuhilahdentie 151
+Siilinjärvi|Siilinjärvi|K|1963|610|47000|77|Siilinpääntie 10 as. 2
+Pyylampi|Siilinjärvi|R|1968|677|105000|155|Suruttomanpolku 5 A 1
+Vuorela|Siilinjärvi|K|2006|2403|149000|62|Sandelsintie 15
+Vuorela|Siilinjärvi|R|1975|1183|142000|120|Laaksopolku 10
+Vuorela|Siilinjärvi|R|1974|1276|125000|98|Sammakkoniementie 11 E
+Vuorela|Siilinjärvi|K|2008|2092|160000|76.5|Sandelsintie 17 A
+Harjamäki|Siilinjärvi|O|1981|887|180000|203|Lehdontie 130
+Siilinjärvi|Siilinjärvi|R|1980|1397|109000|78|Kasurilantie 71 B
+Vuorela|Siilinjärvi|K|1969|1406|109000|77.5|Sandelsintie 16 B
+Koivumäki|Siilinjärvi|O|1996|830|109500|132|Varpasentie 3
+Räisälä|Siilinjärvi|O|1975|1267|128000|101|Metsontie 4
+Pyylampi|Siilinjärvi|O|1977|940|109000|116|Hovilanpisto 5
+Leppäkaarre|Siilinjärvi|O|1978|937|89000|95|Sikoahontie 4
+Harjamäki|Siilinjärvi|R|1960|1681|269000|160|Kevättömänpolku 4
+Vuorela|Siilinjärvi|R|1974|1423|119500|84|Sammakkoniementie 17
+Tarinaharju|Siilinjärvi|R|1962|1368|80000|58.5|Tarinaharjuntie 48 as
+Vuorela|Siilinjärvi|K|2016|3086|233000|75.5|Tammirannantie 3
+Siilinpää|Siilinjärvi|K|2018|501|26531|53|Peltotie 2
+Kirkonmäki|Siilinjärvi|K|1991|1787|109000|61|Haarahongantie 12
+Viinamäki|Siilinjärvi|K|2000|2174|75000|34.5|Viinamäentie 1
+Vuorela|Siilinjärvi|O|1966|742|98000|132|Peuranpolku 18
+Leppäkaarre|Siilinjärvi|R|1977|901|114000|126.5|Kallioniementie 7
+Leppäkaarre|Siilinjärvi|K|1978|500|29000|58|Leppäkaarteentie 10
+Toivala|Siilinjärvi|O|1973|1374|147000|107|Ahotie 3
+Ahmo|Siilinjärvi|R|1986|1303|99000|76|Parolankierto 12
+Tynnörinen|Siilinjärvi|R|1996|1478|85000|57.5|Kiviharjuntie
+Pyylampi|Siilinjärvi|O|1975|1271|169000|133|Nuottipolku 1
+Vuorela|Siilinjärvi|R|1972|1158|139000|120|Laaksopolku 1-3 B
+Vuorela|Siilinjärvi|R|1989|2045|158500|77.5|Rissalantie 34 A 5
+Simonsalo|Siilinjärvi|R|2005|1987|149000|75|Jussintie 3
+Vanha-Pappila|Siilinjärvi|R|1999|1304|75000|57.5|Kaaripolku 2
+Leppäkaarre|Siilinjärvi|R|1982|693|79000|114|Kallioniementie 6 as
+Kirkonmäki|Siilinjärvi|R|1984|1398|90000|64.4|Haarahongantie 6
+Keskusta|Siilinjärvi|K|2016|508|38625|76|Asematie 6b
+Keskusta|Siilinjärvi|K|1999|1570|89500|57|Kotipolku 11
+Kuuslahti|Siilinjärvi|R|1969|787|85000|108|Nilsiäntie 1008
+Simonsalo|Siilinjärvi|K|1975|516|48000|93|Anteronkierto 13
+Toivala|Siilinjärvi|R|1999|1717|182000|106|Toivalantie 57 as 2
+Kasurilanmäki|Siilinjärvi|R|1994|1833|132000|72|Kukkurintie 166
+Leppäkaarre|Siilinjärvi|R|1984|1148|89000|77.5|Leppäkaarteentie 22-24 A
+Leppäkaarre|Siilinjärvi|O|1977|975|79000|81|Paimentie 10
+Pöljä|Siilinjärvi|O|2014|1709|258000|151|Hoikintie 164
+Leppäkaarre|Siilinjärvi|R|1994|1113|69000|62|Honkamäentie 54 A
+Keskusta|Siilinjärvi|R|1984|974|87000|89.3|Haarahongantie 6 A
+Kasurila|Siilinjärvi|R|1994|1653|119000|72|Kukkurintie 158 D
+Leppäkaarre|Siilinjärvi|R|1990|1310|93000|71|Honkamäentie 1 E
+Siilinpää|Siilinjärvi|K|1963|906|34900|38.5|Siilinpääntie 10 A
+Taivallahti|Siilinjärvi|O|2026|2865|298000|104|Lehtokertuntie 18
+Kirkonmäki|Siilinjärvi|K|2000|1954|127000|65|Santamäentie 3
+Hamula|Siilinjärvi|O|2015|2597|435000|167.5|Hakametsäntie 50
+Siilinpää|Siilinjärvi|R|1976|1076|49500|46|Julkulantie 13
+Vuorela|Siilinjärvi|R|1971|867|98000|113|Lentäjänpolku 6
+Ahmo|Siilinjärvi|O|1971|1101|174000|158|Myyränpolku 2
+Keskusta|Siilinjärvi|K|1999|1848|85000|46|Kotipolku 11 A
+Siilinpää|Siilinjärvi|K|2018|2475|99000|40|Asematie 9 A
+Harjamäki|Siilinjärvi|R|2012|2261|182000|80.5|Muikkukuja 2
+Vuorela|Siilinjärvi|R|1990|1280|74900|58.5|Rissalantie 31
+Viinamäki|Siilinjärvi|R|1998|1576|119000|75.5|Pappilanrinne 7
+Leppäkaarre|Siilinjärvi|O|1983|1453|154000|106|Karjankierto 9
+Räisälä|Siilinjärvi|R|1975|657|23000|35|Koppelontie 25
+Vesijärvi|Siilinjärvi|R|1990|1400|84000|60|Ahvenkuja 3
+Sulkavanniitty|Siilinjärvi|R|1990|1360|119000|87.5|Niittytie 23
+Siilinjärvi|Siilinjärvi|K|1979|545|36000|66|Leppäkaarteentie 12
+Ahmo|Siilinjärvi|O|1966|952|99000|104|Jokitie 8
+Simonsalo|Siilinjärvi|R|1983|919|62000|67.5|Liisantie 2
+Pöljä|Siilinjärvi|O|1960|645|138000|214|Mehtomäentie 182
+Leppäkaarre|Siilinjärvi|O|1984|904|89000|98.5|Kantopolku 3
+Leppäkaarre|Siilinjärvi|O|1979|1107|119000|107.5|Sikoahontie 5
+Toivala|Siilinjärvi|O|1974|856|89000|104|Ruskeisentie 27
+Vuorela|Siilinjärvi|O|1970|734|94000|128|Ruukinpolku 8
+Simonsalo|Siilinjärvi|R|1973|891|49000|55|Jussintie 1 b 4
+Hamula|Siilinjärvi|O|1972|1824|197000|108|Luvelahdentie 99
+Siilinpää|Siilinjärvi|K|1969|623|47500|76.2|Salmintie 8
+Vesijärvi|Siilinjärvi|R|1989|1357|81400|60|Muikkukuja 5 B 8
+Ahmo|Siilinjärvi|O|1970|739|85000|115|Oravanpolku
+Leppäkaarre|Siilinjärvi|R|1982|1211|138000|114|Kallioniementie 6
+Leppäkaarre|Siilinjärvi|O|1980|1286|135000|105|Karjankierto 22
+Keskusta|Laukaa|K|2011|2479|119000|48|Vuojärven Puistotie 6 A
+Leppävesi|Laukaa|O|2001|1569|185000|117.9|Korpelantie 21
+Leppävesi|Laukaa|O|2010|2755|449000|163|Havurinne 17
+Laukaa|Laukaa|O|2006|1641|169000|103|Raitapellontie 11
+Keskusta|Laukaa|K|2021|517|34393|66.5|Laukaantie 21
+Keskusta|Laukaa|R|1984|1054|68000|64.5|Pelkosentie 13
+Keskusta|Laukaa|K|1990|1079|75000|69.5|Keskustie 7 A 13
+Vihtavuori|Laukaa|R|1982|1213|64900|53.5|Riipintie 2
+Kylmäniemi|Laukaa|R|2018|2192|228000|104|Pellosharjunkatu 17 as 2
+Jokiniemi|Laukaa|R|1982|1062|69000|65|Yläniementie 19,
+Kuusa|Laukaa|O|1911|1079|75500|70|Harjulantie 46
+Keskusta|Laukaa|K|2001|1613|179000|111|Laukaantie 9
+Leppävesi|Laukaa|R|2026|3186|259000|81.3|Kuukkelinkatu 3 as 2
+Laukaan kirkonkylä|Laukaa|O|1987|1330|117000|88|Kokonkuja 1
+Kylmäniemi|Laukaa|R|2019|2113|224000|106|Pellosharjunkatu 15 B
+Keskusta|Laukaa|O|1954|2320|232000|100|Kantolantie 19 a
+Tyvelänniemi|Laukaa|K|1989|1327|69000|52|Roinilantie 3
+Laukaa|Laukaa|O|1984|1140|159000|139.5|Isoniityntie 4
+Leppävesi|Laukaa|R|2007|1721|105000|61|Hevosvuorentie 40b as
+Keskusta|Laukaa|K|1975|1115|29000|26|Laukaantie 1 B
+Lemettilä|Laukaa|R|1975|1516|94000|62|Lemettiläntie 4b
+Keskusta|Laukaa|K|1990|1135|78900|69.5|Keskustie 7
+Lievestuore|Laukaa|O|1985|693|79000|114|Pistokuja 3
+Vihtavuori|Laukaa|R|1943|840|44500|53|Parakkimäentie 6 as
+Kirkonkylä|Laukaa|K|2022|3392|164500|48.5|Kipparintie 4 A
+Keskusta|Laukaa|K|1976|798|65000|81.5|Saratie 11 B
+Ketaramäki|Laukaa|O|2005|2255|212000|94|Poranmäki 15
+Ritolahti|Laukaa|O|1983|621|90000|145|Ritokuja 3
+Laukaa|Laukaa|R|1976|1226|76000|62|Lemettiläntie 4
+Leppävesi|Laukaa|O|1990|1639|218000|133|Mestarintie 4
+Petäiskorpi|Laukaa|O|1239|1593|239000|150|Salorinteentie 69
+Leppävesi|Laukaa|O|1954|1162|194000|167|Kumpurinne 3
+Keskusta|Laukaa|K|2008|1771|139000|78.5|Vuojärven puistotie 8 A
+Kirkonkylä-Etelä|Laukaa|R|2006|1642|156000|95|Hytösenkuja 12 A
+Lievestuore|Laukaa|O|2005|1316|175000|133|Rastaantie 5
+Laukkavirta|Laukaa|O|2022|3357|470000|140|Rantakyläntie 15
+Leppävesi|Laukaa|R|2017|2483|221000|89|Vaajakoskentie 29
+Lievestuore|Laukaa|O|1960|634|59000|93|Petäjätie 7
+Kataanmäki|Laukaa|O|2012|2199|310000|141|Kataanmäki 62
+Jokiniemi|Laukaa|O|1990|1890|189000|100|Aininpolku 8
+Kantola|Laukaa|R|2012|1972|215000|109|Emännänkuja 3 as
+Jokiniemi|Laukaa|O|1975|787|139000|176.6|Kiekkotie 20
+Jokiniemi|Laukaa|R|1989|821|69000|84|Kielokummuntie 7 A
+Kantola|Laukaa|O|2006|1742|169000|97|Sahamäenkuja 3
+Laukaa|Laukaa|R|1977|1238|99000|80|Mäkikuja 2, Laukaa
+Leppävesi|Laukaa|R|2011|2287|215000|94|Sudenjälki 1b
+Vihtavuori|Laukaa|R|1988|1402|89000|63.5|Vehmasahontie 15
+Lievestuore|Laukaa|O|1983|848|70000|82.5|Mikkelintie 91
+Keskusta|Laukaa|R|1983|1165|99000|85|Pelkosentie 7-9
+Leppävesi|Laukaa|O|1970|1294|120000|92.7|Hevosvuorentie 2
+Kantola|Laukaa|R|2020|2144|253000|118|Emännänkuja 1
+Laukaa|Laukaa|O|2019|2679|299000|111.6|Päivämiehenkuja 13
+Lievestuore|Laukaa|O|2004|2065|165000|79.9|Poranmäki 5
+Vihtavuori|Laukaa|O|1983|1234|129000|104.5|Hiihtomäentie 1
+Laukaa|Laukaa|O|2022|2850|379000|133|Kataanmäki 46
+Laukaa|Laukaa|K|1990|1439|100000|69.5|Keskustie 7 as.10
+Tyvelänniemi|Laukaa|O|1985|1732|220000|127|Tyvelänkuja 9
+Tyvelänniemi|Laukaa|R|2004|2178|159000|73|Neuvojankuja 3
+Lievestuore|Laukaa|O|1926|1657|580000|350|Haarlantie 6
+Harhala|Laukaa|O|2008|2540|348000|137|Salmensillantie 29
+Jokiniemi|Laukaa|O|1991|1324|229000|173|Puolukkarinne 15
+Laukaa|Laukaa|R|1966|1056|38000|36|Saratie 1
+Laukaa|Laukaa|R|1981|1648|89000|54|Ojakuja 10
+Jokiniemi|Laukaa|O|1993|1566|149600|95.5|Kuusisentie 46
+Keskusta|Laukaa|K|1974|1082|59500|55|Laukaantie 7
+Kuhaniemi|Laukaa|O|1920|3611|260000|72|Ruohoniementie 197
+Lievestuore|Laukaa|R|1990|1280|74900|58.5|Rantapolku 5
+Kirkonkylä|Laukaa|K|2022|3129|219000|70|Kipparintie 4 as
+Kataanmäki|Laukaa|O|2013|2458|370000|150.5|Kataanmäki 55
+Asema|Laukaa|O|1972|880|139000|158|Koppelontie 4
+Kantola|Laukaa|R|2006|1810|143000|79|Pajakuja 10-12
+Laajalahti|Laukaa|R|2024|2900|266800|92|Taivaankaari 2 b
+Kirkonkylä-Etelä|Laukaa|O|1988|1041|152000|146|Ritolahdentie 3
+Kirkonkylä|Laukaa|K|1990|951|49000|51.5|Keskustie 7 A
+Tarvaala|Laukaa|K|1947|841|297000|353.3|Tarvaalantie 834
+Jokiniemi|Laukaa|O|1980|985|164000|166.5|Veräjätie 4
+Laajalahti|Laukaa|O|2004|1841|429000|233|Tammelanmutka 2
+Lievestuore|Laukaa|O|1974|630|75000|119|Vannastie 8
+Keskusta|Laukaa|R|1969|1478|99000|67|Pellosniementie 12
+Lievestuore-Keskusta|Laukaa|O|1965|1580|139000|88|Sirppikatu 13
+Keskusta|Laukaa|R|1977|1243|43500|35|Mäkikuja 2
+Vihtavuori|Laukaa|O|1940|635|69900|110|Mikkolantie
+Keskusta|Laukaa|O|1953|970|175000|180.5|Saratie 3
+Tyvelänniemi|Laukaa|R|1990|1463|79000|54|Riihikuja 1
+Keskusta|Laukaa|K|2001|1776|119000|67|Laukaantie 9 A
+Laukaa|Laukaa|K|2006|2205|129000|58.5|Laukaantie 17
+Lievestuore|Laukaa|R|2009|1908|145000|76|Sylvi Saimon tie 4 as
+Vehniä|Laukaa|O|1940|500|35000|70|Syväjärventie 147
+Jokiniemi|Laukaa|O|1983|1205|188000|156|Yläniementie 43
+Keskusta|Laukaa|K|1985|722|39000|54|Laukaantie 3 B
+Vihtavuori|Laukaa|R|1970|582|39000|67|Haavistontie 12
+Keskusta|Laukaa|K|1985|1093|59000|54|Laukaantie 3
+Laukaa|Laukaa|K|2013|2240|168000|75|Vuojärventie 5 A
+Lievestuore|Laukaa|R|2006|1644|120000|73|Kenttäkuja 4 as
+Leppävesi|Laukaa|R|2009|2071|198000|95.6|Reporinne 2
+Keskusta|Laukaa|R|2024|3106|219000|70.5|Kuukkasentie 7
+Keskusta|Laukaa|K|1975|1159|79999|69|Arwidssonintie 14
+Vihtavuori|Laukaa|R|2021|2436|229000|94|Kuusistonkatu 6B
+Lemettilä|Laukaa|R|1984|1095|46000|42|Lemettiläntie 19
+Keskusta|Laukaa|K|1972|812|62500|77|Laukaantie 5
+Leppävesi|Laukaa|R|2006|1753|149000|85|Johanneksentie 1
+Laukaa|Laukaa|O|1999|1588|189000|119|Ahotie 2
+Leppävesi|Laukaa|R|1985|1280|80000|62.5|Toivonpolku 3
+Keskusta|Laukaa|R|2006|1608|698000|434|Vuokaari 5
+Vihtavuori|Laukaa|O|2007|1932|343000|177.5|Eetterikuja 1
+Leppävesi|Laukaa|R|2009|2389|215000|90|Reporinne 2 B1
+Keskusta|Laukaa|K|1973|982|80000|81.5|Keskustie 10 A
+Tyvelänniemi|Laukaa|K|1990|1637|74500|45.5|Roinilantie 5 B 2
+Laukaa|Laukaa|O|1891|870|395000|454|Järvilinnantie 213
+Lievestuore|Laukaa|O|1980|580|69000|119|Suurosentie 3
+Jokiniemi|Laukaa|R|1987|1168|50000|42.8|Jokiniityntie 4
+Vihtavuori|Laukaa|R|1981|1105|42000|38|Riipintie 2 C
+Aikalanmäki|Laukaa|R|1974|1345|78000|58|Ketomaantie 10-12
+Laukaan keskusta|Laukaa|K|2001|1613|75000|46.5|Saratie 13 As 9
+Laukaan keskusta|Laukaa|K|2001|1849|86000|46.5|Saratie 13
+Vihtavuori|Laukaa|O|1970|1306|145000|111|Matinkuja 2
+Keskusta|Laukaa|K|2022|3392|164500|48.5|Kipparintie 4
+VIHTAVUORI|Laukaa|O|1977|728|95000|130.5|Saarnikuja 4
+Keskusta|Laukaa|K|2019|2965|209000|70.5|Vuokaari 4 A
+Keskusta|Laukaa|K|1979|914|32000|35|Laukaantie 12
+Lievestuore|Laukaa|R|1959|552|42500|77|Laurinkyläntie 8
+Lievestuore|Laukaa|R|2009|1841|104000|56.5|Sylvi Saimon tie 4 A 4
+Leppävesi|Laukaa|R|2000|1756|79000|45|Mäntyrinne 4 as 4
+Jokiniemi|Laukaa|R|1986|1285|79000|61.5|Kupiaisentie 8-10, E 10
+Muurame|Muurame|R|2007|1641|179000|109.1|Vuorenlahdentie 14
+Muurame|Muurame|K|1989|915|65000|71|Roomupolku 3 A
+Muurame|Muurame|R|2026|3784|264900|70|Jaakkolantie 2 A1
+Kinkomaa|Muurame|K|2020|550|30782|56|Parantolantie 14 as 20
+Muurame|Muurame|R|1990|1434|119000|83|Pehtoorinpolku 4-6 A
+Saarenkylä|Muurame|O|2013|2837|389000|137.1|Kivijärvenranta 5
+Muurame|Muurame|O|2015|1489|198000|133|Isolahdentie 606 a
+Keskusta|Muurame|O|2109|1079|109000|101|Muuramentie 6
+Keskusta|Muurame|K|1970|680|48962|72|Virastotie 3
+Jaakkola|Muurame|K|1987|1158|55000|47.5|Pienjaakkolantie 10 A
+Kinkomaa|Muurame|K|2020|564|17202|30.5|Kinkoranta 4 as 24
+Kinkomaa|Muurame|K|2020|546|27025|49.5|Kinkoranta 4 as 13
+Jaakkola|Muurame|R|1990|2070|119000|57.5|Lompsantie 2 as
+Kinkomaa|Muurame|K|2020|527|37450|71|Parantolantie 14 as 23
+Kinkomaa|Muurame|K|2020|531|24172|45.5|Kinkoranta 4 as 09
+Uimola|Muurame|R|1993|2287|163500|71.5|Roomupolku 4
+Tervamäki|Muurame|O|2015|2756|485000|176|Siepontie 27
+Tervamäki|Muurame|O|2005|2206|368000|166.8|Siepontie 8
+Kinkomaa|Muurame|K|2020|551|23401|42.5|Parantolantie 14 as 10
+Muurame|Muurame|O|1974|1211|109000|90|Yläpaulantie 8
+Uimola|Muurame|R|1990|1721|74000|43|Pehtoorinpolku 4-6 B
+Rajala|Muurame|R|2016|2367|245000|103.5|Keijukorento 7 B
+Kinkomaa|Muurame|K|2020|568|17314|30.5|Parantolantie 14 as 24
+Verkkoniemi|Muurame|K|1984|1132|38500|34|Peltolantie 4
+Murtolampi|Muurame|O|2020|3436|389000|113.2|Murtolammentie 14
+Saarenkylä|Muurame|O|2003|2326|449000|193|Saarenkyläntie 70
+Muurame|Muurame|R|2026|3998|239900|60|Jaakkolantie 2 C1
+Muurame|Muurame|R|2026|3784|264900|70|Jaakkolantie 2 C5
+Muurame|Muurame|R|2026|3915|234900|60|Jaakkolantie 2 C3
+Tervamäki|Muurame|O|2005|2605|448000|172|Siepontie 4
+Kinkomaa|Muurame|R|2022|2759|389000|141|Kinkorinne 20
+Kinkomaa|Muurame|O|1966|1900|258000|135.8|Kinkomaantie 33
+Paavalinvuori|Muurame|O|2003|2132|352000|165.1|Paavalinvuorentie 31
+Rajala|Muurame|R|2027|2607|279000|107|Seunavuorentie 7
+Muurame|Muurame|K|1978|686|35000|51|Tapanintie 1 A
+Rajala|Muurame|R|1992|1719|165000|96|Sulunsalmentie 1-3
+Muurame|Muurame|R|2026|3886|242900|62.5|Jaakkolantie 2 A4
+Muurame|Muurame|R|2026|3535|289900|82|Jaakkolantie 2 B4
+Muurame|Muurame|R|2026|3617|274900|76|Jaakkolantie 2 B2
+Muurame|Muurame|R|2003|939|139000|148|Kertuntie 8
+Verkkoniemi|Muurame|R|1379|3354|379000|113|Viikkilänraitti 2 A
+Kinkomaa|Muurame|R|2023|2658|295000|111|Jyväpolku 4 A 2
+Keskusta|Muurame|R|2018|2459|150000|61|Muuramentie 29
+Seunavuori|Muurame|R|2027|2650|265000|100|Poutapilventie 1
+Verkkoniemi|Muurame|O|1978|1449|149000|102.8|Penttilänraitti 18
+Paavalinvuori|Muurame|O|2001|1857|299000|161|Haapalahdentie 18
+Kinkomaa|Muurame|O|2016|4472|1170000|261.6|Mäkipajanranta 22
+kuntakeskus|Muurame|K|1981|1137|39800|35|Manninkuja 4
+Keskusta|Muurame|O|2022|3167|418000|132|Usvatie 4
+Kinkomaa|Muurame|R|2017|2264|249000|110|Kinkorinne 1
+Kinkomaa|Muurame|O|1976|681|145000|213|Kinkorinne 18
+Muurame|Muurame|K|2019|3037|124500|41|Muuramentie 35 C
+Muurame|Muurame|R|1990|1910|149000|78|Mesimättääntie 3
+Tervamäki|Muurame|O|2002|1688|238000|141|Metsätie 9
+Jaakkola|Muurame|K|1992|1408|69000|49|Muuramentie 42
+Kinkomaa|Muurame|K|1989|1484|69000|46.5|Keskuskuja 1 B
+Muurame|Muurame|O|1390|1566|390000|249|Muuramentie 74
+Riihiniemi|Muurame|O|2002|2595|410000|158|Vuohisaarentie 8
+Kinkomaa|Muurame|O|2024|3076|895000|291|Kinkomaantie 110
+Pitkälä|Muurame|R|2026|3617|274900|76|Jaakkolantie 2 B
+Jaakkola|Muurame|R|2025|3617|274900|76|Jaakkolantie 2 B 2
+Jaakkola|Muurame|R|2025|3915|234900|60|Jaakkolantie 2 C 3
+Kinkomaa|Muurame|K|2020|557|27559|49.5|Parantolantie 14 as 25
+Niittyaho|Muurame|O|1977|643|49500|77|Hannanpolku 6
+Muurame|Muurame|R|2026|3784|264900|70|Jaakkolantie 2 C
+Muurame|Muurame|R|2026|3498|174900|50|Jaakkolantie 2 A
+Verkkoniemi|Muurame|R|1975|1432|159000|111|Verkkoniementie 29 as
+Uimola|Muurame|K|1987|795|44900|56.5|Pienjaakkolantie 1
+Muurame|Muurame|K|1984|694|34000|49|Suntiontie 3 B
+Jaakkola|Muurame|K|1984|540|34000|63|Suntiontie 3
+Rättäli|Muurame|O|1977|571|119900|210|Taksvärkkitie 3
+Kinkomaa|Muurame|O|1986|1022|89000|87.1|Ritarintie 8
+Kotiranta|Muurame|R|2027|3495|384500|110|Rivipolku 4 B 1
+Verkkoniemi|Muurame|K|1981|1014|74000|73|Penttilänraitti 11 DB
+Verkkoniemi|Muurame|O|1975|1048|109000|104|Suilatie 2
+Kinkomaa|Muurame|R|1976|1066|65000|61|Uljaantie 3 B
+Jaakkola|Muurame|R|2025|3784|264900|70|Jaakkolantie 2 C 5
+Jaakkola|Muurame|R|2025|3498|174900|50|Jaakkolantie 2 A 2
+Jaakkola|Muurame|R|2025|3886|242900|62.5|Jaakkolantie 2 A 4
+Muurame|Muurame|R|2026|3498|174900|50|Jaakkolantie 2 A2
+Niittyaho|Muurame|O|1967|597|40000|67|Santalantie 2
+Keskusta|Muurame|R|1990|2050|119900|58.5|Mesimättääntie 3B 6
+Jaakkola|Muurame|R|2025|3535|289900|82|Jaakkolantie 2 B 4
+Jaakkola|Muurame|R|2025|3998|239900|60|Jaakkolantie 2 C 1
+Jaakkola|Muurame|R|2025|3784|264900|70|Jaakkolantie 2 A 1
+Riihiniemi|Muurame|O|2007|2403|495000|206|Saarenkyläntie 72
+Seunavuori|Muurame|R|2014|2439|204900|84|Saarikonlenkki 46 as 4
+Keskusta|Muurame|K|1970|1346|52500|39|Virastotie 1"

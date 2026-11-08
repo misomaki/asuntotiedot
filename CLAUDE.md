@@ -400,8 +400,8 @@ npx tsx scripts/data-import/02b-import-statfin-municipality.ts     # ✅ 13mx ku
 npx tsx scripts/data-import/10-import-khr-stats.ts                 # (KUNTA-taso mukana)
 npx tsx scripts/data-import/11-compute-khr-okt-prices.ts
 npx tsx scripts/data-import/13-build-area-base-prices.ts           # ✅ 7 975 perushintaa (area_base_prices)
-npx tsx scripts/data-import/08-import-etuovi-listings.ts           # ✅ 16 752 / 17 218 matchattu (97 %, osoitematchaus)
-npx tsx scripts/data-import/09-compute-neighborhood-factors.ts     # ✅ bias + 1 149 kutistettua kerrointa
+npx tsx scripts/data-import/08-import-etuovi-listings.ts           # ✅ 18 795 / 20 132 matchattu (93 %, osoitematchaus; 18 kehyskuntaa mukana)
+npx tsx scripts/data-import/09-compute-neighborhood-factors.ts     # ✅ bias + 1 467 kutistettua kerrointa
 npx tsx scripts/validation/calibrate-scurve.ts --apply             # ✅ S-käyrä datasta
 npx tsx scripts/validation/validate-holdout.ts --mode compute      # ✅ median |Δ| 13.2 %
 npx tsx scripts/validation/check-sql-ts-parity.ts                  # ✅ SQL == TS
@@ -423,8 +423,8 @@ npx tsx scripts/validation/validate-holdout.ts --mode stored       # jälkeen-mi
 - **OKT-perushinnat (KHR-pohjainen):** 2 117 vuosiriviä, 293 postinumeroa (2018–2026, mediaaniala, n ≥ 3) + 303 kuntariviä `municipality_prices`-tauluun
 - **Perushinnat (`area_base_prices`):** 7 975 riviä (3 018 aluetta × 3 talotyyppiä, kun dataa). Lähteet KT: area 311 / shrunk 71 / nearby 411 / municipality 1 628; OKT: area 138 / shrunk 132 / nearby 272 / municipality 105 / cascade 2 130. OKT/RT-suhde rajattu [0.75, 1.40].
 - **Kuntahinnat (`municipality_prices`):** StatFin 13mx 3 176 riviä (301 kuntaa, 2016–2025) + KHR kunta 303 riviä. **Hintaindeksi (`price_index`):** StatFin 13mq, 87 aluetta, 2020–2025.
-- **Etuovi-ilmoitukset:** 17 218, joista 16 752 (97 %) matchattu alueeseen (osoite → MML-osoiterekisteri → postinumero; ennen 67 %). 20 % hold-out-jaolla.
-- **Naapurustokertoimet:** 1 149 (791 high, 126 medium, 232 low), kutistettu kohti 1.0 otoskoolla, keskiarvo 1.03. Globaali bias erikseen: KT 1.097, RT 1.056, OKT 1.010.
+- **Etuovi-ilmoitukset:** 20 132, joista 18 795 (93 %) matchattu alueeseen (osoite → MML-osoiterekisteri → postinumero). 20 % hold-out-jaolla. Sisältää 18 kehyskuntaa (3 415 ilmoitusta, kerätty etuovi.com-hakusivuilta 2026-11-08).
+- **Naapurustokertoimet:** 1 467 (955 high, 192 medium, 320 low), kutistettu kohti 1.0 otoskoolla, keskiarvo 1.03. Globaali bias erikseen: KT 1.100, RT 1.047, OKT 1.024.
 - **Hinta-arvio:** ~268 000 / ~271 000 (98.8%) — kuntatasoinen fallback + neighborhood factors + energy/size factors + KHR OKT base prices
 - **Rakennusluokittelu:** `is_residential` (3-tasoinen: OSM building_type denylist → Ryhti main_purpose → pinta-alaheuristiikka). Denylist-prioriteetti korjattu 2026-03 (migraatio 018).
 - **Kunnat:** ~107 kuntaa hintadatalla (municipality choropleth). WFS-rajat haetaan Tilastokeskukselta, hintadata median per kunta `areas` + `price_estimates` -tauluista.
@@ -512,18 +512,20 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 
 Mittari on **out-of-sample**: 20 % Etuovi-ilmoituksista (`scripts/lib/holdout.ts`, deterministinen hash) ei koskaan osallistu kertoimiin, biasiin tai S-käyrään. Vanha 87 kohteen `validate-prices.ts` oli in-sample (samat ilmoitukset kertoimissa) ja on nyt arkisto.
 
-| Mittari | Tuotanto ennen (stored, n=880) | Uusi malli (compute, n=3 258) |
-|---|---|---|
-| Mean Δ% | +7.4 % | +3.3 % |
-| Median \|Δ%\| | 18.0 % | 13.2 % |
-| Osuus ±15 % sisällä | 43 % | 55 % |
-| KT / RT / OKT mean Δ% | +7.7 / +7.7 / +0.2 | +3.5 / +4.3 / +0.5 |
+Alkuperäinen tuotanto (stored, ennen perushintatyötä) vs. uusi malli (compute), molemmat hold-out-joukolla:
 
-- **Segmentit:** kaikki hold-out-ilmoitukset ovat yhdeksästä suuresta kaupungista — kehyskuntien tarkkuutta ei vielä voi mitata (ks. TODO: Etuovi-keräys kehyskunnista).
+| Mittari | Tuotanto ennen (stored, n=880) | Uusi malli (compute, n=3 653) |
+|---|---|---|
+| Mean Δ% | +7.4 % | +3.6 % |
+| Median \|Δ%\| | 18.0 % | 13.1 % |
+| Osuus ±15 % sisällä | 43 % | 55 % |
+| KT / RT / OKT mean Δ% | +7.7 / +7.7 / +0.2 | +3.5 / +4.0 / +3.6 |
+
+- **Kehyskunnat mitattavissa (2026-11-08):** Etuovi-keräys 18 kehyskunnasta (3 415 ilmoitusta) toi hold-outiin oman segmentin: **kehyskunta/muu n=389, median |Δ| 12.7 %, mean +6.2 %** — samaa tasoa kuin suurkaupungit (13.2 %). Aiemmin näille ei syntynyt lainkaan naapurustokertoimia.
 - **Huom:** asking-hintakorin "< 2 000 €/m²" +24 % on valintaharhaa (halvan pyynnön ehdolla), ei mallin vinoumaa — raakahinnan mukaan koritettu jäännös on 0.96–1.00 kaikissa koreissa (`calibrate-scurve.ts`).
 - **Huom 2:** Etuovi = pyyntihinnat, toteutuneet ~5-10 % alemmat.
 - Raportit: `scripts/validation/reports/holdout-<pvm>-<mode>.md` (+ `latest-compute.json` / `latest-stored.json` portin vertailukohtana)
-- Etuovi-ilmoitukset (17 218 kpl, 9 kaupunkia): `scripts/data-import/etuovi-listings.csv`
+- Etuovi-ilmoitukset (20 132 kpl, 27 kaupunkia ml. 18 kehyskuntaa): `scripts/data-import/etuovi-listings.csv`. Keräys etuovi.com-hakusivuilta (`/myytavat-asunnot/{kunta}?sivu=N`, SSR-HTML, aria-label osoite + hinta/koko-leaf-elementit); robots.txt sallii (Claude-User / yleissääntö, ei `/tulokset` eikä `/api/*`).
 
 ### Missä hinta-algoritmin osat elävät (2026-11 lähtien)
 
@@ -591,7 +593,7 @@ Mittari on **out-of-sample**: 20 % Etuovi-ilmoituksista (`scripts/lib/holdout.ts
 
 - **`_etuovi_staging`**: Etuovi.fi-ilmoitusten raakadata (postal_code, property_type, asking_price_per_sqm, area_id)
 - **`neighborhood_factors`**: Lasketut aluekohtaiset kertoimet (area_id, property_type, factor, sample_count, confidence)
-- **Globaali bias ensin:** `09` laskee talotyypeittäin mediaanin `asking / (base × age)` opetusjoukosta → `price_calibration bias.<type>` (2026-11: KT 1.097, RT 1.056, OKT 1.010). Aiemmin tämä keskimääräinen vinouma eli naapurustokertoimien sisällä (keskiarvo 1.08–1.19), jolloin kaikki alueet ILMAN Etuovi-dataa (kehyskunnat) aliarvioitiin 10–15 %.
+- **Globaali bias ensin:** `09` laskee talotyypeittäin mediaanin `asking / (base × age)` opetusjoukosta → `price_calibration bias.<type>` (2026-11: KT 1.100, RT 1.047, OKT 1.024). Aiemmin tämä keskimääräinen vinouma eli naapurustokertoimien sisällä (keskiarvo 1.08–1.19), jolloin kaikki alueet ILMAN Etuovi-dataa (kehyskunnat) aliarvioitiin 10–15 %.
 - **Kerroin on poikkeama biasista ja kutistettu:** `raw = avg(asking) / (bias × avg(base × age))`, clamp [0.50, 1.50], `factor = 1 + (raw − 1) × n / (n + 5)`.
 - **Lookup-kaskadi** (supabaseDataProvider + SQL + validation, kaikki synkassa):
   1. Tarkka area_id + property_type → factor (sample_count ≥ 1)

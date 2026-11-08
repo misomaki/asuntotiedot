@@ -91,7 +91,7 @@ Etuovi-ilmoituksista (80 % opetusjoukko, 20 % jätetään validointiin) lasketaa
 raaka = avg(pyyntihinnat) / (kalibrointi × avg(perusarviot))
 kerroin = 1 + (raaka − 1) × n / (n + 5)
 ```
-Pieni otos kutistuu kohti 1,0 (yksi ilmoitus säilyttää 17 % poikkeamasta, 20 ilmoitusta 80 %). Rajataan välille [0,50, 1,50]. 1 149 kerrointa nykyisessä tietokannassa, keskiarvo 1,03.
+Pieni otos kutistuu kohti 1,0 (yksi ilmoitus säilyttää 17 % poikkeamasta, 20 ilmoitusta 80 %). Rajataan välille [0,50, 1,50]. 1 467 kerrointa nykyisessä tietokannassa, keskiarvo 1,03 (18 kehyskuntaa mukana marraskuusta 2026).
 
 Suurimmat poikkeamat ovat uudisalueita (Jätkäsaari 0,58: perushinta koostuu jo uusista kaupoista, joten ikäkerroin tuplaisi preemion) ja halpoja lähiöitä (1,3–1,4).
 
