@@ -6,7 +6,7 @@ import { useMapContext } from '@/app/contexts/MapContext'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { cn } from '@/app/lib/utils'
 import { formatNumber, formatPriceRange, getPropertyTypeLabel } from '@/app/lib/formatters'
-import { computePriceRange, inferPropertyType } from '@/app/lib/priceEstimation'
+import { computePriceRange, describeBaseSource, inferPropertyType, isFallbackBaseSource } from '@/app/lib/priceEstimation'
 import type { ConfidenceLevel } from '@/app/lib/priceEstimation'
 import { AnimatedNumber } from '@/app/components/ui/AnimatedNumber'
 import { CompactAttribute } from '@/app/components/sidebar/CompactAttribute'
@@ -134,8 +134,17 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
         propertyType,
         hasFloorCount: building.floor_count !== null,
         hasSizeFactor: building.apartment_count !== null || building.footprint_area_sqm !== null,
+        baseSource: building.base_price_source,
+        baseN: building.base_price_n,
       })
     : null
+  const baseSourceText = describeBaseSource(
+    building.base_price_source,
+    building.base_price_n,
+    building.area_code,
+    building.municipality
+  )
+  const isSparseArea = isFallbackBaseSource(building.base_price_source)
 
   // Resolve building type label — Ryhti subcategory > paritalo heuristic > shared formatter
   let typeLabel: string | null
@@ -229,7 +238,21 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
                     label="Alueen perushinta"
                     value={`${formatBuildingPrice(building.base_price)} €/m²`}
                   />
+                  {baseSourceText && (
+                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                      {baseSourceText}
+                    </p>
+                  )}
                 </div>
+
+                {building.bias_factor !== 1 && (
+                  <FactorRow
+                    label="Markkinakalibrointi"
+                    value={formatFactor(building.bias_factor)}
+                    neutral={false}
+                    positive={building.bias_factor > 1}
+                  />
+                )}
 
                 <FactorRow
                   label="Ikäkerroin"
@@ -368,12 +391,16 @@ export function BuildingPanel({ hideClose }: { hideClose?: boolean } = {}) {
           address={building.address}
           areaCode={building.area_code}
           estimatedPrice={price}
+          baseSource={building.base_price_source}
+          confidence={priceRange?.confidence ?? null}
         />
       )}
 
       {/* ── Disclaimer ── */}
       <p className="text-xs text-muted-foreground/70 leading-snug">
-        Arvio perustuu Tilastokeskuksen tilastohintoihin ja rakennuksen ominaisuuksiin. Suuntaa-antava.
+        {isSparseArea
+          ? 'Alueella on vähän kauppoja, joten arvio nojaa lähialueiden ja kunnan hintatasoon. Haarukka on siksi tavallista leveämpi.'
+          : 'Arvio perustuu Tilastokeskuksen ja Maanmittauslaitoksen kauppahintatilastoihin sekä rakennuksen ominaisuuksiin. Suuntaa-antava.'}
       </p>
     </div>
   )
@@ -561,16 +588,23 @@ function PriceFeedback({
   address,
   areaCode,
   estimatedPrice,
+  baseSource,
+  confidence,
 }: {
   buildingId: string
   address: string | null
   areaCode: string | null
   estimatedPrice: number | null
+  baseSource: string | null
+  confidence: string | null
 }) {
   const [rating, setRating] = useState<FeedbackRating | null>(null)
   const [comment, setComment] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  // 'idle' → vote recorded ('voted', comment field visible) → 'done'
+  const [stage, setStage] = useState<'idle' | 'voted' | 'done'>('idle')
 
+  // The vote is sent immediately (tracked + persisted to Supabase); the
+  // comment is a second, optional event so we never lose the vote.
   function saveFeedback(selectedRating: FeedbackRating, text?: string) {
     trackPriceFeedback({
       buildingId,
@@ -579,6 +613,8 @@ function PriceFeedback({
       estimatedPrice,
       rating: selectedRating,
       comment: text || undefined,
+      baseSource,
+      confidence,
     })
     fetch('/api/feedback/price', {
       method: 'POST',
@@ -594,22 +630,60 @@ function PriceFeedback({
     }).catch(() => {})
   }
 
-  function handleSubmit(selectedRating: FeedbackRating) {
+  function handleVote(selectedRating: FeedbackRating) {
     setRating(selectedRating)
     saveFeedback(selectedRating)
-    setSubmitted(true)
+    setStage('voted')
   }
 
   function handleCommentSubmit() {
     if (!rating || !comment.trim()) return
     saveFeedback(rating, comment.trim())
-    setSubmitted(true)
+    setStage('done')
   }
 
-  if (submitted) {
+  if (stage === 'done') {
     return (
       <div className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-3 py-2.5 text-center animate-fade-in">
         <p className="text-xs text-muted-foreground">Kiitos palautteesta!</p>
+      </div>
+    )
+  }
+
+  if (stage === 'voted') {
+    return (
+      <div className="rounded-lg border border-[#1a1a1a]/10 bg-[#FFFBF5] px-3 py-2.5 space-y-2 animate-fade-in">
+        <p className="text-xs text-muted-foreground font-medium">Kiitos! Mikä olisi mielestäsi oikea neliöhinta?</p>
+        <div className="flex gap-1.5">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="esim. 2 400 €/m² (vapaaehtoinen)"
+            className="flex-1 min-w-0 h-10 md:h-9 rounded-lg border border-[#1a1a1a]/10 bg-transparent px-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#1a1a1a]/30"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCommentSubmit()
+            }}
+            autoFocus
+          />
+          <button
+            type="button"
+            onClick={handleCommentSubmit}
+            disabled={!comment.trim()}
+            className="h-10 md:h-9 min-w-[44px] rounded-lg border border-[#1a1a1a]/10 px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default flex items-center justify-center"
+            aria-label="Lähetä"
+          >
+            <Send size={14} />
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => setStage('done')}
+          className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors"
+        >
+          Ohita
+        </button>
       </div>
     )
   }
@@ -620,9 +694,9 @@ function PriceFeedback({
       <div className="flex gap-1.5">
         <button
           type="button"
-          onClick={() => handleSubmit('too_low')}
+          onClick={() => handleVote('too_low')}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 py-2 text-xs',
+            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 h-11 md:h-9 text-xs',
             'hover:bg-pink-baby/30 hover:border-[#1a1a1a]/20 transition-colors cursor-pointer',
             rating === 'too_low' && 'bg-pink-baby/40 border-[#1a1a1a]/20',
           )}
@@ -632,9 +706,9 @@ function PriceFeedback({
         </button>
         <button
           type="button"
-          onClick={() => handleSubmit('accurate')}
+          onClick={() => handleVote('accurate')}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 py-2 text-xs',
+            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 h-11 md:h-9 text-xs',
             'hover:bg-mint/10 hover:border-[#1a1a1a]/20 transition-colors cursor-pointer',
             rating === 'accurate' && 'bg-mint/20 border-[#1a1a1a]/20',
           )}
@@ -644,9 +718,9 @@ function PriceFeedback({
         </button>
         <button
           type="button"
-          onClick={() => handleSubmit('too_high')}
+          onClick={() => handleVote('too_high')}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 py-2 text-xs',
+            'flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#1a1a1a]/10 px-2 h-11 md:h-9 text-xs',
             'hover:bg-pink-baby/30 hover:border-[#1a1a1a]/20 transition-colors cursor-pointer',
             rating === 'too_high' && 'bg-pink-baby/40 border-[#1a1a1a]/20',
           )}
@@ -655,27 +729,6 @@ function PriceFeedback({
           <span>Liian korkea</span>
         </button>
       </div>
-      {rating && !submitted && (
-        <div className="flex gap-1.5 animate-fade-in">
-          <input
-            type="text"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Mikä olisi oikea hinta? (vapaaehtoinen)"
-            className="flex-1 rounded-lg border border-[#1a1a1a]/10 bg-transparent px-2.5 py-1.5 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#1a1a1a]/30"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleCommentSubmit()
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleCommentSubmit}
-            className="rounded-lg border border-[#1a1a1a]/10 px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
-          >
-            <Send size={13} />
-          </button>
-        </div>
-      )}
     </div>
   )
 }

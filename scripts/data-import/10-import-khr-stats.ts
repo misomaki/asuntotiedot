@@ -14,6 +14,12 @@
  *   Rural area (haja-asutus):
  *     2501 = count, 2502 = avg area m², 2503 = median €, 2504 = mean €, 2505 = std dev €
  *
+ * Region levels imported (khr_transaction_stats.region_type):
+ *   'postal'       — Postinumero (3 044 regions), area_id matched to our areas
+ *   'municipality' — KUNTA (318 regions), area_code = Tilastokeskus kunta code
+ *                    Used by 11-compute-khr-okt-prices.ts as the municipality-level
+ *                    OKT parent price for sparse postal codes.
+ *
  * Usage: npx tsx scripts/data-import/10-import-khr-stats.ts
  */
 
@@ -28,6 +34,13 @@ const INDICATORS = {
 } as const
 
 type LocationType = 'plan' | 'rural'
+type RegionType = 'postal' | 'municipality'
+
+/** KHR API category name per region level */
+const REGION_CATEGORIES: Record<RegionType, string> = {
+  postal: 'Postinumero',
+  municipality: 'KUNTA',
+}
 
 interface KhrDataPoint {
   indicator: number
@@ -59,13 +72,14 @@ function sleep(ms: number): Promise<void> {
 
 // ── Region mapping ───────────────────────────────────────────────────
 
-async function fetchPostalRegions(): Promise<Map<number, RegionInfo>> {
-  console.log('Fetching postal code regions from KHR API...')
+async function fetchRegions(regionType: RegionType): Promise<Map<number, RegionInfo>> {
+  const category = REGION_CATEGORIES[regionType]
+  console.log(`Fetching ${category} regions from KHR API...`)
   const data = await fetchJson<Array<{
     id: number
     code: string
     title: { fi: string }
-  }>>(`${KHR_BASE}/categories/Postinumero/regions`)
+  }>>(`${KHR_BASE}/categories/${category}/regions`)
 
   const map = new Map<number, RegionInfo>()
   for (const item of data) {
@@ -75,7 +89,7 @@ async function fetchPostalRegions(): Promise<Map<number, RegionInfo>> {
       name: item.title?.fi ?? '',
     })
   }
-  console.log(`  ${map.size} postal code regions`)
+  console.log(`  ${map.size} ${category} regions`)
   return map
 }
 
@@ -114,10 +128,15 @@ async function main() {
   console.log('=== KHR Transaction Stats Import ===\n')
 
   // 1. Fetch region mapping + our area IDs
-  const [regions, areaIds] = await Promise.all([
-    fetchPostalRegions(),
+  const [postalRegions, municipalityRegions, areaIds] = await Promise.all([
+    fetchRegions('postal'),
+    fetchRegions('municipality'),
     fetchAreaIds(),
   ])
+  // One lookup covering both levels — KHR region ids are globally unique
+  const regions = new Map<number, RegionInfo & { regionType: RegionType }>()
+  for (const [id, r] of postalRegions) regions.set(id, { ...r, regionType: 'postal' })
+  for (const [id, r] of municipalityRegions) regions.set(id, { ...r, regionType: 'municipality' })
 
   // 2. Define year range (1990–current year)
   const currentYear = new Date().getFullYear()
@@ -135,6 +154,7 @@ async function main() {
     area_id: string | null
     year: number
     location_type: LocationType
+    region_type: RegionType
     transaction_count: number | null
     median_price: number | null
     mean_price: number | null
@@ -206,7 +226,7 @@ async function main() {
       const regionId = parseInt(regionStr, 10)
       const year = parseInt(yearStr, 10)
       const regionInfo = regions.get(regionId)
-      if (!regionInfo) continue // Not a postal code region
+      if (!regionInfo) continue // Not a postal code or municipality region
 
       const count = countMap.get(key) ?? null
       const median = medianMap.get(key) ?? null
@@ -218,9 +238,10 @@ async function main() {
       allRows.push({
         area_code: regionInfo.code,
         area_name: regionInfo.name,
-        area_id: areaIds.get(regionInfo.code) ?? null,
+        area_id: regionInfo.regionType === 'postal' ? (areaIds.get(regionInfo.code) ?? null) : null,
         year,
         location_type: locType,
+        region_type: regionInfo.regionType,
         transaction_count: count,
         median_price: median,
         mean_price: mean,
@@ -233,11 +254,13 @@ async function main() {
   console.log(`\nTotal rows to upsert: ${allRows.length}`)
 
   // 4. Count coverage stats
-  const uniquePostalCodes = new Set(allRows.map(r => r.area_code))
-  const matchedToDb = allRows.filter(r => r.area_id != null)
-  const uniqueMatched = new Set(matchedToDb.map(r => r.area_code))
+  const postalRows = allRows.filter(r => r.region_type === 'postal')
+  const muniRows = allRows.filter(r => r.region_type === 'municipality')
+  const uniquePostalCodes = new Set(postalRows.map(r => r.area_code))
+  const uniqueMatched = new Set(postalRows.filter(r => r.area_id != null).map(r => r.area_code))
   console.log(`Unique postal codes: ${uniquePostalCodes.size}`)
   console.log(`Matched to our areas: ${uniqueMatched.size} / ${uniquePostalCodes.size}`)
+  console.log(`Municipality rows: ${muniRows.length} (${new Set(muniRows.map(r => r.area_code)).size} municipalities)`)
 
   // 5. Batch upsert
   const BATCH_SIZE = 500
@@ -247,7 +270,7 @@ async function main() {
     const batch = allRows.slice(i, i + BATCH_SIZE)
     const { error } = await supabase
       .from('khr_transaction_stats')
-      .upsert(batch, { onConflict: 'area_code,year,location_type' })
+      .upsert(batch, { onConflict: 'area_code,year,location_type,region_type' })
 
     if (error) {
       console.error(`Upsert error at batch ${i}: ${error.message}`)
@@ -267,7 +290,7 @@ async function main() {
   console.log('\n=== Latest data summary ===')
   const recentYears = years.slice(-5)
   for (const y of recentYears) {
-    const yearRows = allRows.filter(r => r.year === y)
+    const yearRows = allRows.filter(r => r.year === y && r.region_type === 'postal')
     const planRows = yearRows.filter(r => r.location_type === 'plan')
     const ruralRows = yearRows.filter(r => r.location_type === 'rural')
     const planCodes = new Set(planRows.map(r => r.area_code))

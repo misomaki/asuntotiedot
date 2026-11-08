@@ -386,10 +386,28 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 677 000 rakennu
 # supabase/migrations/031_khr_transaction_stats.sql        # ✅ KHR-tilastotaulu
 
 # Vaihe 11: MML KHR -import + OKT-perushinnat
-npx tsx scripts/data-import/10-import-khr-stats.ts         # ✅ 43 539 riviä, 2 286 postinumeroa (2000-2026)
-npx tsx scripts/data-import/11-compute-khr-okt-prices.ts   # ✅ 5 452 OKT EUR/m² hintaa → price_estimates
-# Resetoi hinnat: UPDATE buildings SET estimation_year = NULL, estimated_price_per_sqm = NULL;
-npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 267 909 rakennusta sai hinta-arvion (KHR OKT base prices)
+npx tsx scripts/data-import/10-import-khr-stats.ts         # ✅ 59 034 riviä: postinumerot + KUNTA-taso (region_type)
+npx tsx scripts/data-import/11-compute-khr-okt-prices.ts   # ✅ 2 117 OKT-vuosiriviä (293 postinumeroa) + 303 kuntariviä
+
+# Vaihe 12 (2026-11): Perushinnat yhdeksi lähteeksi + hold-out-validointi
+# Aja migraatiot 040 (area_base_prices, price_calibration, municipality_prices, price_index,
+# compute_building_price uusiksi) ja 041 (price_estimates-duplikaattien siivous, NULLS NOT DISTINCT)
+npx tsx scripts/run-sql.ts supabase/migrations/040_base_price_shrinkage.sql
+npx tsx scripts/run-sql.ts supabase/migrations/041_dedupe_price_estimates.sql
+npx tsx scripts/validation/validate-holdout.ts --mode stored      # baseline ENNEN muutoksia
+npx tsx scripts/data-import/00-fill-municipality-codes.ts          # ✅ areas.municipality_code (3 018 aluetta)
+npx tsx scripts/data-import/02b-import-statfin-municipality.ts     # ✅ 13mx kuntahinnat (301 kuntaa) + 13mq indeksi
+npx tsx scripts/data-import/10-import-khr-stats.ts                 # (KUNTA-taso mukana)
+npx tsx scripts/data-import/11-compute-khr-okt-prices.ts
+npx tsx scripts/data-import/13-build-area-base-prices.ts           # ✅ 7 975 perushintaa (area_base_prices)
+npx tsx scripts/data-import/08-import-etuovi-listings.ts           # ✅ 16 752 / 17 218 matchattu (97 %, osoitematchaus)
+npx tsx scripts/data-import/09-compute-neighborhood-factors.ts     # ✅ bias + 1 149 kutistettua kerrointa
+npx tsx scripts/validation/calibrate-scurve.ts --apply             # ✅ S-käyrä datasta
+npx tsx scripts/validation/validate-holdout.ts --mode compute      # ✅ median |Δ| 13.2 %
+npx tsx scripts/validation/check-sql-ts-parity.ts                  # ✅ SQL == TS
+# Resetoi hinnat (pg): UPDATE buildings SET estimation_year = NULL, estimated_price_per_sqm = NULL;
+npx tsx scripts/data-import/05-compute-building-prices.ts          # ajaa hold-out-portin ennen laskentaa
+npx tsx scripts/validation/validate-holdout.ts --mode stored       # jälkeen-mittaus
 ```
 
 ### Datan nykytilanne
@@ -401,8 +419,12 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 267 909 rakennu
 - **Kerrostieto:** ~93% kattavuus
 - **Asuntomäärä (apartment_count):** ~636 000 / ~700 000 (91%) — Ryhti-rekisteristä
 - **Energialuokka (energy_class):** 0% — Ryhti open data ei sisällä energiatodistuksia. Data on erillisessä energiatodistusrekisterissä (ARA), ei avoimesti saatavilla.
-- **KHR-transaktiotilastot:** 43 539 riviä, 2 286 postinumeroa, 2000–2026 (MML Tilastopalvelu REST API, CC BY 4.0)
-- **OKT-perushinnat (KHR-pohjainen):** 5 452 hintarecordia, 270 postinumeroa — todellisiin OKT-kauppahintoihin perustuva EUR/m² (korvaa RT×1.10/KT×0.90 -fallbackin)
+- **KHR-transaktiotilastot:** 59 034 riviä: 2 290 postinumeroa (`region_type='postal'`) + 306 kuntaa (`'municipality'`), 2000–2026 (MML Tilastopalvelu REST API, CC BY 4.0)
+- **OKT-perushinnat (KHR-pohjainen):** 2 117 vuosiriviä, 293 postinumeroa (2018–2026, mediaaniala, n ≥ 3) + 303 kuntariviä `municipality_prices`-tauluun
+- **Perushinnat (`area_base_prices`):** 7 975 riviä (3 018 aluetta × 3 talotyyppiä, kun dataa). Lähteet KT: area 311 / shrunk 71 / nearby 411 / municipality 1 628; OKT: area 138 / shrunk 132 / nearby 272 / municipality 105 / cascade 2 130. OKT/RT-suhde rajattu [0.75, 1.40].
+- **Kuntahinnat (`municipality_prices`):** StatFin 13mx 3 176 riviä (301 kuntaa, 2016–2025) + KHR kunta 303 riviä. **Hintaindeksi (`price_index`):** StatFin 13mq, 87 aluetta, 2020–2025.
+- **Etuovi-ilmoitukset:** 17 218, joista 16 752 (97 %) matchattu alueeseen (osoite → MML-osoiterekisteri → postinumero; ennen 67 %). 20 % hold-out-jaolla.
+- **Naapurustokertoimet:** 1 149 (791 high, 126 medium, 232 low), kutistettu kohti 1.0 otoskoolla, keskiarvo 1.03. Globaali bias erikseen: KT 1.097, RT 1.056, OKT 1.010.
 - **Hinta-arvio:** ~268 000 / ~271 000 (98.8%) — kuntatasoinen fallback + neighborhood factors + energy/size factors + KHR OKT base prices
 - **Rakennusluokittelu:** `is_residential` (3-tasoinen: OSM building_type denylist → Ryhti main_purpose → pinta-alaheuristiikka). Denylist-prioriteetti korjattu 2026-03 (migraatio 018).
 - **Kunnat:** ~107 kuntaa hintadatalla (municipality choropleth). WFS-rajat haetaan Tilastokeskukselta, hintadata median per kunta `areas` + `price_estimates` -tauluista.
@@ -446,6 +468,8 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 267 909 rakennu
 - `.rpc()` JSONB-parametrille anna JavaScript-objekti/array, EI `JSON.stringify()` → muuten "cannot extract elements from a scalar"
 - Migraatiot täytyy ajaa uudelleen SQL Editorissa jos funktioita muutetaan lokaalisti — tietokannassa on edelleen vanha versio kunnes CREATE OR REPLACE ajetaan
 - **KRIITTINEN: Numeeristen kenttien null-tarkistus** — ÄLÄ käytä `value ? Number(value) : null` numeerisille kentille jotka voivat olla 0 (esim. `min_distance_to_water_m`). JS:n falsy-tarkistus tulkitsee `0`:n nulliksi. Käytä aina `value != null ? Number(value) : null`.
+- **KRIITTINEN: REST-client palauttaa max 1 000 riviä** — `supabase.from('areas').select(...)` ilman `.range()`-paginointia palauttaa vain 1 000 ensimmäistä riviä (areas-taulussa on 3 018). Tämä rikkoi hiljaa skriptit 08, 10 ja 11 (vain kolmasosa alueista matchattiin). Käytä bulk-lukuihin `scripts/data-import/lib/pgClient.ts` (`getPgClient()`, suora pg-yhteys) tai paginoi.
+- **`UNIQUE` + NULL-sarake:** `UNIQUE(area_id, year, quarter, property_type)` ei estänyt duplikaatteja kun `quarter IS NULL` → jokainen upsert-ajo lisäsi uuden rivin (17 786 riviä / 6 442 avainta). Korjattu migraatiossa 041 `UNIQUE NULLS NOT DISTINCT` (PG 15+). Käytä samaa mallia uusissa tauluissa, joissa avaimessa voi olla NULL.
 - **Supabase CLI:** `npx supabase db query --linked -f <file.sql>` — ajaa SQL:n suoraan remote-tietokantaan. Linkitys: `npx supabase link --project-ref <ref>`. Vaihtoehto: `npx tsx scripts/run-sql.ts <file.sql>` (pg-yhteys, 600s timeout)
 - **MVT-tiilikätkö:** Vercel CDN cachettaa rakennustiilet 24h. Hintojen uudelleenlaskennan jälkeen kasvata `TILE_VERSION`-vakiota `MapContainer.tsx`:ssä (moduulitason vakio)
 - **getAreaDetails parallelization:** 6 riippumatonta kyselyä (prices, building_stats, demographics, socioeconomics, housing, employment) ajetaan `Promise.all`:lla — EI peräkkäin
@@ -484,27 +508,44 @@ npx tsx scripts/data-import/05-compute-building-prices.ts  # ✅ 267 909 rakennu
 
 Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihintoja algoritmimme tuottamiin arvioihin. Tarkkuuden ylläpitäminen edellyttää säännöllistä uudelleenvalidointia ja faktorien päivitystä.
 
-### Nykyinen tarkkuus (baseline 2026-04-01, recalibrated all factors + no water dampening)
-- **Mean Δ%:** -1% (lähes harhaton), **Median Δ%:** -5%
-- **KT:** -2% (n=30), **RT:** -6% (n=28), **OKT:** +4% (n=29)
-- **Helsinki:** -3% (n=57), **Tampere:** +4% (n=27), **Turku:** -24% (n=3, vähän dataa)
-- **Mean |Δ%|:** 18%, **Std Dev:** 23%
-- **Huom:** energy_factor = 1.0 kaikille (ei dataa), size_factor aktiivinen KT:lle (apartment_count 91%)
-- **Huom 2:** Etuovi = pyyntihinnat, toteutuneet ~5-10% alemmat → todellinen tarkkuus ~+5% vs toteutuneet
-- **Huom 3:** Mean |Δ%| 18% johtuu pääosin puuttuvista neighborhood factoreista (67% validointilistingseistä ilman factoria). Alueilla joilla on factor, tarkkuus on ~12%.
-- Validointiraportti: `scripts/validation/price-validation-2026-03.md`
-- Raakadata: `scripts/validation/etuovi-raw-data.md`
-- Etuovi-ilmoitukset (1 134 kpl, 9 kaupunkia): `scripts/data-import/etuovi-listings.csv`
-- Neighborhood factors: 468 kpl (68 high, 86 medium, 177 low + 137 vanhaa), avg 1.06
+### Nykyinen tarkkuus (hold-out baseline 2026-11-08)
 
-### Kolme paikkaa joissa faktorit elävät (pidä synkassa!)
+Mittari on **out-of-sample**: 20 % Etuovi-ilmoituksista (`scripts/lib/holdout.ts`, deterministinen hash) ei koskaan osallistu kertoimiin, biasiin tai S-käyrään. Vanha 87 kohteen `validate-prices.ts` oli in-sample (samat ilmoitukset kertoimissa) ja on nyt arkisto.
+
+| Mittari | Tuotanto ennen (stored, n=880) | Uusi malli (compute, n=3 258) |
+|---|---|---|
+| Mean Δ% | +7.4 % | +3.3 % |
+| Median \|Δ%\| | 18.0 % | 13.2 % |
+| Osuus ±15 % sisällä | 43 % | 55 % |
+| KT / RT / OKT mean Δ% | +7.7 / +7.7 / +0.2 | +3.5 / +4.3 / +0.5 |
+
+- **Segmentit:** kaikki hold-out-ilmoitukset ovat yhdeksästä suuresta kaupungista — kehyskuntien tarkkuutta ei vielä voi mitata (ks. TODO: Etuovi-keräys kehyskunnista).
+- **Huom:** asking-hintakorin "< 2 000 €/m²" +24 % on valintaharhaa (halvan pyynnön ehdolla), ei mallin vinoumaa — raakahinnan mukaan koritettu jäännös on 0.96–1.00 kaikissa koreissa (`calibrate-scurve.ts`).
+- **Huom 2:** Etuovi = pyyntihinnat, toteutuneet ~5-10 % alemmat.
+- Raportit: `scripts/validation/reports/holdout-<pvm>-<mode>.md` (+ `latest-compute.json` / `latest-stored.json` portin vertailukohtana)
+- Etuovi-ilmoitukset (17 218 kpl, 9 kaupunkia): `scripts/data-import/etuovi-listings.csv`
+
+### Missä hinta-algoritmin osat elävät (2026-11 lähtien)
+
+**Perushinta ja kalibrointi ovat DATAA, eivät koodia:**
+
+| Taulu | Sisältö | Kirjoittaja | Lukijat |
+|---|---|---|---|
+| `area_base_prices` | Yksi kutistettu €/m² per (alue, talotyyppi) + `source`, `n_own`, `details` | `13-build-area-base-prices.ts` (täysi uudelleenrakennus) | SQL `compute_building_price()`, `supabaseDataProvider.lookupBasePrice`, `validate-holdout.ts`, `09-compute-neighborhood-factors.ts` |
+| `price_calibration` | `bias.<type>`, `shrink.k.<type>`, `scurve.1500…8000` | `09-compute-neighborhood-factors.ts` (bias), `calibrate-scurve.ts` (S-käyrä) | SQL `calib()`, provider `loadCalibration()` (10 min välimuisti), validointi |
+| `municipality_prices` | StatFin 13mx (KT/RT) + KHR kunta (OKT) | `02b-import-statfin-municipality.ts`, `11-compute-khr-okt-prices.ts` | `13-build-area-base-prices.ts` |
+| `price_index` | StatFin 13mq (2020=100) deflatointiin | `02b-import-statfin-municipality.ts` | `13-build-area-base-prices.ts` |
+
+**Kertoimet (ikä, vesi, kerros, koko, tontti, dampening) ovat edelleen koodia kahdessa paikassa — pidä synkassa:**
 
 | Sijainti | Käyttö | Muokkaa kun |
 |----------|--------|-------------|
-| `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider) | Faktoriarvo muuttuu |
-| `supabase/migrations/022_sync_price_factors.sql` | Tietokanta — korvattu 034:llä | - |
-| `supabase/migrations/034_fix_okt_fallback_and_clamp.sql` | Tietokanta — korvattu 038:llä | - |
-| `supabase/migrations/038_nearby_interpolation.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**: Phase 1.5 IDW interpolation, S-curve fallback guard, latest-year fix. Korvaa 034:n. | Mikä tahansa faktori muuttuu |
+| `app/lib/priceEstimation.ts` | Frontend (BuildingPanel, supabaseDataProvider), validointi, skriptit | Faktoriarvo muuttuu |
+| `supabase/migrations/040_base_price_shrinkage.sql` | Tietokanta (`compute_building_price()` RPC) — **uusin**. Lukee `area_base_prices` + `price_calibration`. Palauttaa 030:n täyden 11-parametrisen signatuurin (038 oli hiljaa pudottanut `total_area_sqm` ja `is_leased_plot`). | Mikä tahansa faktori muuttuu |
+| `scripts/validation/check-sql-ts-parity.ts` | **Aja aina faktorimuutoksen jälkeen** — vertaa SQL- ja TS-hintaa 300–400 satunnaiselle rakennukselle, exit 1 jos ero > 1 €/m² | - |
+| `supabase/migrations/038_nearby_interpolation.sql` | Korvattu 040:llä (`get_nearby_area_prices` jää tauluun, ei käytössä) | - |
+| `supabase/migrations/034_fix_okt_fallback_and_clamp.sql` | Korvattu 038:lla | - |
+| `supabase/migrations/022_sync_price_factors.sql` | Korvattu 034:llä | - |
 | `supabase/migrations/016_recalibrated_age_factors.sql` | Korvattu 022:lla | - |
 | `supabase/migrations/017_recalibrated_water_factors.sql` | Korvattu 022:lla | - |
 | `supabase/migrations/015_energy_size_factors.sql` | Tietokanta — energy/size sarakkeet + match_ryhti_energy_apartment_batch RPC | Energy/size sarakkeet muuttuvat |
@@ -512,12 +553,16 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 | `supabase/migrations/011_premium_dampening.sql` | Tietokanta — premium dampening + municipality median fallback | Dampening-logiikka muuttuu |
 | `supabase/migrations/012_fix_neighborhood_factor_cascade.sql` | Tietokanta — poistettu municipality median nbhd-faktorista | Neighborhood factor -kaskadi muuttuu |
 | `supabase/migrations/013_water_distance_lake_sea_only.sql` | Tietokanta — vesistöetäisyys vain järvet+meri, EPSG:3067 | Vesistösuodatus tai etäisyyslaskenta muuttuu |
-| `scripts/validation/validate-prices.ts` | Validointiskripti | Faktoriarvo muuttuu |
-| `scripts/data-import/09-compute-neighborhood-factors.ts` | Laskee neighborhood factorit Etuovi-datasta | Factor-laskentalogiikka muuttuu |
-| `scripts/data-import/10-import-khr-stats.ts` | MML KHR -raakadata → `khr_transaction_stats` | KHR-aineiston päivitys |
-| `scripts/data-import/11-compute-khr-okt-prices.ts` | KHR → OKT EUR/m² → `price_estimates` | OKT-perushintalaskenta muuttuu |
+| `scripts/validation/validate-holdout.ts` | **Päämittari.** `--mode compute` (TS-malli tauluista) / `--mode stored` (tuotannon tallennetut hinnat), `--gate` | Ajetaan ennen jokaista uudelleenlaskentaa (05 tekee sen automaattisesti) |
+| `scripts/validation/validate-prices.ts` | Vanha 87 kohteen in-sample-validointi — arkisto | - |
+| `scripts/validation/calibrate-scurve.ts` | Laskee S-käyrän solmut opetusjoukon jäännöksistä → `price_calibration` | Kertoimet tai perushinnat muuttuvat |
+| `scripts/data-import/13-build-area-base-prices.ts` | Perushintojen kutistus (poolaus 3 v, naapurit n/d², kunta, kaskadi, OKT-vartija) | Perushintalogiikka muuttuu |
+| `scripts/data-import/09-compute-neighborhood-factors.ts` | Globaali bias + kutistetut naapurustokertoimet Etuovi-datasta (hold-out pois) | Factor-laskentalogiikka muuttuu |
+| `scripts/data-import/10-import-khr-stats.ts` | MML KHR -raakadata (postinumero + kunta) → `khr_transaction_stats` | KHR-aineiston päivitys |
+| `scripts/data-import/11-compute-khr-okt-prices.ts` | KHR → OKT EUR/m² → `price_estimates` + `municipality_prices` | OKT-perushintalaskenta muuttuu |
+| `scripts/lib/holdout.ts` | 20 % hold-out-jako (FNV-1a hash osoite+kaupunki+tyyppi) | Ei muuteta — muuttaisi vertailukelpoisuuden |
 
-**KRIITTINEN:** TypeScript-faktorit (`priceEstimation.ts`) ja SQL-faktorit (migraatiot) PITÄÄ päivittää yhdessä. Jos muutat esim. age factoria TypeScriptissä mutta unohdat SQL-migraation, tietokannassa lasketut arvot ja frontendin laskemat arvot eroavat.
+**KRIITTINEN:** TypeScript-faktorit (`priceEstimation.ts`) ja SQL-faktorit (migraatio 040) PITÄÄ päivittää yhdessä ja todentaa `check-sql-ts-parity.ts`-skriptillä. Perushintaa tai S-käyrää EI muuteta koodissa — ne lasketaan tauluihin skripteillä.
 
 ### Ei-asuinrakennusten denylist (pidä synkassa!)
 
@@ -546,20 +591,21 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 
 - **`_etuovi_staging`**: Etuovi.fi-ilmoitusten raakadata (postal_code, property_type, asking_price_per_sqm, area_id)
 - **`neighborhood_factors`**: Lasketut aluekohtaiset kertoimet (area_id, property_type, factor, sample_count, confidence)
+- **Globaali bias ensin:** `09` laskee talotyypeittäin mediaanin `asking / (base × age)` opetusjoukosta → `price_calibration bias.<type>` (2026-11: KT 1.097, RT 1.056, OKT 1.010). Aiemmin tämä keskimääräinen vinouma eli naapurustokertoimien sisällä (keskiarvo 1.08–1.19), jolloin kaikki alueet ILMAN Etuovi-dataa (kehyskunnat) aliarvioitiin 10–15 %.
+- **Kerroin on poikkeama biasista ja kutistettu:** `raw = avg(asking) / (bias × avg(base × age))`, clamp [0.50, 1.50], `factor = 1 + (raw − 1) × n / (n + 5)`.
 - **Lookup-kaskadi** (supabaseDataProvider + SQL + validation, kaikki synkassa):
-  1. Tarkka area_id + property_type → factor (sample_count ≥ 3)
-  2. Fallback: area_id + 'all' → factor (sample_count ≥ 3)
+  1. Tarkka area_id + property_type → factor (sample_count ≥ 1)
+  2. Fallback: area_id + 'all' → factor (sample_count ≥ 1)
   3. Final fallback: 1.0
-  - **EI municipality-median-fallbackia** nbhd-faktoreille — harvan datan kanssa se vääristää (esim. Tampere KT median 1.12 vain 3 alueesta). Municipality median käytetään VAIN base price -fallbackissa.
-- **Luottamustasot:** high (≥5 listingsiä), medium (3-4), low (1-2), default (ei dataa)
-- **Lookup minimum:** sample_count ≥ 2 (lasketettu 3:sta parempaa Tampere-kattavuutta varten)
-- **Clamping:** factor rajataan välille [0.50, 1.50] (laajennettu 0.70:stä halvempien alueiden korjaamista varten)
-- **Päivitys:** Kerää uudet Etuovi-ilmoitukset → `_etuovi_staging` → aja `09-compute-neighborhood-factors.ts`
+  - **EI municipality-median-fallbackia** nbhd-faktoreille — harvan datan kanssa se vääristää. Kuntataso vaikuttaa vain perushintaan (`area_base_prices`).
+- **Luottamustasot:** high (≥5 listingsiä), medium (3-4), low (1-2), default (ei dataa). Kutistus hoitaa luotettavuuden, joten lookup ei enää suodata sample_countilla.
+- **Hold-out:** 20 % ilmoituksista (`scripts/lib/holdout.ts`) ei koskaan osallistu kertoimiin tai biasiin.
+- **Päivitys:** Kerää uudet Etuovi-ilmoitukset → CSV → `08-import-etuovi-listings.ts` (osoitematchaus MML-rekisteriin) → `13-build-area-base-prices.ts` → `09-compute-neighborhood-factors.ts` → `calibrate-scurve.ts --apply` → `validate-holdout.ts`
 
-### OKT_FALLBACK — single source of truth
-- Omakotitalon fallback-kertoimet on määritelty `priceEstimation.ts` → `OKT_FALLBACK`-vakiossa
-- `supabaseDataProvider.ts` importtaa ja käyttää näitä — ÄLÄ hardkoodaa arvoja sinne
-- SQL-migraatiossa sama arvo on toistettava manuaalisesti (ei voi importata TS:stä)
+### OKT_FALLBACK — talotyyppikaskadi
+- Kaskadi (OKT ← RT×1.00 ← KT×0.75, RT ← KT×0.85) ajetaan nykyään VAIN `13-build-area-base-prices.ts`:ssä (`CASCADE`-vakio), tulos tallentuu `area_base_prices`-tauluun lähteellä `cascade`. SQL ja provider eivät enää kaskadoi.
+- `priceEstimation.ts` → `OKT_FALLBACK` pidetään dokumentaation ja mahdollisen offline-käytön vuoksi samoissa arvoissa.
+- Lisäksi **OKT-vartija:** saman alueen OKT-perushinta rajataan välille [0.75, 1.40] × RT-perushinta (KHR-johdettu €/m² oli paikoin 2–3× RT:n).
 
 ### Milloin uudelleenvalidoida
 
@@ -575,26 +621,27 @@ Hinta-arviot validoitiin 2026-03 vertaamalla 87 Etuovi.fi-ilmoituksen pyyntihint
 #    Tallenna ilmoitukset: _etuovi_staging -tauluun (Supabase)
 #    Tallenna raakadata: scripts/validation/etuovi-raw-data.md
 
-# 2. Laske neighborhood factorit uudelleen
+# 2. Importtaa ilmoitukset ja rakenna perushinnat + kertoimet (hold-out jää automaattisesti pois)
 source ~/.nvm/nvm.sh && nvm use 20
+npx tsx scripts/data-import/08-import-etuovi-listings.ts
+npx tsx scripts/data-import/13-build-area-base-prices.ts
 npx tsx scripts/data-import/09-compute-neighborhood-factors.ts
+npx tsx scripts/validation/calibrate-scurve.ts            # tarkista ehdotus, sitten --apply
 
-# 3. Aja validointiskripti
-npx tsx scripts/validation/validate-prices.ts
+# 3. Hold-out-validointi (out-of-sample, vertaa automaattisesti edelliseen raporttiin)
+npx tsx scripts/validation/validate-holdout.ts --mode compute
 
-# 4. Analysoi tulokset (raportti tulostuu terminaaliin + päivittää .md-tiedoston)
-#    Tarkasta: Mean Δ%, jakauma talotyypeittäin ja kaupungeittain
-
-# 5. Jos faktorit muuttuvat:
+# 4. Jos faktorit (ikä, vesi, koko…) muuttuvat:
 #    a) Päivitä app/lib/priceEstimation.ts (TypeScript-faktorit)
-#    b) Luo uusi SQL-migraatio joka päivittää compute_building_price()
-#    c) Päivitä scripts/validation/validate-prices.ts (samat faktorit)
+#    b) Luo uusi SQL-migraatio joka päivittää compute_building_price() (pohjana 040)
+#    c) npx tsx scripts/validation/check-sql-ts-parity.ts   — pitää olla 0 mismatches
 #    d) Päivitä tämä CLAUDE.md (algoritmi-kuvaus + baseline-luvut)
 
-# 6. Aja migraatio ja laske hinnat uudelleen:
-#    a) Aja uusi SQL-migraatio Supabase SQL Editorissa
-#    b) Resetoi: UPDATE buildings SET estimation_year = NULL;
-#    c) npx tsx scripts/data-import/05-compute-building-prices.ts
+# 5. Uudelleenlaskenta tuotantoon:
+#    a) Resetoi (pg): UPDATE buildings SET estimation_year = NULL, estimated_price_per_sqm = NULL;
+#    b) npx tsx scripts/data-import/05-compute-building-prices.ts   (ajaa hold-out-portin; --force ohittaa)
+#    c) npx tsx scripts/validation/validate-holdout.ts --mode stored (jälkeen-mittaus)
+#    d) Kasvata TILE_VERSION (MapContainer.tsx)
 ```
 
 ### Tunnetut rajoitukset
@@ -612,14 +659,14 @@ raw_estimate = base_price × age_factor × energy_factor × water_factor × floo
 estimated_price = raw_estimate × price_range_correction(raw_estimate)
 ```
 
-**Base price** = €/m² (postinumero + vuosi + talotyyppi)
-- **Phase 1:** Area-level lookup (postinumero + talotyyppi, uusin vuosi). OKT cascade: omakotitalo → rivitalo×1.00 → kerrostalo×0.75. RT cascade: rivitalo → kerrostalo×0.85.
-- **Phase 1.5:** Nearby postal code interpolation (IDW, max 5 naapuria 10km säteellä, min 2 vaaditaan). Käytetään kun postinumerolla ei ole hintadataa. `get_nearby_area_prices()` RPC + `areas.centroid` GIST-indeksi. Sama OKT/RT-cascade.
-- **Phase 2:** Municipality median fallback (PERCENTILE_CONT, vain uusin vuosi per alue). Sama OKT/RT-cascade.
-- Kerrostalo/rivitalo: StatFin PxWeb API
-- Omakotitalo: **KHR-pohjainen** (MML kauppahintarekisteri mediaani / avg asuntoala per postinumero, 270 aluetta, 2000–2026)
-- Omakotitalo fallback (jos ei KHR-dataa): rivitalo × OKT_FALLBACK.fromRivitalo (1.00) → kerrostalo × OKT_FALLBACK.fromKerrostalo (0.75)
-- **`isFallback`-lippu:** Phase 1.5 ja Phase 2 asettavat `isFallback=true` → S-curve low-end discount (0.92) ohitetaan
+**Base price** = `area_base_prices.base_price` (postinumero + talotyyppi), rakennettu `13-build-area-base-prices.ts`:llä (2026-11):
+- **Oma estimaatti:** `p_own = Σ w_y·p_y·deflate_y / Σ w_y`, kolme viimeistä täyttä vuotta (L = viimeisin täysi vuosi; kuluva osavuosi mukana L:n painolla), `w_y = n_y × 0.6^(L−y)`, deflatointi StatFin 13mq -indeksillä (kunta → maakunta → koko maa). `n_own = Σ w_y`.
+- **Parent:** (1) naapurit ≤ 15 km, max 8, paino `n_own/d²`, Σn ≥ 10; (2) kuntataso: StatFin 13mx (KT/RT) tai KHR kunta (OKT), fallback kunnan alueiden mediaani; jos molemmat → 50/50; (3) talotyyppikaskadi saman alueen jo lasketusta perushinnasta (OKT ← RT×1.00 ← KT×0.75, RT ← KT×0.85).
+- **Kutistus:** `base = (n_own·p_own + k·p_parent) / (n_own + k)`, `k` = `price_calibration shrink.k.<type>` (KT 10, RT 8, OKT 6). 80 kaupan alue pysyy omassa hinnassaan, 4 kaupan alue nojaa 60 % naapureihin.
+- **`source`:** `area` (n_own ≥ 3k) / `shrunk` / `nearby` / `municipality` / `cascade`. Fallback-lähteet (`nearby|municipality|cascade`) ohittavat S-käyrän alapään ja leventävät UI:n hintahaarukkaa (+6 pp; `shrunk` +3 pp; n_own < 10 +2 pp).
+- **OKT-vartija:** OKT-perushinta rajataan [0.75, 1.40] × saman alueen RT-perushinta.
+- Kerrostalo/rivitalo-vuosirivit: StatFin 13mu. Omakotitalo-vuosirivit: KHR mediaanihinta / Ryhti-mediaaniala per postinumero (≥ 5 taloa, ≥ 3 kauppaa, 2018–).
+- **Bias:** perushinta kerrotaan `price_calibration bias.<type>` -vakiolla (opetusjoukon mediaani asking/estimate) ennen kertoimia.
 
 **Age factor** (U-käyrä, recalibrated 2026-04-01):
 ```
@@ -658,12 +705,10 @@ uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) lasket
 - EI vaimenneta vanhoille rakennuksille (rakennuksen sisäinen ominaisuus)
 
 **Neighborhood factor** (aluekerroin):
-- Laskettu Etuovi.fi-ilmoituksista: `factor = avg(asking_price) / avg(algorithmic_estimate)`
+- Laskettu Etuovi.fi-ilmoituksista (opetusjoukko, hold-out pois): `raw = avg(asking) / (bias × avg(base × age))`, clamp [0.50, 1.50], kutistus `1 + (raw − 1) × n/(n + 5)`
 - Ilmoitukset joilla `construction_year = 0/NULL` suodatetaan pois (vääristäisi factoria)
-- Lookup: area_id + property_type → area_id + 'all' → 1.0 (ei municipality mediania — vääristäisi)
-- Clamping: [0.70, 1.50]
-- Minimum sample_count: 3 (low confidence factors ignored in lookup)
-- Tyypillinen vaihteluväli: 0.70 (lähiöt) – 1.50 (premium-alueet)
+- Lookup: area_id + property_type → area_id + 'all' → 1.0 (ei municipality mediania — vääristäisi); sample_count ≥ 1
+- Keskiarvo ≈ 1.03 (bias siirretty perustasoon); suurimmat poikkeamat ovat uudisalueita (Jätkäsaari 0.58: perushinta sisältää jo uudispreemion, ikäkerroin tuplaisi sen) ja halpoja lähiöitä (1.3–1.4)
 
 **Premium dampening** (vanhoille rakennuksille):
 - Kun `age_factor < 0.85` (rakennettu ennen ~1986), neighborhood-faktorin (> 1.0) vaikutusta vaimennetaan
@@ -673,17 +718,13 @@ uudet+vanhat kaupat → uudispreemio laimenee. Vanhat ikähaarukat (>80v) lasket
 - Implementoitu: `priceEstimation.ts` → `dampenPremium()`, `038_nearby_interpolation.sql`
 - Vaimennetaan: neighborhood (markkina-sentimentti). EI vaimenneta: water (pysyvä fyysinen ominaisuus), energy, size, floor (rakennuksen sisäiset)
 
-**Price-range correction** (S-curve, added 2026-04-10, fallback guard added 2026-04-26):
-- ≤1500 €/m²: 0.92 (strong discount — cheap areas systematically overestimated)
-- 1500–2000 €/m²: linear interpolation 0.92→1.00
-- 2000–6000 €/m²: 1.00 (neutral zone — no correction)
-- 6000–8000 €/m²: linear interpolation 1.00→1.06
-- >8000 €/m²: 1.06 (boost — premium areas systematically underestimated)
-- **Fallback guard:** When `isFallback=true` (Phase 1.5 or Phase 2 base price) AND `rawEstimate ≤ 2000`: correction = 1.00 (neutral). Low-end discount skipped because fallback prices are already uncertain — additional discount compounds the error.
-- Applied to final raw estimate AFTER all factors, BEFORE rounding
-- Reason: StatFin base prices compress the spread (blend old+new transactions)
+**Price-range correction** (S-curve, data-driven since 2026-11):
+- Solmut `price_calibration scurve.1500 / 2000 / 4000 / 6000 / 8000`, lineaarinen interpolointi välillä, tasainen ulkopuolella. Laskee `calibrate-scurve.ts` opetusjoukon mediaanijäännöksestä raakahintakoreittain, rajaus [0.90, 1.10].
+- 2026-11 arvot: 0.999 / 0.980 / 0.997 / 0.978 / 0.961 — eli käytännössä tasainen, lievä alennus kalleimmassa päässä. Vanha käsin asetettu 0.92 → 1.06 oli kutistetun perushinnan jälkeen väärään suuntaan molemmissa päissä.
+- **Fallback guard:** kun `source IN ('nearby','municipality','cascade')` JA `rawEstimate ≤ 2000`: correction = 1.00.
+- Applied to final raw estimate AFTER all factors, BEFORE rounding. SQL: `price_range_correction(raw, is_fallback)`, TS: `computePriceRangeCorrection(raw, isFallback, scurve)`.
 
-**Municipality fallback:** Käyttää **mediaania** (PERCENTILE_CONT(0.5)), ei keskiarvoa — kestää premium-alueiden vääristymää. **Fixed 2026-04-26:** SQL nyt suodattaa uusimpaan vuoteen per alue ennen PERCENTILE_CONT (aiemmin sekoitti kaikkien vuosien hinnat, mikä laimensi mediaania).
+**Municipality fallback:** ei enää erillistä SQL-polkua — kuntataso on `area_base_prices`-rakentajan parent-lähde (StatFin 13mx / KHR kunta / alueiden mediaani), ks. Base price.
 
 ## Liiketoimintamalli ja monetisaatio
 

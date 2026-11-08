@@ -22,9 +22,82 @@ export const OKT_FALLBACK = {
 
 export type PropertyType = 'kerrostalo' | 'rivitalo' | 'omakotitalo'
 
+/**
+ * Where the base price came from (area_base_prices.source).
+ *   area         own postal-code data dominates
+ *   shrunk       own data blended with neighbours / municipality
+ *   nearby       no own data — IDW of nearby postal codes
+ *   municipality no own data — municipality-level price
+ *   cascade      no own data — derived from another property type in the same area
+ */
+export type BasePriceSource = 'area' | 'shrunk' | 'nearby' | 'municipality' | 'cascade'
+
+/** Sources that count as fallbacks for the S-curve guard and wider price ranges. */
+export const FALLBACK_BASE_SOURCES: ReadonlySet<BasePriceSource> = new Set([
+  'nearby',
+  'municipality',
+  'cascade',
+])
+
+export function isFallbackBaseSource(source: BasePriceSource | null | undefined): boolean {
+  return source != null && FALLBACK_BASE_SOURCES.has(source)
+}
+
+/** S-curve knots (raw €/m² → multiplier). Linear between knots, flat outside. */
+export interface SCurveKnots {
+  k1500: number
+  k2000: number
+  k4000: number
+  k6000: number
+  k8000: number
+}
+
+/**
+ * Calibration constants — mirrors the `price_calibration` table.
+ * `DEFAULT_CALIBRATION` must equal the seed values in migration 040 so the
+ * mock provider and any offline computation agree with the database defaults.
+ */
+export interface PriceCalibration {
+  bias: Record<PropertyType, number>
+  scurve: SCurveKnots
+}
+
+export const DEFAULT_CALIBRATION: PriceCalibration = {
+  bias: { kerrostalo: 1.0, rivitalo: 1.0, omakotitalo: 1.0 },
+  scurve: { k1500: 0.92, k2000: 1.0, k4000: 1.0, k6000: 1.0, k8000: 1.06 },
+}
+
+/** Build a PriceCalibration from `price_calibration` rows (missing keys → defaults). */
+export function calibrationFromRows(rows: Array<{ key: string; value: number | string }>): PriceCalibration {
+  const map = new Map(rows.map((r) => [r.key, Number(r.value)]))
+  const get = (key: string, fallback: number) => {
+    const v = map.get(key)
+    return v != null && Number.isFinite(v) ? v : fallback
+  }
+  const d = DEFAULT_CALIBRATION
+  return {
+    bias: {
+      kerrostalo: get('bias.kerrostalo', d.bias.kerrostalo),
+      rivitalo: get('bias.rivitalo', d.bias.rivitalo),
+      omakotitalo: get('bias.omakotitalo', d.bias.omakotitalo),
+    },
+    scurve: {
+      k1500: get('scurve.1500', d.scurve.k1500),
+      k2000: get('scurve.2000', d.scurve.k2000),
+      k4000: get('scurve.4000', d.scurve.k4000),
+      k6000: get('scurve.6000', d.scurve.k6000),
+      k8000: get('scurve.8000', d.scurve.k8000),
+    },
+  }
+}
+
 export interface PriceEstimationInput {
-  /** Real StatFin €/m² for this postal code + year + property type */
+  /** Base €/m² for this postal code + property type (area_base_prices.base_price) */
   basePrice: number
+  /** Where the base price came from — drives the S-curve fallback guard */
+  baseSource?: BasePriceSource | null
+  /** Calibration constants (bias, S-curve). Defaults to DEFAULT_CALIBRATION. */
+  calibration?: PriceCalibration
   /** Building construction year (null if unknown) */
   constructionYear: number | null
   /** Distance to nearest water body in meters (null if unknown) */
@@ -52,6 +125,11 @@ export interface PriceEstimationInput {
 export interface PriceEstimationResult {
   estimatedPricePerSqm: number
   basePrice: number
+  /** Global bias multiplier applied to the base price (price_calibration bias.<type>) */
+  biasFactor: number
+  /** Raw estimate before the price-range (S-curve) correction */
+  rawEstimate: number
+  priceRangeCorrection: number
   ageFactor: number
   energyFactor: number
   waterFactor: number
@@ -216,24 +294,23 @@ export function computeSizeFactor(
  * The correction is applied to the final raw estimate (base × all factors)
  * BEFORE rounding to avoid compounding with other factors.
  */
-export function computePriceRangeCorrection(rawEstimate: number, isFallback?: boolean): number {
-  // When base price is from a fallback source (nearby interpolation or municipality median),
-  // don't apply low-end discount — it compounds the error on already-uncertain data
+export function computePriceRangeCorrection(
+  rawEstimate: number,
+  isFallback?: boolean,
+  scurve: SCurveKnots = DEFAULT_CALIBRATION.scurve
+): number {
+  // When base price is from a fallback source (nearby interpolation, municipality,
+  // type cascade), don't apply low-end discount — it compounds the error on
+  // already-uncertain data. Mirrors price_range_correction() in migration 040.
   if (isFallback && rawEstimate <= 2000) return 1.00
 
-  if (rawEstimate <= 1500) return 0.92      // strong discount for very cheap
-  if (rawEstimate <= 2000) {
-    // Linear interpolation: 0.92 at 1500 → 1.00 at 2000
-    const t = (rawEstimate - 1500) / 500
-    return 0.92 + 0.08 * t
-  }
-  if (rawEstimate <= 6000) return 1.00       // neutral zone
-  if (rawEstimate <= 8000) {
-    // Linear interpolation: 1.00 at 6000 → 1.06 at 8000
-    const t = (rawEstimate - 6000) / 2000
-    return 1.00 + 0.06 * t
-  }
-  return 1.06                                // boost for premium
+  const { k1500, k2000, k4000, k6000, k8000 } = scurve
+  if (rawEstimate <= 1500) return k1500
+  if (rawEstimate <= 2000) return k1500 + (k2000 - k1500) * ((rawEstimate - 1500) / 500)
+  if (rawEstimate <= 4000) return k2000 + (k4000 - k2000) * ((rawEstimate - 2000) / 2000)
+  if (rawEstimate <= 6000) return k4000 + (k6000 - k4000) * ((rawEstimate - 4000) / 2000)
+  if (rawEstimate <= 8000) return k6000 + (k8000 - k6000) * ((rawEstimate - 6000) / 2000)
+  return k8000
 }
 
 export function dampenPremium(factor: number, ageFactor: number): number {
@@ -346,13 +423,23 @@ export function estimateBuildingPrice(
   // Leased plot discount (vuokratontti)
   const tonttiFactor = computeTonttiFactor(input.isLeasedPlot, input.propertyType)
 
-  const rawEstimate = input.basePrice * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor * tonttiFactor
-  const priceRangeCorrection = computePriceRangeCorrection(rawEstimate)
+  const calibration = input.calibration ?? DEFAULT_CALIBRATION
+  const biasFactor = input.propertyType ? calibration.bias[input.propertyType] : 1.0
+
+  const rawEstimate = input.basePrice * biasFactor * ageFactor * energyFactor * waterFactor * floorFactor * sizeFactor * neighborhoodFactor * tonttiFactor
+  const priceRangeCorrection = computePriceRangeCorrection(
+    rawEstimate,
+    isFallbackBaseSource(input.baseSource),
+    calibration.scurve
+  )
   const estimatedPricePerSqm = Math.round(rawEstimate * priceRangeCorrection)
 
   return {
     estimatedPricePerSqm,
     basePrice: input.basePrice,
+    biasFactor,
+    rawEstimate,
+    priceRangeCorrection,
     ageFactor,
     energyFactor,
     waterFactor,
@@ -411,6 +498,10 @@ export function computePriceRange(
     propertyType?: PropertyType
     hasFloorCount?: boolean
     hasSizeFactor?: boolean
+    /** area_base_prices.source — fallback sources widen the range */
+    baseSource?: BasePriceSource | null
+    /** Effective own-transaction weight behind the base price (area_base_prices.n_own) */
+    baseN?: number | null
   }
 ): PriceRange {
   let margin = 0.10
@@ -429,6 +520,11 @@ export function computePriceRange(
   if (opts?.hasSizeFactor) margin -= 0.005
   if (opts?.hasEnergyClass) margin -= 0.01
 
+  // Base price uncertainty — sparse areas get an honest, wider range
+  if (opts?.baseSource === 'shrunk') margin += 0.03
+  else if (isFallbackBaseSource(opts?.baseSource)) margin += 0.06
+  if (opts?.baseN != null && opts.baseN < 10) margin += 0.02
+
   margin = Math.max(0.03, margin)
 
   // Derive confidence label from final margin
@@ -443,5 +539,41 @@ export function computePriceRange(
     high: roundTo50(price * (1 + margin)),
     marginPct: margin,
     confidence,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Base price provenance (UI text)
+// ---------------------------------------------------------------------------
+
+/**
+ * Human-readable (Finnish) description of where the base price came from,
+ * e.g. "Perustuu 4 kauppaan alueella 37100 ja Nokian hintatasoon".
+ */
+export function describeBaseSource(
+  source: BasePriceSource | null | undefined,
+  nOwn: number | null | undefined,
+  areaCode: string | null | undefined,
+  municipality: string | null | undefined
+): string | null {
+  if (!source) return null
+  const n = nOwn != null ? Math.round(nOwn) : 0
+  const area = areaCode ? `alueella ${areaCode}` : 'alueella'
+  const muni = municipality ? `${municipality}n` : 'kunnan'
+  const kauppaa = n === 1 ? '1 kauppaan' : `${n} kauppaan`
+
+  switch (source) {
+    case 'area':
+      return `Perustuu ${kauppaa} ${area}`
+    case 'shrunk':
+      return `Perustuu ${kauppaa} ${area} ja lähialueiden hintatasoon`
+    case 'nearby':
+      return `Alueella ei ole riittävästi kauppoja – perustuu lähipostinumeroiden hintatasoon`
+    case 'municipality':
+      return `Alueella ei ole riittävästi kauppoja – perustuu ${muni} hintatasoon`
+    case 'cascade':
+      return `Tälle talotyypille ei ole kauppoja alueella – johdettu muiden talotyyppien hinnoista`
+    default:
+      return null
   }
 }

@@ -89,6 +89,10 @@ export function trackPriceFeedback(props: {
   estimatedPrice: number | null;
   rating: "accurate" | "too_high" | "too_low";
   comment?: string;
+  /** area_base_prices.source — lets us split feedback by base-price reliability */
+  baseSource?: string | null;
+  /** Confidence label shown to the user at the time of voting */
+  confidence?: string | null;
 }) {
   posthog.capture("price_feedback", props);
 }

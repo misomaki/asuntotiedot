@@ -5,6 +5,26 @@
 
 ---
 
+## 2026-11: Perushinta materialisoiduksi tauluksi + Bayes-kutistus
+
+**Päätös:** Perushinta lasketaan kerran tauluun `area_base_prices` (`13-build-area-base-prices.ts`) ja kaikki kuluttajat (SQL `compute_building_price`, provider, validointi, naapurustokertoimet) lukevat sen. Harvan datan alueilla oma hinta kutistetaan kohti naapureita/kuntatasoa otoskoon mukaan: `base = (n_own·p_own + k·p_parent)/(n_own + k)`. Kolme viimeistä vuotta poolataan indeksikorjattuna. Kalibrointivakiot (bias, S-käyrän solmut, k) ovat `price_calibration`-taulussa dataa, eivät koodia.
+
+**Miksi:** Perushinta oli yhden vuoden keskiarvo ilman kutistusta (OKT: 154/270 alueella n < 6, 39 alueella 2026-osavuosi), ja kaskadi oli kopioitu kolmeen paikkaan, jotka olivat eriytyneet. Validointi regressoi keväällä (OKT +4 % → +24 %) huomaamatta. Keskimääräinen asking/estimate-vinouma (1.08–1.19) eli naapurustokertoimissa, jolloin kehyskunnat ilman Etuovi-dataa aliarvioitiin 10–15 % — palautteessa 1 000–2 000 €/m² luokassa 26 "liian matala" vs 1 "osui". Hold-out-mediaanivirhe 18.0 % → 13.2 %, keskiharha +7.4 % → +3.3 %.
+
+**Samalla korjattu:** migraatio 038 oli pudottanut `total_area_sqm` ja `is_leased_plot` SQL-funktiosta (tonttikerroin ei ollut käytössä tuotannossa); `ESTIMATION_YEAR` oli jäänyt 2024:ään (ikäkertoimet kaksi vuotta pielessä); Supabase REST-clientin 1 000 rivin katto rikkoi skriptit 08/10/11 (vain kolmasosa alueista); `price_estimates` sisälsi 2.7× duplikaatteja NULL-quarterin takia (migraatio 041); palautewidgetin kommenttikenttä ei koskaan näkynyt.
+
+**Hylätty:** municipality-median-fallback naapurustokertoimille (vääristää, ks. 2026-03) ja S-käyrän käsin asetetut arvot (data näytti ne väärän suuntaisiksi molemmissa päissä).
+
+---
+
+## 2026-11: Hold-out-validointi ainoaksi tarkkuusmittariksi
+
+**Päätös:** 20 % Etuovi-ilmoituksista (deterministinen hash, `scripts/lib/holdout.ts`) ei koskaan osallistu kertoimiin. `validate-holdout.ts` on päämittari (`--mode compute` ilman uudelleenlaskentaa, `--mode stored` tuotannon hinnoille) ja `05-compute-building-prices.ts` ajaa sen porttina ennen jokaista uudelleenlaskentaa.
+
+**Miksi:** Vanha 87 kohteen validointi käytti samoja ilmoituksia, joista naapurustokertoimet laskettiin (6/8 tarkistetusta osoitteesta löytyi stagingista) → raportoitu tarkkuus oli optimistinen ja regressiot jäivät huomaamatta.
+
+---
+
 ## 2026-04: GTM UI-strippaus — fokus selauskokemukseen
 
 **Päätös:** Poistetaan UI:sta markkinapaikka (MarketplaceSignals), autentikaatio (UserMenu), ja AI-haku (Header-integraatio). Backend-infrastruktuuri jätetään paikoilleen uudelleenkytkentää varten. Lisätään kaupunkipaneeli (CityPanel) sivupalkkiin ja hakuvinkkidropdown Headeriin.

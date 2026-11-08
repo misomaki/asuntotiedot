@@ -5,19 +5,48 @@
  * compute_building_price() to calculate per-building price estimates
  * based on area prices, building age, water proximity, and floor count.
  *
- * Prerequisites: Scripts 01-04 must be run first.
+ * Prerequisites: Scripts 01-04 must be run first; area_base_prices must be
+ * built (13-build-area-base-prices.ts) — compute_building_price() reads it.
  *
- * Usage: npx tsx scripts/data-import/05-compute-building-prices.ts
+ * Before computing, the hold-out validation gate runs in compute mode and
+ * aborts if accuracy regressed against the previous report
+ * (scripts/validation/reports/latest-compute.json).
+ *
+ * Usage:
+ *   npx tsx scripts/data-import/05-compute-building-prices.ts
+ *   npx tsx scripts/data-import/05-compute-building-prices.ts --force   # skip the gate
  */
 
+import { execSync } from 'child_process'
+import { resolve } from 'path'
 import { supabase } from './lib/supabaseAdmin'
 
-const ESTIMATION_YEAR = 2024
+/** Reference year for age factors — MUST match the current year (was stuck at 2024 until 2026-11). */
+const ESTIMATION_YEAR = 2026
 const BATCH_SIZE = 1000
+const FORCE = process.argv.includes('--force')
+
+function runValidationGate(): void {
+  if (FORCE) {
+    console.log('Validation gate skipped (--force)\n')
+    return
+  }
+  console.log('Running hold-out validation gate (compute mode)...\n')
+  const script = resolve(__dirname, '../validation/validate-holdout.ts')
+  try {
+    execSync(`npx tsx "${script}" --mode compute --gate --quiet`, { stdio: 'inherit' })
+  } catch {
+    console.error('\nAborting: validation gate failed. Fix calibration or rerun with --force.')
+    process.exit(1)
+  }
+  console.log('')
+}
 
 async function main() {
   console.log('=== Building Price Computation ===\n')
-  console.log(`Estimation year: ${ESTIMATION_YEAR}`)
+  console.log(`Estimation year: ${ESTIMATION_YEAR}\n`)
+
+  runValidationGate()
 
   // Check current state (use estimated count to avoid timeout on large tables)
   const { count: totalBuildings } = await supabase
@@ -86,10 +115,8 @@ WHERE area_id IS NOT NULL
     totalProcessed += batchCount
 
     if (batchNum % 5 === 0 || batchCount < BATCH_SIZE) {
-      const pct = Math.round((totalProcessed / (needsEstimate ?? 1)) * 100)
-      console.log(
-        `  Batch ${batchNum}: +${batchCount} (total: ${totalProcessed}/${needsEstimate}, ${pct}%)`
-      )
+      // needsEstimate is a planner estimate (count: 'estimated'), not a reliable total
+      console.log(`  Batch ${batchNum}: +${batchCount} (total: ${totalProcessed})`)
     }
   }
 

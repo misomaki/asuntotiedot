@@ -11,7 +11,8 @@
   3. `UPDATE buildings SET estimation_year = NULL;`
   4. `npx tsx scripts/data-import/05-compute-building-prices.ts`
 - [ ] Mobiiliresponsiivisuuden viimeistely ja testaus (erityisesti sheet-interaktiot, legend-sijoittelu)
-- [ ] Lisää Etuovi-dataa neighborhood factoreihin — harvan datan alueet (68 high, tarvitaan lisää)
+- [ ] **Etuovi-keräys kehyskunnista** (manuaalinen selaintyö, `etuovi-scraper.js`): Nokia, Kangasala, Ylöjärvi, Pirkkala, Lempäälä, Kaarina, Raisio, Lieto, Naantali, Kempele, Liminka, Kirkkonummi, Sipoo, Kauniainen, Hollola, Siilinjärvi, Laukaa, Muurame. Tavoite ≥ 2 000 ilmoitusta → `08` → `13` → `09` → `validate-holdout`. Ilman tätä kehyskuntien tarkkuutta ei voi mitata eikä niille synny naapurustokertoimia (bias + kutistus korjaavat vain tason).
+- [ ] Hinta-algoritmi, seuraavat lähteet (ks. `docs/hinta-algoritmi-parannussuunnitelma.md` vaihe C): StatFin 12dg uudisasuntojen hinnat osa-alueittain (uudispreemio kaupunkikohtaiseksi — Jätkäsaari-tyyppiset alueet saavat nyt 0.58-kertoimen), Paavo-sosioekonominen data + palveluetäisyydet naapurustokertoimen imputointiin alueille ilman Etuovi-dataa, Ryhti lämmitystapa/rakennusaine, KVKL-datalisenssi (kunto + energialuokka)
 - [ ] Cookie consent + GDPR-yhteensopivuus (CookieConsentBanner komponentti kesken)
 - [ ] Käyttöehdot- ja tietosuojasivut (`/kayttoehdot`, `/tietosuoja` — tiedostot luotu, sisältö?)
 - [ ] Asiakastukisähköpostin (tietosuoja@neliohinnat.fi) lisäys käyttöliittymään (footer, tietosuojasivu)
@@ -48,6 +49,7 @@
 
 ## Done
 
+- [x] Perushinnat yhdeksi lähteeksi (`area_base_prices`, Bayes-kutistus, StatFin 13mx/13mq + KHR kunta), hold-out-validointi, S-käyrä datasta, palautewidgetin korjaus — hold-out median |Δ| 18 % → 13 % (2026-11)
 - [x] Karttanäkymä Voronoi-tesselloinnilla + IDW-interpolointi (2026-01)
 - [x] Supabase-integraatio + oikea StatFin/Paavo data (2026-01)
 - [x] Rakennuskerros kartalla zoom ≥14 (2026-01)

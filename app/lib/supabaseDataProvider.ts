@@ -26,8 +26,25 @@ import {
   computeTonttiFactor,
   dampenPremium,
   inferPropertyType,
-  OKT_FALLBACK,
+  calibrationFromRows,
+  DEFAULT_CALIBRATION,
+  type PriceCalibration,
+  type BasePriceSource,
 } from './priceEstimation'
+
+/** Base price row from area_base_prices (built by 13-build-area-base-prices.ts) */
+interface BasePriceLookup {
+  price: number
+  source: BasePriceSource
+  nOwn: number
+  nEffective: number
+}
+
+/** price_calibration is tiny and changes only on recalibration — cache it per server process. */
+const CALIBRATION_TTL_MS = 10 * 60 * 1000
+let calibrationCache: { value: PriceCalibration; loadedAt: number } | null = null
+let calibrationInFlight: Promise<PriceCalibration> | null = null
+
 export class SupabaseDataProvider implements DataProvider {
   private supabase: SupabaseClient
 
@@ -385,32 +402,42 @@ export class SupabaseDataProvider implements DataProvider {
       building.footprint_area_sqm ? Number(building.footprint_area_sqm) : null
     )
 
-    // Fetch area info, base price, and neighborhood factor in parallel
+    // Fetch area info, base price, neighborhood factor and calibration in parallel
     let areaCode = ''
     let areaName = ''
+    let municipality: string | null = null
     let basePrice: number | null = null
+    let basePriceSource: BasePriceSource | null = null
+    let basePriceN: number | null = null
     let neighborhoodFactor = 1.0
     let neighborhoodFactorConfidence: 'high' | 'medium' | 'low' | 'default' = 'default'
+    let calibration: PriceCalibration = DEFAULT_CALIBRATION
 
     if (building.area_id) {
-      const [areaResult, basePriceResult, nbhdResult] = await Promise.all([
+      const [areaResult, basePriceResult, nbhdResult, calib] = await Promise.all([
         this.supabase
           .from('areas')
-          .select('area_code, name')
+          .select('area_code, name, municipality')
           .eq('id', building.area_id)
           .single(),
         this.lookupBasePrice(building.area_id, propertyType),
         this.lookupNeighborhoodFactor(building.area_id, propertyType),
+        this.loadCalibration(),
       ])
 
       if (areaResult.data) {
         areaCode = areaResult.data.area_code
         areaName = areaResult.data.name
+        municipality = areaResult.data.municipality ?? null
       }
       basePrice = basePriceResult?.price ?? null
+      basePriceSource = basePriceResult?.source ?? null
+      basePriceN = basePriceResult?.nOwn ?? null
       neighborhoodFactor = nbhdResult.factor
       neighborhoodFactorConfidence = nbhdResult.confidence
+      calibration = calib
     }
+    const biasFactor = calibration.bias[propertyType]
 
     // Compute the factors for the breakdown
     const ageFactor = computeAgeFactor(building.construction_year, new Date().getFullYear())
@@ -459,6 +486,10 @@ export class SupabaseDataProvider implements DataProvider {
       energy_class: building.energy_class ?? null,
       apartment_count: building.apartment_count ?? null,
       base_price: basePrice,
+      base_price_source: basePriceSource,
+      base_price_n: basePriceN,
+      bias_factor: biasFactor,
+      municipality,
       age_factor: ageFactor,
       energy_factor: energyFactor,
       water_factor: dampenedWaterFactor,
@@ -479,79 +510,67 @@ export class SupabaseDataProvider implements DataProvider {
     }
   }
   /**
-   * Look up base price with omakotitalo fallback + nearby interpolation + municipality fallback.
-   * Phase 1: area-level (omakotitalo → rivitalo×1.00 → kerrostalo×0.75)
-   * Phase 1.5: IDW interpolation from nearest postal codes (max 5 within 10km)
-   * Phase 2: municipality-level median (same cascade)
-   * Returns { price, isFallback } — isFallback=true when Phase 1.5 or 2 resolved.
+   * Base price lookup — one row from area_base_prices.
+   *
+   * All cascading (multi-year pooling, nearby IDW, municipality parent, type
+   * cascade, shrinkage) happens offline in 13-build-area-base-prices.ts, so
+   * SQL, this provider and the validation scripts read exactly the same number.
    */
   private async lookupBasePrice(
     areaId: string,
     propertyType: string
-  ): Promise<{ price: number; isFallback: boolean } | null> {
-    // Phase 1: Area-level lookup
-    const price = await this.fetchLatestPrice(areaId, propertyType)
-    if (price !== null) return { price, isFallback: false }
+  ): Promise<BasePriceLookup | null> {
+    const { data } = await this.supabase
+      .from('area_base_prices')
+      .select('base_price, source, n_own, n_effective')
+      .eq('area_id', areaId)
+      .eq('property_type', propertyType)
+      .maybeSingle()
 
-    if (propertyType === 'omakotitalo') {
-      const rivitaloPrice = await this.fetchLatestPrice(areaId, 'rivitalo')
-      if (rivitaloPrice !== null) return { price: rivitaloPrice * OKT_FALLBACK.fromRivitalo, isFallback: false }
-
-      const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
-      if (kerrostaloPrice !== null) return { price: kerrostaloPrice * OKT_FALLBACK.fromKerrostalo, isFallback: false }
+    if (!data) return null
+    return {
+      price: Number(data.base_price),
+      source: data.source as BasePriceSource,
+      nOwn: Number(data.n_own ?? 0),
+      nEffective: Number(data.n_effective ?? 0),
     }
+  }
 
-    // Rivitalo fallback: kerrostalo × 0.85 (rivitalo typically 10-20% below KT in same area)
-    if (propertyType === 'rivitalo') {
-      const kerrostaloPrice = await this.fetchLatestPrice(areaId, 'kerrostalo')
-      if (kerrostaloPrice !== null) return { price: kerrostaloPrice * 0.85, isFallback: false }
+  /** Load price_calibration (bias, S-curve) with a process-level cache. */
+  private async loadCalibration(): Promise<PriceCalibration> {
+    const now = Date.now()
+    if (calibrationCache && now - calibrationCache.loadedAt < CALIBRATION_TTL_MS) {
+      return calibrationCache.value
     }
+    if (calibrationInFlight) return calibrationInFlight
 
-    // Phase 1.5: Nearby postal code interpolation (IDW)
-    const nearbyPrice = await this.fetchNearbyInterpolatedPrice(areaId, propertyType)
-    if (nearbyPrice !== null) return { price: nearbyPrice, isFallback: true }
-
-    if (propertyType === 'omakotitalo') {
-      const nearbyRivitalo = await this.fetchNearbyInterpolatedPrice(areaId, 'rivitalo')
-      if (nearbyRivitalo !== null) return { price: nearbyRivitalo * OKT_FALLBACK.fromRivitalo, isFallback: true }
-
-      const nearbyKerrostalo = await this.fetchNearbyInterpolatedPrice(areaId, 'kerrostalo')
-      if (nearbyKerrostalo !== null) return { price: nearbyKerrostalo * OKT_FALLBACK.fromKerrostalo, isFallback: true }
-    }
-
-    if (propertyType === 'rivitalo') {
-      const nearbyKerrostalo = await this.fetchNearbyInterpolatedPrice(areaId, 'kerrostalo')
-      if (nearbyKerrostalo !== null) return { price: nearbyKerrostalo * 0.85, isFallback: true }
-    }
-
-    // Phase 2: Municipality-level fallback
-    // Resolve municipality area IDs once, reuse for all property type lookups
-    const municipalityAreaIds = await this.resolveMunicipalityAreaIds(areaId)
-    if (!municipalityAreaIds) return null
-
-    const munPrice = await this.fetchMunicipalityMedianPrice(municipalityAreaIds, propertyType)
-    if (munPrice !== null) return { price: munPrice, isFallback: true }
-
-    if (propertyType === 'omakotitalo') {
-      // Fetch rivitalo and kerrostalo in parallel — they are independent lookups
-      const [munRivitalo, munKerrostalo] = await Promise.all([
-        this.fetchMunicipalityMedianPrice(municipalityAreaIds, 'rivitalo'),
-        this.fetchMunicipalityMedianPrice(municipalityAreaIds, 'kerrostalo'),
-      ])
-      if (munRivitalo !== null) return { price: munRivitalo * OKT_FALLBACK.fromRivitalo, isFallback: true }
-      if (munKerrostalo !== null) return { price: munKerrostalo * OKT_FALLBACK.fromKerrostalo, isFallback: true }
-    }
-
-    return null
+    calibrationInFlight = (async () => {
+      try {
+        const { data, error } = await this.supabase
+          .from('price_calibration')
+          .select('key, value')
+        if (error || !data) return calibrationCache?.value ?? DEFAULT_CALIBRATION
+        const value = calibrationFromRows(data as Array<{ key: string; value: number | string }>)
+        calibrationCache = { value, loadedAt: Date.now() }
+        return value
+      } catch {
+        return calibrationCache?.value ?? DEFAULT_CALIBRATION
+      } finally {
+        calibrationInFlight = null
+      }
+    })()
+    return calibrationInFlight
   }
 
   /**
    * Look up neighborhood correction factor from market data.
-   * Cascade (matches SQL function compute_building_price, migration 012):
-   *   1. area + exact type, sample_count ≥ 3 (high/medium confidence)
-   *   2. area + 'all', sample_count ≥ 3
+   * Cascade (matches SQL function compute_building_price, migration 040):
+   *   1. area + exact type
+   *   2. area + 'all'
    *   3. Final: 1.0 (neutral)
    *
+   * Factors are already shrunk toward 1.0 by sample size (09-compute-
+   * neighborhood-factors.ts), so no sample_count threshold is applied here.
    * No municipality median fallback — with sparse data it creates bias.
    */
   private async lookupNeighborhoodFactor(
@@ -563,7 +582,7 @@ export class SupabaseDataProvider implements DataProvider {
       .select('factor, property_type, sample_count, confidence')
       .eq('area_id', areaId)
       .in('property_type', [propertyType, 'all'])
-      .gte('sample_count', 2)
+      .gte('sample_count', 1)
 
     if (!data?.length) return { factor: 1.0, confidence: 'default' }
 
@@ -584,113 +603,6 @@ export class SupabaseDataProvider implements DataProvider {
     }
 
     return { factor: 1.0, confidence: 'default' }
-  }
-
-  private async fetchLatestPrice(
-    areaId: string,
-    propertyType: string
-  ): Promise<number | null> {
-    const { data } = await this.supabase
-      .from('price_estimates')
-      .select('price_per_sqm_avg, price_per_sqm_median')
-      .eq('area_id', areaId)
-      .eq('property_type', propertyType)
-      .not('price_per_sqm_avg', 'is', null)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    if (!data) return null
-    return Number(data.price_per_sqm_median ?? data.price_per_sqm_avg)
-  }
-
-  /**
-   * Phase 1.5: IDW interpolation from nearest postal codes.
-   * Uses get_nearby_area_prices RPC (max 5 neighbors within 10km).
-   * Returns interpolated price or null if fewer than 2 neighbors found.
-   */
-  private async fetchNearbyInterpolatedPrice(
-    areaId: string,
-    propertyType: string
-  ): Promise<number | null> {
-    const currentYear = new Date().getFullYear()
-    const { data, error } = await this.supabase.rpc('get_nearby_area_prices', {
-      p_area_id: areaId,
-      p_property_type: propertyType,
-      p_year: currentYear,
-    })
-
-    if (error || !data || data.length < 2) return null
-
-    // IDW: weighted average (weight = 1/distance)
-    let numerator = 0
-    let denominator = 0
-    for (const row of data as { price: number; distance_m: number }[]) {
-      const weight = 1.0 / row.distance_m
-      numerator += Number(row.price) * weight
-      denominator += weight
-    }
-
-    if (denominator === 0) return null
-    return numerator / denominator
-  }
-
-  /**
-   * Resolve all area IDs belonging to the same municipality as the given area.
-   * Returns null if the area has no municipality.
-   */
-  private async resolveMunicipalityAreaIds(
-    areaId: string
-  ): Promise<string[] | null> {
-    const { data: area } = await this.supabase
-      .from('areas')
-      .select('municipality')
-      .eq('id', areaId)
-      .single()
-
-    if (!area?.municipality) return null
-
-    const { data: municipalityAreas } = await this.supabase
-      .from('areas')
-      .select('id')
-      .eq('municipality', area.municipality)
-
-    if (!municipalityAreas?.length) return null
-    return municipalityAreas.map((a: { id: string }) => a.id)
-  }
-
-  /**
-   * Municipality-level median price fallback.
-   * Returns the median price across all postal codes in the same municipality
-   * for the most recent year with data.
-   */
-  private async fetchMunicipalityMedianPrice(
-    municipalityAreaIds: string[],
-    propertyType: string
-  ): Promise<number | null> {
-    const { data: prices } = await this.supabase
-      .from('price_estimates')
-      .select('year, price_per_sqm_avg, price_per_sqm_median')
-      .in('area_id', municipalityAreaIds)
-      .eq('property_type', propertyType)
-      .not('price_per_sqm_avg', 'is', null)
-      .order('year', { ascending: false })
-
-    if (!prices?.length) return null
-
-    // Filter to only the latest year's records
-    type PriceRow = { year: number; price_per_sqm_avg: number; price_per_sqm_median: number | null }
-    const latestYear = (prices[0] as PriceRow).year
-    const latestPrices = (prices as PriceRow[]).filter((p) => p.year === latestYear)
-
-    // Use median instead of average — robust against premium-area outliers
-    const values = latestPrices
-      .map((p) => Number(p.price_per_sqm_median ?? p.price_per_sqm_avg))
-      .sort((a, b) => a - b)
-    const mid = Math.floor(values.length / 2)
-    return values.length % 2 === 0
-      ? (values[mid - 1] + values[mid]) / 2
-      : values[mid]
   }
 }
 

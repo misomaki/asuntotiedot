@@ -1,9 +1,12 @@
 /**
  * Script 08: Import Etuovi listings from CSV into _etuovi_staging table.
  *
- * Reads etuovi-listings.csv (collected via browser scraping),
- * matches each listing to an area_id by finding the best matching
- * area name + municipality, and inserts into _etuovi_staging.
+ * Reads etuovi-listings.csv (collected via browser scraping) and matches
+ * each listing to an area_id:
+ *   0. street address → MML address register (_mml_address_staging) → postal code
+ *   1. neighborhood name → area name within the same municipality
+ *   2. fuzzy first-word match
+ * then inserts into _etuovi_staging (postal_code filled when strategy 0 hits).
  *
  * Prerequisites: Migration 009 must be run first (creates _etuovi_staging table).
  *
@@ -11,6 +14,7 @@
  */
 
 import { supabase } from './lib/supabaseAdmin'
+import { getPgClient } from './lib/pgClient'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
@@ -86,19 +90,78 @@ function parseCsv(filePath: string): CsvListing[] {
   return listings
 }
 
-/** Normalize city name from Etuovi format */
+/** "NOKIA" → "Nokia", "hämeenkyrö" → "Hämeenkyrö" (keeps internal hyphen/space casing simple) */
+function titleCase(s: string): string {
+  return s
+    .toLowerCase()
+    .split(/(\s+|-)/)
+    .map(part => (part.length > 1 || /[a-zåäö]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join('')
+}
+
+/** Known municipality names (lowercase) — filled from the areas table at runtime */
+let knownMunicipalities = new Set<string>()
+
+/** Normalize city name from Etuovi format — works for any municipality in the DB */
 function normalizeCity(city: string): string {
-  // Handle "Hervanta, Tampere" → "Tampere"
-  const parts = city.split(/[,/]/).map(p => p.trim())
-  for (const part of parts.reverse()) {
+  // Handle "Hervanta, Tampere" → "Tampere"; "Huopalahti Helsinki" → "Helsinki"
+  const parts = city.split(/[,/]/).map(p => p.trim()).filter(Boolean)
+  for (const part of [...parts].reverse()) {
     const upper = part.toUpperCase()
     if (CITY_NORMALIZE[upper]) return CITY_NORMALIZE[upper]
-    // Check if it's a known major city
-    if (['Helsinki', 'Tampere', 'Turku', 'Oulu', 'Espoo', 'Vantaa', 'Jyväskylä', 'Kuopio', 'Lahti'].includes(part)) {
-      return part
-    }
+    if (knownMunicipalities.has(part.toLowerCase())) return titleCase(part)
+    // "Huopalahti Helsinki" — last word is the municipality
+    const words = part.split(/\s+/)
+    const last = words[words.length - 1]
+    if (words.length > 1 && knownMunicipalities.has(last.toLowerCase())) return titleCase(last)
   }
-  return parts[parts.length - 1] || city
+  return titleCase(parts[parts.length - 1] || city)
+}
+
+// ── Strategy 0: address → MML address register → postal code ─────────
+
+/** 'Mestarintie 19 C' → { street: 'mestarintie', number: '19' } */
+function parseAddress(address: string): { street: string; number: string } | null {
+  const m = address.trim().match(/^(.+?)\s+(\d+)/)
+  if (!m) return null
+  return { street: m[1].toLowerCase().replace(/\s+/g, ' '), number: m[2] }
+}
+
+type AddressIndex = Map<string, string> // `${street}|${number}|${municipality}` → postal_code
+
+async function loadAddressIndex(): Promise<AddressIndex> {
+  console.log('Loading MML address register for address matching...')
+  const index: AddressIndex = new Map()
+  let client
+  try {
+    client = await getPgClient()
+    const res = await client.query<{ street: string; num: string; muni: string; postal_code: string }>(
+      `SELECT lower(street_name) AS street,
+              substring(house_number from '^\\d+') AS num,
+              lower(municipality) AS muni,
+              postal_code
+       FROM _mml_address_staging
+       WHERE street_name IS NOT NULL AND postal_code IS NOT NULL`
+    )
+    for (const r of res.rows) {
+      if (!r.num) continue
+      const key = `${r.street.replace(/\s+/g, ' ')}|${r.num}|${r.muni}`
+      if (!index.has(key)) index.set(key, r.postal_code)
+    }
+    console.log(`  ${index.size} address keys`)
+  } catch (err) {
+    console.warn(`  Address index unavailable (${(err as Error).message}) — falling back to name matching only`)
+  } finally {
+    await client?.end()
+  }
+  return index
+}
+
+function findPostalCodeByAddress(listing: CsvListing, index: AddressIndex): string | null {
+  const parsed = parseAddress(listing.address)
+  if (!parsed) return null
+  const city = normalizeCity(listing.city).toLowerCase()
+  return index.get(`${parsed.street}|${parsed.number}|${city}`) ?? null
 }
 
 // Etuovi neighborhood → database area name aliases
@@ -193,25 +256,38 @@ async function main() {
   console.log(`Filtered ${filtered} listings with pricePerSqm < 1200 (likely non-sale prices)`)
   console.log(`Valid listings: ${validListings.length}`)
 
-  // 2. Fetch all areas
-  const { data: areas, error: areaErr } = await supabase
-    .from('areas')
-    .select('id, name, municipality')
-
-  if (areaErr) {
-    console.error('Failed to fetch areas:', areaErr.message)
-    process.exit(1)
-  }
+  // 2. Fetch all areas (via pg — the Supabase REST client caps responses at 1 000 rows)
+  const pgc = await getPgClient()
+  const areas = (await pgc.query<AreaRow & { area_code: string }>('SELECT id, name, municipality, area_code FROM areas')).rows
+  await pgc.end()
 
   console.log(`Areas in database: ${areas?.length || 0}\n`)
+  knownMunicipalities = new Set((areas ?? []).map((a: { municipality: string }) => a.municipality.toLowerCase()))
+  const areaIdByCode = new Map<string, string>()
+  for (const a of (areas ?? []) as Array<{ id: string; area_code: string }>) areaIdByCode.set(a.area_code, a.id)
+
+  const addressIndex = await loadAddressIndex()
 
   // 3. Match listings to areas
   let matched = 0
+  let matchedByAddress = 0
   let unmatched = 0
   const unmatchedNeighborhoods = new Map<string, number>()
 
   const rows = validListings.map(listing => {
-    const areaId = findAreaId(listing, areas as AreaRow[])
+    let areaId: string | null = null
+    let postalCode: string | null = null
+
+    // Strategy 0: exact street address via MML register
+    const pc = findPostalCodeByAddress(listing, addressIndex)
+    if (pc && areaIdByCode.has(pc)) {
+      areaId = areaIdByCode.get(pc)!
+      postalCode = pc
+      matchedByAddress++
+    }
+
+    if (!areaId) areaId = findAreaId(listing, areas as AreaRow[])
+
     if (areaId) {
       matched++
     } else {
@@ -230,11 +306,12 @@ async function main() {
       size_sqm: listing.size,
       asking_price_per_sqm: listing.pricePerSqm,
       area_id: areaId,
+      postal_code: postalCode,
     }
   })
 
-  console.log(`Matched to area: ${matched}`)
-  console.log(`No area match:   ${unmatched}`)
+  console.log(`Matched to area:   ${matched} (by address: ${matchedByAddress}, by name: ${matched - matchedByAddress})`)
+  console.log(`No area match:     ${unmatched}`)
 
   if (unmatchedNeighborhoods.size > 0) {
     console.log('\nTop unmatched neighborhoods:')

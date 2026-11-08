@@ -153,6 +153,13 @@ export interface BuildingWithPrice {
   energy_class: string | null
   apartment_count: number | null
   base_price: number | null
+  /** Where the base price came from (area_base_prices.source) */
+  base_price_source: 'area' | 'shrunk' | 'nearby' | 'municipality' | 'cascade' | null
+  /** Own-transaction weight behind the base price (area_base_prices.n_own) */
+  base_price_n: number | null
+  /** Global calibration multiplier applied to the base price */
+  bias_factor: number
+  municipality: string | null
   age_factor: number
   energy_factor: number
   water_factor: number

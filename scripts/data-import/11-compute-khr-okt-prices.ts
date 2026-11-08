@@ -2,75 +2,88 @@
  * Script 11: Compute OKT base prices from KHR transaction data.
  *
  * Derives OKT EUR/m² by combining:
- *   - KHR median total transaction prices (from khr_transaction_stats)
- *   - Average OKT living area per postal code (from buildings table)
+ *   - KHR median total transaction prices (khr_transaction_stats)
+ *   - MEDIAN OKT living area per postal code (buildings.total_area_sqm from Ryhti)
  *
- * Formula: price_per_sqm = khr_median_price / avg_okt_living_area
+ * Formula: price_per_sqm = khr_median_price / median_okt_living_area
  *
- * Results are inserted into price_estimates with property_type='omakotitalo',
- * replacing the current crude fallback (rivitalo × 1.10 or kerrostalo × 0.90).
+ * Outputs:
+ *   1. price_estimates (property_type='omakotitalo'), one row per postal code
+ *      + year. Existing OKT rows are DELETED first so stale single-year rows
+ *      from older runs (2000–2016) cannot resurface as "latest year".
+ *   2. municipality_prices (property_type='omakotitalo', source='khr_kunta'),
+ *      one row per municipality + year, from KHR KUNTA-level rows divided by
+ *      the municipality median living area. Used as the OKT parent price in
+ *      13-build-area-base-prices.ts.
  *
- * Prerequisites: Scripts 10 (KHR stats import) must be run first.
+ * Shrinkage / multi-year pooling is NOT done here — that is the job of
+ * 13-build-area-base-prices.ts. This script only produces clean yearly inputs.
+ *
+ * Prerequisites: Scripts 00 (municipality codes) and 10 (KHR import, incl. KUNTA).
  *
  * Usage: npx tsx scripts/data-import/11-compute-khr-okt-prices.ts
  */
 
 import { supabase } from './lib/supabaseAdmin'
+import { getPgClient } from './lib/pgClient'
 
-/** Minimum OKT buildings in a postal code to trust the avg living area */
-const MIN_BUILDINGS = 3
+/** Minimum OKT buildings in a postal code to trust the median living area */
+const MIN_BUILDINGS = 5
+/** Minimum OKT buildings in a municipality to trust its median living area */
+const MIN_MUNICIPALITY_BUILDINGS = 20
 /** Sanity bounds for derived EUR/m² */
-const MIN_PRICE_PER_SQM = 500
+const MIN_PRICE_PER_SQM = 400
 const MAX_PRICE_PER_SQM = 15000
-/** Minimum KHR transactions to trust the median price */
-const MIN_TRANSACTIONS = 2
+/** Minimum KHR transactions to keep a yearly median */
+const MIN_TRANSACTIONS = 3
 /** OKT = apartment_count = 1, living area between 50-500 m² */
 const MIN_LIVING_AREA = 50
 const MAX_LIVING_AREA = 500
+/** Only recent years matter for base prices (older rows add noise) */
+const MIN_YEAR = 2018
 
-interface AreaOktStats {
-  areaCode: string
-  areaId: string
-  avgLivingArea: number
-  buildingCount: number
+interface AreaRef {
+  id: string
+  area_code: string
+  municipality: string
+  municipality_code: string | null
 }
 
 interface KhrRow {
   area_code: string
   area_id: string | null
   year: number
-  location_type: string
+  location_type: 'plan' | 'rural'
+  region_type: 'postal' | 'municipality'
+  area_name: string | null
   median_price: number | null
   transaction_count: number | null
 }
 
-// ── Step 1: Compute avg OKT living area per postal code ──────────────
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+}
 
-async function computeOktLivingAreas(): Promise<Map<string, AreaOktStats>> {
-  console.log('Computing avg OKT living area per postal code...')
+// ── Step 1: median OKT living area per postal code and municipality ──
 
-  // Fetch area code mapping
-  const { data: areas, error: areaError } = await supabase
-    .from('areas')
-    .select('id, area_code')
+async function computeLivingAreas(areas: AreaRef[]): Promise<{
+  byArea: Map<string, { median: number; count: number }>
+  byMunicipality: Map<string, { median: number; count: number }>
+}> {
+  console.log('Computing median OKT living area per postal code / municipality...')
 
-  if (areaError) throw new Error(`Failed to fetch areas: ${areaError.message}`)
+  const areaById = new Map(areas.map((a) => [a.id, a]))
+  const perArea = new Map<string, number[]>()
+  const perMunicipality = new Map<string, number[]>()
 
-  const codeById = new Map<string, string>()
-  const idByCode = new Map<string, string>()
-  for (const a of areas ?? []) {
-    codeById.set(a.id, a.area_code)
-    idByCode.set(a.area_code, a.id)
-  }
-
-  // Paginate through OKT buildings (apartment_count = 1)
   const PAGE_SIZE = 1000
-  const areaAgg = new Map<string, { sum: number; count: number }>()
   let offset = 0
   let totalFetched = 0
 
   while (true) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('buildings')
       .select('area_id, total_area_sqm')
       .eq('apartment_count', 1)
@@ -81,96 +94,105 @@ async function computeOktLivingAreas(): Promise<Map<string, AreaOktStats>> {
       .lt('total_area_sqm', MAX_LIVING_AREA)
       .range(offset, offset + PAGE_SIZE - 1)
 
+    if (error) throw new Error(`Failed to fetch buildings: ${error.message}`)
     if (!data || data.length === 0) break
     totalFetched += data.length
 
     for (const b of data) {
-      const code = codeById.get(b.area_id)
-      if (!code) continue
-      const existing = areaAgg.get(code) ?? { sum: 0, count: 0 }
-      existing.sum += b.total_area_sqm
-      existing.count++
-      areaAgg.set(code, existing)
+      const area = areaById.get(b.area_id)
+      if (!area) continue
+      const v = Number(b.total_area_sqm)
+      const list = perArea.get(area.id) ?? []
+      list.push(v)
+      perArea.set(area.id, list)
+      if (area.municipality_code) {
+        const ml = perMunicipality.get(area.municipality_code) ?? []
+        ml.push(v)
+        perMunicipality.set(area.municipality_code, ml)
+      }
     }
 
     offset += PAGE_SIZE
-    if (totalFetched % 50000 < PAGE_SIZE) {
-      process.stdout.write(`  ${totalFetched} buildings...`)
-    }
+    if (totalFetched % 50000 < PAGE_SIZE) process.stdout.write(`  ${totalFetched} buildings...\n`)
     if (data.length < PAGE_SIZE) break
   }
 
-  console.log(`\n  ${totalFetched} OKT buildings fetched`)
+  console.log(`  ${totalFetched} OKT buildings with Ryhti living area`)
 
-  // Filter to areas with enough buildings
-  const result = new Map<string, AreaOktStats>()
-  for (const [code, agg] of areaAgg) {
-    if (agg.count >= MIN_BUILDINGS) {
-      result.set(code, {
-        areaCode: code,
-        areaId: idByCode.get(code) ?? '',
-        avgLivingArea: agg.sum / agg.count,
-        buildingCount: agg.count,
-      })
+  const byArea = new Map<string, { median: number; count: number }>()
+  for (const [areaId, list] of perArea) {
+    if (list.length >= MIN_BUILDINGS) byArea.set(areaId, { median: median(list), count: list.length })
+  }
+  const byMunicipality = new Map<string, { median: number; count: number }>()
+  for (const [code, list] of perMunicipality) {
+    if (list.length >= MIN_MUNICIPALITY_BUILDINGS) {
+      byMunicipality.set(code, { median: median(list), count: list.length })
     }
   }
 
-  console.log(`  ${result.size} postal codes with ≥${MIN_BUILDINGS} OKT buildings`)
-  return result
+  console.log(`  ${byArea.size} postal codes with ≥${MIN_BUILDINGS} OKT buildings`)
+  console.log(`  ${byMunicipality.size} municipalities with ≥${MIN_MUNICIPALITY_BUILDINGS} OKT buildings`)
+  return { byArea, byMunicipality }
 }
 
-// ── Step 2: Fetch KHR median prices ──────────────────────────────────
+// ── Step 2: KHR yearly medians ───────────────────────────────────────
 
-async function fetchKhrPrices(): Promise<KhrRow[]> {
+async function fetchKhrRows(): Promise<KhrRow[]> {
   console.log('\nFetching KHR transaction stats...')
-
   const PAGE_SIZE = 1000
-  const allRows: KhrRow[] = []
+  const rows: KhrRow[] = []
   let offset = 0
 
   while (true) {
     const { data, error } = await supabase
       .from('khr_transaction_stats')
-      .select('area_code, area_id, year, location_type, median_price, transaction_count')
+      .select('area_code, area_id, area_name, year, location_type, region_type, median_price, transaction_count')
       .not('median_price', 'is', null)
       .gte('transaction_count', MIN_TRANSACTIONS)
+      .gte('year', MIN_YEAR)
       .range(offset, offset + PAGE_SIZE - 1)
 
     if (error) throw new Error(`Failed to fetch KHR stats: ${error.message}`)
     if (!data || data.length === 0) break
-
-    allRows.push(...data)
+    rows.push(...(data as KhrRow[]))
     offset += PAGE_SIZE
     if (data.length < PAGE_SIZE) break
   }
 
-  console.log(`  ${allRows.length} KHR rows with ≥${MIN_TRANSACTIONS} transactions`)
-  return allRows
+  console.log(`  ${rows.length} KHR rows (year ≥ ${MIN_YEAR}, n ≥ ${MIN_TRANSACTIONS})`)
+  return rows
 }
 
-// ── Step 3: Compute EUR/m² and upsert ────────────────────────────────
+/** Per (code, year) keep the plan-area row; fall back to rural. */
+function preferPlan(rows: KhrRow[]): Map<string, KhrRow> {
+  const out = new Map<string, KhrRow>()
+  for (const row of rows) {
+    const key = `${row.area_code}_${row.year}`
+    const existing = out.get(key)
+    if (!existing || (row.location_type === 'plan' && existing.location_type === 'rural')) {
+      out.set(key, row)
+    }
+  }
+  return out
+}
+
+// ── Step 3: derive €/m² and write ────────────────────────────────────
 
 async function main() {
   console.log('=== KHR-Derived OKT Base Prices ===\n')
 
-  const oktAreas = await computeOktLivingAreas()
-  const khrRows = await fetchKhrPrices()
+  // All 3 000+ areas — the Supabase REST client caps responses at 1 000 rows, so use pg
+  const pgc = await getPgClient()
+  const areas = (await pgc.query<AreaRef>('SELECT id, area_code, municipality, municipality_code FROM areas')).rows
+  await pgc.end()
+  console.log(`Areas: ${areas.length}`)
+  const areaByCode = new Map(areas.map((a) => [a.area_code, a]))
 
-  // Group KHR rows: for each postal code + year, prefer 'plan' over 'rural'
-  // (plan = asemakaava-alueet = urban, more comparable to our areas)
-  const khrByCodeYear = new Map<string, KhrRow>()
-  for (const row of khrRows) {
-    const key = `${row.area_code}_${row.year}`
-    const existing = khrByCodeYear.get(key)
-    // Prefer plan area; if both exist, plan wins
-    if (!existing || (row.location_type === 'plan' && existing.location_type === 'rural')) {
-      khrByCodeYear.set(key, row)
-    }
-  }
+  const { byArea, byMunicipality } = await computeLivingAreas(areas)
+  const khrRows = await fetchKhrRows()
 
-  console.log(`\nUnique postal code + year combinations: ${khrByCodeYear.size}`)
-
-  // Compute EUR/m²
+  // ── Postal-code level → price_estimates ──
+  const postal = preferPlan(khrRows.filter((r) => r.region_type === 'postal'))
   const priceRows: Array<{
     area_id: string
     year: number
@@ -180,26 +202,23 @@ async function main() {
     price_per_sqm_median: number
     transaction_count: number
   }> = []
-
   let skippedNoArea = 0
   let skippedRange = 0
 
-  for (const [, khr] of khrByCodeYear) {
-    const oktStats = oktAreas.get(khr.area_code)
-    if (!oktStats) {
+  for (const khr of postal.values()) {
+    const area = areaByCode.get(khr.area_code)
+    const living = area ? byArea.get(area.id) : undefined
+    if (!area || !living) {
       skippedNoArea++
       continue
     }
-
-    const pricePerSqm = Math.round(khr.median_price! / oktStats.avgLivingArea)
-
+    const pricePerSqm = Math.round(khr.median_price! / living.median)
     if (pricePerSqm < MIN_PRICE_PER_SQM || pricePerSqm > MAX_PRICE_PER_SQM) {
       skippedRange++
       continue
     }
-
     priceRows.push({
-      area_id: oktStats.areaId,
+      area_id: area.id,
       year: khr.year,
       quarter: null,
       property_type: 'omakotitalo',
@@ -209,60 +228,96 @@ async function main() {
     })
   }
 
-  console.log(`\nDerived OKT EUR/m² rows: ${priceRows.length}`)
-  console.log(`Skipped (no OKT area data): ${skippedNoArea}`)
-  console.log(`Skipped (out of range ${MIN_PRICE_PER_SQM}-${MAX_PRICE_PER_SQM}): ${skippedRange}`)
+  console.log(`\nPostal-code OKT €/m² rows: ${priceRows.length}`)
+  console.log(`  skipped (no area / too few OKT buildings): ${skippedNoArea}`)
+  console.log(`  skipped (outside ${MIN_PRICE_PER_SQM}–${MAX_PRICE_PER_SQM}): ${skippedRange}`)
+  console.log(`  unique postal codes: ${new Set(priceRows.map((r) => r.area_id)).size}`)
 
-  // Stats
-  const prices = priceRows.map(r => r.price_per_sqm_avg)
-  prices.sort((a, b) => a - b)
-  if (prices.length > 0) {
-    const avg = prices.reduce((s, v) => s + v, 0) / prices.length
-    const median = prices[Math.floor(prices.length / 2)]
-    console.log(`\nPrice distribution:`)
-    console.log(`  avg: ${avg.toFixed(0)} EUR/m²`)
-    console.log(`  median: ${median} EUR/m²`)
-    console.log(`  p10: ${prices[Math.floor(prices.length * 0.1)]} EUR/m²`)
-    console.log(`  p90: ${prices[Math.floor(prices.length * 0.9)]} EUR/m²`)
+  // ── Municipality level → municipality_prices ──
+  const muni = preferPlan(khrRows.filter((r) => r.region_type === 'municipality'))
+  const muniRows: Array<{
+    municipality_code: string
+    municipality: string
+    year: number
+    property_type: 'omakotitalo'
+    price_per_sqm: number
+    transaction_count: number | null
+    source: 'khr_kunta'
+  }> = []
+  let muniSkipped = 0
+  for (const khr of muni.values()) {
+    const living = byMunicipality.get(khr.area_code)
+    if (!living) {
+      muniSkipped++
+      continue
+    }
+    const pricePerSqm = Math.round(khr.median_price! / living.median)
+    if (pricePerSqm < MIN_PRICE_PER_SQM || pricePerSqm > MAX_PRICE_PER_SQM) continue
+    muniRows.push({
+      municipality_code: khr.area_code,
+      municipality: khr.area_name ?? khr.area_code,
+      year: khr.year,
+      property_type: 'omakotitalo',
+      price_per_sqm: pricePerSqm,
+      transaction_count: khr.transaction_count,
+      source: 'khr_kunta',
+    })
   }
+  console.log(`\nMunicipality OKT €/m² rows: ${muniRows.length} (${new Set(muniRows.map((r) => r.municipality_code)).size} municipalities)`)
+  console.log(`  skipped (no OKT living-area data in our buildings): ${muniSkipped}`)
 
-  // Unique areas
-  const uniqueAreas = new Set(priceRows.map(r => r.area_id))
-  const latestYear = Math.max(...priceRows.map(r => r.year))
-  const latestYearRows = priceRows.filter(r => r.year === latestYear)
-  console.log(`\nUnique postal codes: ${uniqueAreas.size}`)
-  console.log(`Latest year (${latestYear}): ${latestYearRows.length} rows`)
+  // ── Write ──
+  console.log('\nDeleting old OKT rows from price_estimates...')
+  const { error: delErr } = await supabase
+    .from('price_estimates')
+    .delete()
+    .eq('property_type', 'omakotitalo')
+  if (delErr) throw new Error(`Delete failed: ${delErr.message}`)
 
-  // Upsert into price_estimates
-  console.log(`\nUpserting into price_estimates...`)
-  const BATCH_SIZE = 200
   let upserted = 0
-
-  for (let i = 0; i < priceRows.length; i += BATCH_SIZE) {
-    const batch = priceRows.slice(i, i + BATCH_SIZE)
+  for (let i = 0; i < priceRows.length; i += 200) {
+    const batch = priceRows.slice(i, i + 200)
     const { error } = await supabase
       .from('price_estimates')
       .upsert(batch, { onConflict: 'area_id,year,quarter,property_type' })
-
     if (error) {
-      console.error(`Upsert error at batch ${i}: ${error.message}`)
+      console.error(`  price_estimates upsert error at ${i}: ${error.message}`)
       continue
     }
-
     upserted += batch.length
-    if ((i + BATCH_SIZE) % 2000 < BATCH_SIZE) {
-      console.log(`  ${upserted} / ${priceRows.length}...`)
+  }
+  console.log(`  ${upserted} OKT rows written to price_estimates`)
+
+  const { error: muniDelErr } = await supabase
+    .from('municipality_prices')
+    .delete()
+    .eq('source', 'khr_kunta')
+  if (muniDelErr) throw new Error(`municipality_prices delete failed: ${muniDelErr.message}`)
+
+  let muniUpserted = 0
+  for (let i = 0; i < muniRows.length; i += 200) {
+    const batch = muniRows.slice(i, i + 200)
+    const { error } = await supabase
+      .from('municipality_prices')
+      .upsert(batch, { onConflict: 'municipality_code,year,property_type,source' })
+    if (error) {
+      console.error(`  municipality_prices upsert error at ${i}: ${error.message}`)
+      continue
     }
+    muniUpserted += batch.length
+  }
+  console.log(`  ${muniUpserted} OKT rows written to municipality_prices`)
+
+  // ── Distribution summary ──
+  const prices = priceRows.map((r) => r.price_per_sqm_avg).sort((a, b) => a - b)
+  if (prices.length > 0) {
+    console.log(`\nPostal-code OKT €/m² distribution: p10 ${prices[Math.floor(prices.length * 0.1)]}, median ${prices[Math.floor(prices.length / 2)]}, p90 ${prices[Math.floor(prices.length * 0.9)]}`)
   }
 
-  console.log(`\nDone! ${upserted} OKT price rows upserted into price_estimates.`)
-  console.log(`\nNext steps:`)
-  console.log(`  1. Reset building prices: UPDATE buildings SET estimation_year = NULL;`)
-  console.log(`  2. Recompute: npx tsx scripts/data-import/05-compute-building-prices.ts`)
-  console.log(`  3. Increment TILE_VERSION in MapContainer.tsx`)
+  console.log('\nNext: npx tsx scripts/data-import/13-build-area-base-prices.ts')
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err)
   process.exit(1)
 })
