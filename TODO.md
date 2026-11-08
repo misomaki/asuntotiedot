@@ -10,7 +10,7 @@
   2. `npx tsx scripts/data-import/06-enrich-from-ryhti.ts`
   3. `UPDATE buildings SET estimation_year = NULL;`
   4. `npx tsx scripts/data-import/05-compute-building-prices.ts`
-- [ ] Mobiiliresponsiivisuuden viimeistely ja testaus (erityisesti sheet-interaktiot, legend-sijoittelu)
+- [x] Mobiiliresponsiivisuuden viimeistely: sheet swipe-to-dismiss + safe-area, bottom-zonen siivous (legend ylös, attribution → kompakti ⓘ, mobiili-H1 sr-only) (2026-11-08)
 - [ ] **Etuovi-keräys kehyskunnista** (manuaalinen selaintyö, `etuovi-scraper.js`): Nokia, Kangasala, Ylöjärvi, Pirkkala, Lempäälä, Kaarina, Raisio, Lieto, Naantali, Kempele, Liminka, Kirkkonummi, Sipoo, Kauniainen, Hollola, Siilinjärvi, Laukaa, Muurame. Tavoite ≥ 2 000 ilmoitusta → `08` → `13` → `09` → `validate-holdout`. Ilman tätä kehyskuntien tarkkuutta ei voi mitata eikä niille synny naapurustokertoimia (bias + kutistus korjaavat vain tason).
 - [ ] Hinta-algoritmi, seuraavat lähteet (ks. `docs/hinta-algoritmi-parannussuunnitelma.md` vaihe C): StatFin 12dg uudisasuntojen hinnat osa-alueittain (uudispreemio kaupunkikohtaiseksi — Jätkäsaari-tyyppiset alueet saavat nyt 0.58-kertoimen), Paavo-sosioekonominen data + palveluetäisyydet naapurustokertoimen imputointiin alueille ilman Etuovi-dataa, Ryhti lämmitystapa/rakennusaine, KVKL-datalisenssi (kunto + energialuokka)
 - [ ] Cookie consent + GDPR-yhteensopivuus (CookieConsentBanner komponentti kesken)

@@ -70,12 +70,9 @@ export default function Home() {
         </nav>
       </section>
 
-      {/* Mobile: minimal H1 for crawlers */}
-      <div className="absolute bottom-7 left-3 z-10 md:hidden">
-        <h1 className="text-[10px] font-display font-black text-muted-foreground/40">
-          Asuntohinnat kartalla — Neliöt
-        </h1>
-      </div>
+      {/* Mobile: H1 for crawlers — visually hidden so it never collides with the
+          legend or attribution at the bottom edge (desktop has its own visible H1 above). */}
+      <h1 className="sr-only md:hidden">Asuntohinnat kartalla — Neliöt</h1>
 
       {/* Data attribution — above MapLibre's built-in attribution */}
       <div className="absolute bottom-1 left-1 md:bottom-1 md:right-1 md:left-auto z-10 text-[9px] md:text-[10px] text-muted-foreground/60 pointer-events-none select-none max-w-[60vw] md:max-w-none md:text-right text-left">

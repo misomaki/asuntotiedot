@@ -57,14 +57,15 @@ export default function MapLegend({ municipalityScale, zoom = 12, hiddenOnMobile
 
   return (
     <div className={cn(
-      'absolute bottom-4 right-3 md:bottom-6 md:right-6 z-20 transition-opacity duration-200',
+      // Mobile: raised above the map attribution (ⓘ) so the two never overlap.
+      'absolute bottom-10 right-3 md:bottom-6 md:right-6 z-20 transition-opacity duration-200',
       hiddenOnMobile && 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'
     )}>
       <div className="neo-lift bg-[#FFFBF5] border-2 border-[#1a1a1a] rounded-xl shadow-hard-sm overflow-hidden">
         {/* Header / toggle button */}
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="flex w-full items-center justify-between px-3 py-2 text-sm font-display font-bold text-[#1a1a1a] hover:bg-pink-pale transition-colors"
+          className="flex w-full items-center justify-between px-3 py-2.5 md:py-2 min-h-[44px] md:min-h-0 text-sm font-display font-bold text-[#1a1a1a] hover:bg-pink-pale transition-colors"
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Pienennä selite' : 'Laajenna selite'}
         >

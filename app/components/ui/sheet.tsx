@@ -1,7 +1,13 @@
 "use client";
 
 import { type ReactNode, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useDragControls,
+  useReducedMotion,
+  type PanInfo,
+} from "framer-motion";
 import { cn } from "@/app/lib/utils";
 
 type SheetSide = "left" | "right" | "bottom";
@@ -49,6 +55,10 @@ const sizeStyles: Record<SheetSide, string> = {
   bottom: "w-full max-h-[85vh] rounded-t-2xl",
 };
 
+/** Drag-dismiss thresholds for the bottom sheet (swipe down to close). */
+const DISMISS_OFFSET_PX = 110;
+const DISMISS_VELOCITY = 600;
+
 function Sheet({
   open,
   onClose,
@@ -57,6 +67,15 @@ function Sheet({
   children,
 }: SheetProps) {
   const config = sideConfig[side];
+  const dragControls = useDragControls();
+  const prefersReducedMotion = useReducedMotion();
+  const isBottom = side === "bottom";
+
+  function handleDragEnd(_event: unknown, info: PanInfo) {
+    if (info.offset.y > DISMISS_OFFSET_PX || info.velocity.y > DISMISS_VELOCITY) {
+      onClose();
+    }
+  }
 
   // Lock body scroll when open
   useEffect(() => {
@@ -115,12 +134,27 @@ function Sheet({
             animate={{ ...config.animate, opacity: 1 }}
             exit={{ ...config.exit, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            drag={isBottom ? "y" : false}
+            dragControls={isBottom ? dragControls : undefined}
+            dragListener={false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={isBottom ? { top: 0, bottom: 0.7 } : 0}
+            onDragEnd={isBottom ? handleDragEnd : undefined}
           >
-            {/* Drag handle for bottom sheet */}
-            {side === "bottom" && (
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
-              </div>
+            {/* Drag handle for bottom sheet — swipe down to dismiss.
+                Only the handle starts the drag, so scrolling the content below
+                never triggers a dismiss. */}
+            {isBottom && (
+              <button
+                type="button"
+                aria-label="Vedä alas sulkeaksesi"
+                onPointerDown={(e) => {
+                  if (!prefersReducedMotion) dragControls.start(e);
+                }}
+                className="flex w-full justify-center pt-3 pb-2 cursor-grab touch-none active:cursor-grabbing focus-visible:outline-none"
+              >
+                <span className="h-1.5 w-12 rounded-full bg-muted-foreground/40" />
+              </button>
             )}
 
             {/* Close button */}
@@ -153,7 +187,17 @@ function Sheet({
             </button>
 
             {/* Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-6">{children}</div>
+            <div
+              className={cn(
+                "flex-1 min-h-0 overflow-y-auto px-6 pt-6",
+                // Respect the iOS home-indicator / gesture bar on the bottom sheet
+                isBottom
+                  ? "pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+                  : "pb-6"
+              )}
+            >
+              {children}
+            </div>
           </motion.div>
         </>
       )}

@@ -416,6 +416,42 @@ export default function MapContainer() {
       mapRef.current = map
       setMapReady(true)
 
+      // ── Keep the compact attribution collapsed to a ⓘ by default ──
+      // MapLibre renders the compact attribution expanded on first paint, applies
+      // the `compact` class late, and re-expands (or re-renders) the control when
+      // the style's sources update. Expanded, it collides with the floating legend
+      // in the bottom-right corner on mobile. Observe the whole control container
+      // and re-collapse any open attribution until the user taps the ⓘ, after
+      // which we stop interfering so they can read the full credits.
+      const ctrlContainer = map
+        .getContainer()
+        .querySelector<HTMLElement>('.maplibregl-control-container')
+      if (ctrlContainer) {
+        let userOpened = false
+        ctrlContainer.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement).closest('.maplibregl-ctrl-attrib-button')) {
+            userOpened = true
+          }
+        })
+        const collapseAttribution = () => {
+          if (userOpened) return
+          ctrlContainer
+            .querySelectorAll<HTMLElement>('.maplibregl-ctrl-attrib[open], .maplibregl-ctrl-attrib.maplibregl-compact-show')
+            .forEach((el) => {
+              el.removeAttribute('open')
+              el.classList.remove('maplibregl-compact-show')
+            })
+        }
+        collapseAttribution()
+        const attribObserver = new MutationObserver(collapseAttribution)
+        attribObserver.observe(ctrlContainer, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['open', 'class'],
+        })
+      }
+
       // Register flyTo for smooth animated camera transitions
       setFlyTo(({ longitude, latitude, zoom: z }) => {
         map.flyTo({
@@ -622,6 +658,7 @@ export default function MapContainer() {
         style={{ width: '100%', height: '100%' }}
         minZoom={4.5}
         maxBounds={[19.0, 59.0, 32.0, 70.5]}
+        attributionControl={{ compact: true }}
         cursor={cursor}
         interactiveLayerIds={interactiveLayerIds}
         onMouseMove={handleMouseMove}
